@@ -13,14 +13,22 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Note struct {
+    ID        int64     `json:"id"`
+    UserID    int64     `json:"user_id"`
+    Title     string    `json:"title"`
+    Content   string    `json:"content"`
+    CreatedAt time.Time `json:"created_at"`
+    UpdatedAt time.Time `json:"updated_at"`
+}
+
+
 // Service represents a service that interacts with a database.
 type Service interface {
 	// Health returns a map of health status information.
-	// The keys and values in the map are service-specific.
 	Health() map[string]string
 
 	// Close terminates the database connection.
-	// It returns an error if the connection cannot be closed.
 	Close() error
 }
 
@@ -34,26 +42,32 @@ var (
 )
 
 func New() Service {
-	// Reuse Connection
-	if dbInstance != nil {
-		return dbInstance
-	}
+    // Reuse Connection
+    if dbInstance != nil {
+        return dbInstance
+    }
 
-	db, err := sql.Open("sqlite3", dburl)
-	if err != nil {
-		// This will not be a connection error, but a DSN parse error or
-		// another initialization error.
-		log.Fatal(err)
-	}
+    db, err := sql.Open("sqlite3", dburl)
+    if err != nil {
+        // This will not be a connection error, but a DSN parse error or
+        // another initialization error.
+        log.Fatal(err)
+    }
 
-	dbInstance = &service{
-		db: db,
-	}
-	return dbInstance
+    dbInstance = &service{
+        db: db,
+    }
+
+    // Call initTables as a method on dbInstance
+    err = dbInstance.initTables()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    return dbInstance
 }
 
 // Health checks the health of the database connection by pinging the database.
-// It returns a map with keys indicating various health statistics.
 func (s *service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -65,7 +79,7 @@ func (s *service) Health() map[string]string {
 	if err != nil {
 		stats["status"] = "down"
 		stats["error"] = fmt.Sprintf("db down: %v", err)
-		log.Fatalf("db down: %v", err) // Log the error and terminate the program
+		log.Fatalf("db down: %v", err) 
 		return stats
 	}
 
@@ -103,11 +117,55 @@ func (s *service) Health() map[string]string {
 	return stats
 }
 
+
+func (s *service) initTables() error {
+    query := `
+    CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL
+    )`
+    
+    _, err := s.db.Exec(query)
+    return err
+}
+
+func (s *service) CreateNote(ctx context.Context, note *Note) error {
+    query := `
+        INSERT INTO notes (user_id, title, content, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+    `
+    now := time.Now()
+    note.CreatedAt = now
+    note.UpdatedAt = now
+
+    result, err := s.db.ExecContext(ctx, query,
+        note.UserID,
+        note.Title,
+        note.Content,
+        note.CreatedAt,
+        note.UpdatedAt,
+    )
+    if err != nil {
+        return fmt.Errorf("failed to create note: %w", err)
+    }
+
+    id, err := result.LastInsertId()
+    if err != nil {
+        return fmt.Errorf("failed to get last insert id: %w", err)
+    }
+
+    note.ID = id
+    return nil
+}
+
+
 // Close closes the database connection.
-// It logs a message indicating the disconnection from the specific database.
-// If the connection is successfully closed, it returns nil.
-// If an error occurs while closing the connection, it returns the error.
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", dburl)
 	return s.db.Close()
 }
+
