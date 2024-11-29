@@ -30,7 +30,7 @@ func (s *Server) HealthHandler(c *gin.Context) {
     c.JSON(http.StatusOK, s.db.Health())
 }
 
-func (s *Server) UpdateNoteHandler(c *gin.Context) {
+func (s *Server) UpsertNoteHandler(c *gin.Context) {
     var note *Note
 
     if err := c.BindJSON(&note); err != nil {
@@ -82,4 +82,16 @@ func (s *Server) UpdateNoteHandler(c *gin.Context) {
     note.ID = result.ID
 
     c.JSON(http.StatusOK, note)
+}
+
+func (s * Server) DeleteNoteHandler(c *gin.Context) {
+    id := c.Param("id")
+
+    err := s.db.DeleteNote(c.Request.Context(), id)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Note deleted successfully"})
 }

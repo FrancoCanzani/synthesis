@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
-
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -32,7 +30,7 @@ type Service interface {
 	GetNote(ctx context.Context, id string) (*Note, error)
 	UpdateNote(ctx context.Context, note *Note) (*Note, error) 
     DeleteNote(ctx context.Context, id string) error
-    
+
 	Close() error
 }
 
@@ -136,9 +134,7 @@ func (s *service) initTables() error {
     return err
 }
 
-func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {
-    note.ID = uuid.New().String()
-    
+func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {    
     query := `
         INSERT INTO notes (id, user_id, title, content, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?)
