@@ -22,7 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	notes := r.Group("/notes")
 	{
-		notes.POST("/:id", s.UpdateNoteHanler)
+		notes.POST("/:id", s.UpdateNoteHandler)
 	}
 
 	return r

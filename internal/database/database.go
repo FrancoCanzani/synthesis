@@ -9,13 +9,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
+
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type Note struct {
-    ID        int64     `json:"id"`
-    UserID    int64     `json:"user_id"`
+    ID        string     `json:"id"`
+    UserID    string     `json:"user_id"`
     Title     string    `json:"title"`
     Content   string    `json:"content"`
     CreatedAt time.Time `json:"created_at"`
@@ -23,12 +25,14 @@ type Note struct {
 }
 
 
-// Service represents a service that interacts with a database.
 type Service interface {
-	// Health returns a map of health status information.
 	Health() map[string]string
 
-	// Close terminates the database connection.
+    CreateNote(ctx context.Context, note *Note) (*Note, error)
+	GetNote(ctx context.Context, id string) (*Note, error)
+	UpdateNote(ctx context.Context, note *Note) (*Note, error) 
+    DeleteNote(ctx context.Context, id string) error
+    
 	Close() error
 }
 
@@ -50,7 +54,6 @@ func New() Service {
     db, err := sql.Open("sqlite3", dburl)
     if err != nil {
         // This will not be a connection error, but a DSN parse error or
-        // another initialization error.
         log.Fatal(err)
     }
 
@@ -121,7 +124,7 @@ func (s *service) Health() map[string]string {
 func (s *service) initTables() error {
     query := `
     CREATE TABLE IF NOT EXISTS notes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -133,16 +136,19 @@ func (s *service) initTables() error {
     return err
 }
 
-func (s *service) CreateNote(ctx context.Context, note *Note) error {
+func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {
+    note.ID = uuid.New().String()
+    
     query := `
-        INSERT INTO notes (user_id, title, content, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO notes (id, user_id, title, content, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
     `
     now := time.Now()
     note.CreatedAt = now
     note.UpdatedAt = now
 
-    result, err := s.db.ExecContext(ctx, query,
+    _, err := s.db.ExecContext(ctx, query,
+        note.ID,     
         note.UserID,
         note.Title,
         note.Content,
@@ -150,18 +156,90 @@ func (s *service) CreateNote(ctx context.Context, note *Note) error {
         note.UpdatedAt,
     )
     if err != nil {
-        return fmt.Errorf("failed to create note: %w", err)
+        return nil, fmt.Errorf("failed to create note: %w", err)
     }
 
-    id, err := result.LastInsertId()
+    return note, nil
+}
+
+func (s *service) GetNote(ctx context.Context, id string) (*Note, error) {
+    query := `
+        SELECT id, user_id, title, content, created_at, updated_at
+        FROM notes
+        WHERE id = ?
+    `
+    
+    note := &Note{}
+    err := s.db.QueryRowContext(ctx, query, id).Scan(
+        &note.ID,
+        &note.UserID,
+        &note.Title,
+        &note.Content,
+        &note.CreatedAt,
+        &note.UpdatedAt,
+    )
+    if err == sql.ErrNoRows {
+        return nil, fmt.Errorf("note not found: %v", id)
+    }
     if err != nil {
-        return fmt.Errorf("failed to get last insert id: %w", err)
+        return nil, fmt.Errorf("failed to get note: %w", err)
     }
 
-    note.ID = id
+    return note, nil
+}
+
+func (s *service) DeleteNote(ctx context.Context, id string) error {
+    query := `
+        DELETE FROM notes
+        WHERE id = ?
+    `
+    
+    result, err := s.db.ExecContext(ctx, query, id)
+    if err != nil {
+        return fmt.Errorf("failed to delete note: %w", err)
+    }
+
+    rows, err := result.RowsAffected()
+    if err != nil {
+        return fmt.Errorf("failed to get rows affected: %w", err)
+    }
+    if rows == 0 {
+        return fmt.Errorf("note not found: %v", id)
+    }
+
     return nil
 }
 
+func (s *service) UpdateNote(ctx context.Context, note *Note) (*Note, error)  {
+    query := `
+        UPDATE notes 
+        SET title = ?, content = ?, user_id = ?, updated_at = ?
+        WHERE id = ?
+    `
+    
+    now := time.Now()
+    result, err := s.db.ExecContext(ctx, query,
+        note.Title,
+        note.Content,
+        note.UserID,
+        now,         
+        note.ID,     
+    )
+    if err != nil {
+        return nil, fmt.Errorf("failed to update note: %w", err)
+    }
+
+    rows, err := result.RowsAffected()
+    if err != nil {
+        return nil, fmt.Errorf("failed to get rows affected: %w", err)
+    }
+    if rows == 0 {
+        return nil, fmt.Errorf("note not found: %v", note.ID)
+    }
+
+    note.UpdatedAt = now
+    return note, nil
+}
 
 // Close closes the database connection.
 func (s *service) Close() error {
