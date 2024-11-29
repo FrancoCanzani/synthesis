@@ -22,6 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	notes := r.Group("/notes")
 	{
+		notes.GET("/:id", s.GetNoteHandler)
 		notes.POST("/upsert", s.UpsertNoteHandler)
 		notes.DELETE("/delete/:id", s.DeleteNoteHandler)
 	}

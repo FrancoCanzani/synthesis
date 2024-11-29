@@ -91,7 +91,21 @@ func (s * Server) DeleteNoteHandler(c *gin.Context) {
 
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
     }
 
     c.JSON(http.StatusOK, gin.H{"message": "Note deleted successfully"})
+}
+
+func (s * Server) GetNoteHandler(c *gin.Context) {
+    id := c.Param("id")
+    
+    note, err := s.db.GetNote(c.Request.Context(), id)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, note)
 }
