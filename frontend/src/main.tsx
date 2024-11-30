@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router';
 import App from './App';
 import DashboardLayout from './pages/dashboard-layout';
 import Editor from './components/editor';
+import './index.css';
 
 const root = document.getElementById('root');
 

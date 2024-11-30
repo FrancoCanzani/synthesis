@@ -11,6 +11,7 @@ import { HorizontalRuleToolbar } from '@/components/toolbars/horizontal-rule';
 import { ItalicToolbar } from '@/components/toolbars/italic';
 import { OrderedListToolbar } from '@/components/toolbars/ordered-list';
 import { RedoToolbar } from '@/components/toolbars/redo';
+import { UndoToolbar } from './toolbars/undo';
 import { StrikeThroughToolbar } from '@/components/toolbars/strikethrough';
 import { ToolbarProvider } from '@/components/toolbars/toolbar-provider';
 import { EditorContent, type Extension, useEditor } from '@tiptap/react';
@@ -67,11 +68,11 @@ export default function Editor() {
     return null;
   }
   return (
-    <div className='border w-full relative rounded-md overflow-hidden pb-3'>
-      <div className='flex w-full items-center py-2 px-2 justify-between border-b  sticky top-0 left-0 bg-background z-20'>
+    <div className='border rounded-md overflow-hidden pb-3'>
+      <div className='flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20'>
         <ToolbarProvider editor={editor}>
           <div className='flex items-center gap-2'>
-            {/* <UndoToolbar /> */}
+            <UndoToolbar />
             <RedoToolbar />
             <Separator orientation='vertical' className='h-7' />
             <BoldToolbar />
@@ -87,14 +88,7 @@ export default function Editor() {
           </div>
         </ToolbarProvider>
       </div>
-      <div
-        onClick={() => {
-          editor?.chain().focus().run();
-        }}
-        className='cursor-text min-h-[18rem] bg-background'
-      >
-        <EditorContent className='outline-none' editor={editor} />
-      </div>
+      <EditorContent className='outline-none' editor={editor} />
     </div>
   );
 }
