@@ -68,7 +68,7 @@ export default function Editor() {
     return null;
   }
   return (
-    <div className='border rounded-md overflow-hidden pb-3'>
+    <>
       <div className='flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20'>
         <ToolbarProvider editor={editor}>
           <div className='flex items-center gap-2'>
@@ -88,7 +88,7 @@ export default function Editor() {
           </div>
         </ToolbarProvider>
       </div>
-      <EditorContent className='outline-none' editor={editor} />
-    </div>
+      <EditorContent className='overflow-y-auto' editor={editor} />
+    </>
   );
 }
