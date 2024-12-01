@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { ThemeToggle } from './theme-toggle';
 
 // Menu items.
 const items = [
@@ -58,6 +59,7 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <ThemeToggle />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
