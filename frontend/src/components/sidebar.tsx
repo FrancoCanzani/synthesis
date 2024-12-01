@@ -9,8 +9,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from './theme-toggle';
+import { signOut } from '@/lib/helpers';
 
 // Menu items.
 const items = [
@@ -48,7 +50,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className='flex-col justify-between h-full'>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -59,11 +61,18 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <ThemeToggle />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <div className='flex items-center justify-start space-x-4'>
+          <ThemeToggle />
+          <button className='text-start' onClick={async () => await signOut()}>
+            Sign out
+          </button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

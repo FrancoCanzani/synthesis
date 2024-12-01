@@ -1,25 +1,13 @@
-import { useState } from 'react';
+import { Link } from 'react-router';
 import './App.css';
 
 function App() {
-  const fetchData = () => {
-    fetch('http://localhost:8080/')
-      .then((response) => response.text())
-      .then((data) => setMessage(data))
-      .catch((error) => console.error('Error fetching data:', error));
-  };
-  const [message, setMessage] = useState<string>('');
-
   return (
-    <>
-      <button onClick={fetchData}>Click to fetch from Go server</button>
-      {message && (
-        <div>
-          <h2>Server Response:</h2>
-          <p>{message}</p>
-        </div>
-      )}
-    </>
+    <div className='h-screen mx-auto w-full flex items-center justify-center'>
+      <Link to={'/login'} className='font-medium text-xl'>
+        Login
+      </Link>
+    </div>
   );
 }
 
