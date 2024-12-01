@@ -1,5 +1,3 @@
-'use client';
-
 import { Separator } from '@/components/ui/separator';
 import { BlockquoteToolbar } from '@/components/toolbars/blockquote';
 import { BoldToolbar } from '@/components/toolbars/bold';
@@ -15,53 +13,23 @@ import { UndoToolbar } from './toolbars/undo';
 import { StrikeThroughToolbar } from '@/components/toolbars/strikethrough';
 import { ToolbarProvider } from '@/components/toolbars/toolbar-provider';
 import { EditorContent, type Extension, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-
-const extensions = [
-  StarterKit.configure({
-    orderedList: {
-      HTMLAttributes: {
-        class: 'list-decimal',
-      },
-    },
-    bulletList: {
-      HTMLAttributes: {
-        class: 'list-disc',
-      },
-    },
-    code: {
-      HTMLAttributes: {
-        class: 'bg-accent rounded-md p-1',
-      },
-    },
-    horizontalRule: {
-      HTMLAttributes: {
-        class: 'my-2',
-      },
-    },
-    codeBlock: {
-      HTMLAttributes: {
-        class: 'bg-primary text-primary-foreground p-2 text-sm rounded-md p-1',
-      },
-    },
-    heading: {
-      levels: [1, 2, 3, 4],
-      HTMLAttributes: {
-        class: 'tiptap-heading',
-      },
-    },
-  }),
-];
+import { extensions } from '@/lib/extensions';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { useEffect } from 'react';
 
 const content = `
-<h2 class="tiptap-heading" style="text-align: center">Hello world 🌍</h2>
+<h2 class="tiptap-heading" style="text-align: center">Hello world</h2>
 `;
 
 export default function Editor() {
+  const handleChange = () => console.log('change');
+  const { user } = useAuth();
+
   const editor = useEditor({
     extensions: extensions as Extension[],
     content,
     immediatelyRender: false,
+    onUpdate: handleChange,
   });
 
   if (!editor) {

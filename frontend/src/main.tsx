@@ -3,11 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import App from './App';
 import DashboardLayout from './pages/dashboard-layout';
 import Editor from './components/editor';
-import { AuthProvider } from './hooks/use-auth';
 import { ProtectedRoute } from './components/protected-route';
 import { LoginPage } from './pages/login-page';
 import './index.css';
-import { useAuth } from './hooks/use-auth';
+import { useAuth } from './lib/hooks/use-auth';
+import { AuthProvider } from './lib/context/auth-provider';
 
 const root = document.getElementById('root');
 
