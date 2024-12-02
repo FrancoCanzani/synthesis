@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 
@@ -43,7 +42,7 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
     if err != nil {
         // Note doesn't exist, create it
         dbNote := &database.Note{
-            ID:      uuid.New().String(),
+            ID:      note.ID,     
             UserID:  note.UserID,
             Title:   note.Title,
             Content: note.Content,
@@ -108,4 +107,17 @@ func (s * Server) GetNoteHandler(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, note)
+}
+
+func (s * Server) GetNotesHandler(c *gin.Context) {
+    user_id := c.Param("user_id")
+    
+    notes, err := s.db.GetNotes(c.Request.Context(), user_id)
+
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, notes)
 }

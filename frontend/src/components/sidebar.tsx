@@ -1,5 +1,5 @@
 import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
-
+import { Suspense } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from './theme-toggle';
 import { signOut } from '@/lib/helpers';
+import SidebarNotes from './sidebar-notes';
+import { Link } from 'react-router';
+import { v4 as uuidv4 } from 'uuid';
 
 // Menu items.
 const items = [
@@ -44,11 +47,13 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const newNoteId = uuidv4();
+
   return (
     <Sidebar>
       <SidebarContent className='rounded-r-md'>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>Synthetic</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='flex-col justify-between h-full'>
               {items.map((item) => (
@@ -61,6 +66,23 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>
+            <div className='flex items-center justify-between w-full'>
+              Notes
+              <Link className='hover:underline' to={`/notes/${newNoteId}`}>
+                New
+              </Link>
+            </div>
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className='flex-col justify-between h-full'>
+              <Suspense fallback={<div>Loading...</div>}>
+                <SidebarNotes />
+              </Suspense>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

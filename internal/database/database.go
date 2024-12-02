@@ -28,6 +28,7 @@ type Service interface {
 
     CreateNote(ctx context.Context, note *Note) (*Note, error)
 	GetNote(ctx context.Context, id string) (*Note, error)
+    GetNotes(ctx context.Context, user_id string) ([]*Note, error)
 	UpdateNote(ctx context.Context, note *Note) (*Note, error) 
     DeleteNote(ctx context.Context, id string) error
 
@@ -122,7 +123,7 @@ func (s *service) Health() map[string]string {
 func (s *service) initTables() error {
     query := `
     CREATE TABLE IF NOT EXISTS notes (
-        id TEXT PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
 		user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
@@ -182,6 +183,39 @@ func (s *service) GetNote(ctx context.Context, id string) (*Note, error) {
     }
 
     return note, nil
+}
+
+func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error) {
+    query := `
+        SELECT id, user_id, title, content, created_at, updated_at
+        FROM notes
+        WHERE user_id = ?
+    `
+    
+    rows, err := s.db.QueryContext(ctx, query, user_id)
+    if err != nil {
+        return nil, fmt.Errorf("failed to query notes: %w", err)
+    }
+    defer rows.Close()
+
+    var notes []*Note
+    for rows.Next() {
+        note := &Note{}
+        err := rows.Scan(
+            &note.ID,
+            &note.UserID,
+            &note.Title,
+            &note.Content,
+            &note.CreatedAt,
+            &note.UpdatedAt,
+        )
+        if err != nil {
+            return nil, fmt.Errorf("failed to scan note: %w", err)
+        }
+        notes = append(notes, note)
+    }
+
+    return notes, nil
 }
 
 func (s *service) DeleteNote(ctx context.Context, id string) error {

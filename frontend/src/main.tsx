@@ -1,8 +1,7 @@
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import App from './App';
-import DashboardLayout from './pages/dashboard-layout';
-import Editor from './components/editor';
+import NotesLayout from './pages/notes-layout';
 import { ProtectedRoute } from './components/protected-route';
 import { LoginPage } from './pages/login-page';
 import './index.css';
@@ -25,15 +24,13 @@ ReactDOM.createRoot(root).render(
         <Route path='/' element={<RootRoute />} />
         <Route path='/login' element={<LoginPage />} />
         <Route
-          path='/dashboard'
+          path='/notes/:id'
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+              <NotesLayout />
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Editor />} />
-        </Route>
+        ></Route>
       </Routes>
     </BrowserRouter>
   </AuthProvider>

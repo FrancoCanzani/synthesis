@@ -1,5 +1,18 @@
 import { Editor } from '@tiptap/react';
-import { Bold, Italic, List, ListOrdered } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { BlockquoteToolbar } from '@/components/toolbars/blockquote';
+import { BoldToolbar } from '@/components/toolbars/bold';
+import { BulletListToolbar } from '@/components/toolbars/bullet-list';
+import { CodeToolbar } from '@/components/toolbars/code';
+import { CodeBlockToolbar } from '@/components/toolbars/code-block';
+import { HardBreakToolbar } from '@/components/toolbars/hard-break';
+import { HorizontalRuleToolbar } from '@/components/toolbars/horizontal-rule';
+import { ItalicToolbar } from '@/components/toolbars/italic';
+import { OrderedListToolbar } from '@/components/toolbars/ordered-list';
+import { RedoToolbar } from '@/components/toolbars/redo';
+import { UndoToolbar } from './toolbars/undo';
+import { StrikeThroughToolbar } from '@/components/toolbars/strikethrough';
+import { ToolbarProvider } from '@/components/toolbars/toolbar-provider';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -11,31 +24,22 @@ export function Toolbar({ editor }: ToolbarProps) {
   }
 
   return (
-    <div className='border-b p-2 flex gap-2'>
-      <button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={editor.isActive('bold') ? 'is-active' : ''}
-      >
-        <Bold className='w-5 h-5' />
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={editor.isActive('italic') ? 'is-active' : ''}
-      >
-        <Italic className='w-5 h-5' />
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={editor.isActive('bulletList') ? 'is-active' : ''}
-      >
-        <List className='w-5 h-5' />
-      </button>
-      <button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={editor.isActive('orderedList') ? 'is-active' : ''}
-      >
-        <ListOrdered className='w-5 h-5' />
-      </button>
-    </div>
+    <ToolbarProvider editor={editor}>
+      <div className='flex items-center gap-2'>
+        <UndoToolbar />
+        <RedoToolbar />
+        <Separator orientation='vertical' className='h-7' />
+        <BoldToolbar />
+        <ItalicToolbar />
+        <StrikeThroughToolbar />
+        <BulletListToolbar />
+        <OrderedListToolbar />
+        <CodeToolbar />
+        <CodeBlockToolbar />
+        <HorizontalRuleToolbar />
+        <BlockquoteToolbar />
+        <HardBreakToolbar />
+      </div>
+    </ToolbarProvider>
   );
 }
