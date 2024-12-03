@@ -2,6 +2,7 @@ import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
 import { Suspense } from 'react';
 import {
   Sidebar,
+  SidebarHeader,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
@@ -16,6 +17,7 @@ import { signOut } from '@/lib/helpers';
 import SidebarNotes from './sidebar-notes';
 import { Link } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/lib/hooks/use-auth';
 
 // Menu items.
 const items = [
@@ -49,8 +51,26 @@ const items = [
 export function AppSidebar() {
   const newNoteId = uuidv4();
 
+  const { user } = useAuth();
+
+  console.log(user);
+
   return (
     <Sidebar>
+      <SidebarHeader>
+        {user ? (
+          <div className='flex w-full pt-4 pl-2 items-center justify-start space-x-4'>
+            <div className='bg-black flex items-center justify-center rounded-md text-white text-xl font-medium p-3 w-8 h-8 text-center'>
+              {user.user_metadata.name.split(' ')[0][0]}
+            </div>
+            <p className='capitalize font-medium'>
+              {user.user_metadata.name.split(' ')[0]}'s notes
+            </p>
+          </div>
+        ) : (
+          'Loading...'
+        )}
+      </SidebarHeader>
       <SidebarContent className='rounded-r-md'>
         <SidebarGroup>
           <SidebarGroupLabel>Synthetic</SidebarGroupLabel>

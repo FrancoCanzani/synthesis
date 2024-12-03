@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/tooltip';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useParams } from 'react-router';
+import { cn } from '@/lib/utils';
 
 function NotePreview({ content }: { content: string }) {
   const editor = useEditor({
@@ -32,6 +34,8 @@ function NotePreview({ content }: { content: string }) {
 }
 
 export default function SidebarNotes() {
+  const params = useParams();
+
   const { user } = useAuth();
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -62,7 +66,10 @@ export default function SidebarNotes() {
           <TooltipTrigger asChild>
             <Link
               to={`/notes/${note.id}`}
-              className='block px-2 py-1 text-sm text-start hover:bg-accent rounded-md'
+              className={cn(
+                'block px-2 py-1 text-sm text-start hover:bg-accent rounded-md',
+                params.id === note.id && 'font-semibold'
+              )}
             >
               {note.title}
             </Link>
