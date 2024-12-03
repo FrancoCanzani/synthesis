@@ -46,8 +46,7 @@ export function LoginPage() {
 
         // Check if session is created successfully
         if (data.session) {
-          console.log('Session established:', data.session);
-          navigate('/dashboard');
+          navigate('/notes');
         } else {
           console.warn('No session established');
         }

@@ -14,7 +14,7 @@ if (!root) throw new Error('Root element not found');
 
 function RootRoute() {
   const { user } = useAuth();
-  return user ? <Navigate to='/dashboard' replace /> : <App />;
+  return user ? <Navigate to='/notes' replace /> : <App />;
 }
 
 ReactDOM.createRoot(root).render(

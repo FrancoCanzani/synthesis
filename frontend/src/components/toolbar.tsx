@@ -25,7 +25,7 @@ export function Toolbar({ editor }: ToolbarProps) {
 
   return (
     <ToolbarProvider editor={editor}>
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-2 overflow-y-scroll'>
         <UndoToolbar />
         <RedoToolbar />
         <Separator orientation='vertical' className='h-7' />

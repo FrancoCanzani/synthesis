@@ -9,6 +9,7 @@ import { extensions } from '@/lib/extensions';
 import debounce from 'lodash/debounce';
 import { Note } from '@/lib/types';
 import { Toolbar } from '@/components/toolbar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -134,33 +135,35 @@ export default function NotesLayout() {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className='w-full flex bg-background'>
-        <AppSidebar />
-        <div className='flex-1 flex flex-col p-4 lg:p-6'>
-          <div className='border rounded-md pt-1.5 mb-3 min-h-full'>
-            <header className='border-b flex items-center px-4 py-1.5 bg-background space-x-2'>
-              <SidebarTrigger />
-              <Separator orientation='vertical' className='h-6' />
-              <input
-                placeholder='Title'
-                value={noteTitle}
-                onChange={(e) => setNoteTitle(e.target.value)}
-                autoFocus
-                className='flex-1 border-none outline-none'
-              />
-            </header>
-            <main className='flex-1'>
-              <div className='mx-auto pb-4'>
-                <div className='flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20'>
-                  <Toolbar editor={editor} />
+    <TooltipProvider>
+      <SidebarProvider defaultOpen={true}>
+        <div className='w-full flex bg-background'>
+          <AppSidebar />
+          <div className='flex-1 flex flex-col p-4 lg:p-6'>
+            <div className='border rounded-md pt-1.5 mb-3 min-h-full'>
+              <header className='border-b flex items-center px-4 py-1.5 bg-background space-x-2'>
+                <SidebarTrigger />
+                <Separator orientation='vertical' className='h-6' />
+                <input
+                  placeholder='Title'
+                  value={noteTitle}
+                  onChange={(e) => setNoteTitle(e.target.value)}
+                  autoFocus
+                  className='flex-1 border-none outline-none bg-background'
+                />
+              </header>
+              <main className='flex-1'>
+                <div className='mx-auto pb-4'>
+                  <div className='flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20'>
+                    <Toolbar editor={editor} />
+                  </div>
+                  <EditorContent className='overflow-y-auto' editor={editor} />
                 </div>
-                <EditorContent className='overflow-y-auto' editor={editor} />
-              </div>
-            </main>
+              </main>
+            </div>
           </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
