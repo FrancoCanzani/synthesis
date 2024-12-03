@@ -87,13 +87,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className='flex items-center justify-start space-x-4'>
-          <ThemeToggle />
-          <button className='text-start' onClick={async () => await signOut()}>
-            Sign out
-          </button>
-        </div>
+      <SidebarFooter className='flex flex-row items-center justify-between space-x-4'>
+        <ThemeToggle />
+        <button
+          className='text-sm px-2 py-1 text-start hover:bg-accent rounded-md'
+          onClick={async () => await signOut()}
+        >
+          Sign out
+        </button>
       </SidebarFooter>
     </Sidebar>
   );
