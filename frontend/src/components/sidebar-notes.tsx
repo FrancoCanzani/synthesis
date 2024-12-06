@@ -11,8 +11,9 @@ import StarterKit from '@tiptap/starter-kit';
 import { useParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import { useNotesStore } from '@/lib/store/use-note-store';
+import { Trash } from 'lucide-react';
 
-function NotePreview({ content }: { content: string }) {
+function NoteContentPreview({ content }: { content: string }) {
   const editor = useEditor({
     extensions: [StarterKit],
     content,
@@ -35,7 +36,7 @@ function NotePreview({ content }: { content: string }) {
 export default function SidebarNotes() {
   const params = useParams();
   const { user } = useAuth();
-  const { notes, fetchNotes, error, isLoading } = useNotesStore();
+  const { notes, fetchNotes, error, isLoading, deleteNote } = useNotesStore();
 
   useEffect(() => {
     let mounted = true;
@@ -67,15 +68,27 @@ export default function SidebarNotes() {
       {notes?.map((note) => (
         <Tooltip key={note.id}>
           <TooltipTrigger asChild>
-            <Link
-              to={`/notes/${note.id}`}
-              className={cn(
-                'block px-2 py-1 text-sm text-start hover:bg-accent rounded-md',
-                params.id === note.id && 'font-semibold'
-              )}
-            >
-              {note.title}
-            </Link>
+            <div className='group/item flex items-center hover:bg-accent rounded-md px-2 py-1'>
+              <Link
+                to={`/notes/${note.id}`}
+                className={cn(
+                  'block text-sm text-start truncate flex-1 pr-1',
+                  params.id === note.id && 'font-semibold'
+                )}
+              >
+                {note.title}
+              </Link>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteNote(note.id);
+                }}
+                className='md:invisible md:group-hover/item:visible p-1 rounded-md'
+              >
+                <Trash size={14} />
+                <span className='sr-only'>Delete</span>
+              </button>
+            </div>
           </TooltipTrigger>
           <TooltipContent
             side='right'
@@ -83,7 +96,7 @@ export default function SidebarNotes() {
             sideOffset={10}
           >
             <h3 className='font-medium'>{note.title}</h3>
-            <NotePreview content={note.content} />
+            <NoteContentPreview content={note.content} />
             <div className='text-xs text-muted-foreground'>
               Created {formatDate(note.created_at)}
             </div>
