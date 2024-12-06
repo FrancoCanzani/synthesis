@@ -1,7 +1,5 @@
-import useSWR from 'swr';
-import { fetcher } from '@/lib/helpers';
+import { useEffect } from 'react';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { Note } from '@/lib/types';
 import { Link } from 'react-router';
 import {
   Tooltip,
@@ -12,6 +10,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useParams } from 'react-router';
 import { cn } from '@/lib/utils';
+import { useNotesStore } from '@/lib/store/use-note-store';
 
 function NotePreview({ content }: { content: string }) {
   const editor = useEditor({
@@ -35,18 +34,22 @@ function NotePreview({ content }: { content: string }) {
 
 export default function SidebarNotes() {
   const params = useParams();
-
   const { user } = useAuth();
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const { notes, fetchNotes, error, isLoading } = useNotesStore();
 
-  const {
-    data: notes,
-    error,
-    isLoading,
-  } = useSWR<Note[]>(
-    user?.id ? `${apiUrl}/notes/all/${user.id}` : null,
-    fetcher
-  );
+  useEffect(() => {
+    let mounted = true;
+
+    if (user?.id) {
+      fetchNotes(user.id).then(() => {
+        if (!mounted) return;
+      });
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [user, fetchNotes]);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -56,8 +59,8 @@ export default function SidebarNotes() {
     });
   };
 
-  if (error) return <div>failed to load</div>;
-  if (isLoading) return <div>loading...</div>;
+  if (error) return <div>Failed to load notes: {error}</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className='space-y-1 flex-col flex w-full justify-start'>

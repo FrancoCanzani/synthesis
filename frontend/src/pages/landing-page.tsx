@@ -50,7 +50,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   );
 };
 
-const App: React.FC = () => {
+export default function LandingPage() {
   return (
     <div className='min-h-screen bg-background text-foreground font-sans'>
       <style
@@ -73,7 +73,7 @@ const App: React.FC = () => {
 
       <header className='border-b sticky top-0 bg-background/80 backdrop-blur-lg z-50'>
         <div className='container mx-auto px-4 h-16 flex items-center justify-between'>
-          <h1 className='text-xl font-medium'>Synthetic</h1>
+          <h1 className='text-xl font-medium'>synthesis</h1>
           <nav className='hidden md:flex items-center space-x-8'>
             <a
               href='#features'
@@ -94,7 +94,7 @@ const App: React.FC = () => {
               Pricing
             </a>
             <a
-              href='https://github.com/synthetic/app'
+              href='https://github.com/synthesis/app'
               target='_blank'
               rel='noopener noreferrer'
               className='text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center'
@@ -128,7 +128,7 @@ const App: React.FC = () => {
           <div className='container mx-auto px-4 text-center relative z-10'>
             <div className='inline-flex items-center bg-muted/50 backdrop-blur-sm border rounded-full px-4 py-1.5 mb-8'>
               <Star className='w-4 h-4 text-primary mr-2' />
-              <span className='text-sm'>Over 10,000 users trust Synthetic</span>
+              <span className='text-sm'>Over 10,000 users trust synthesis</span>
             </div>
             <h2 className='text-4xl md:text-6xl font-bold tracking-tight mb-6 relative'>
               <span className='bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60 animate-gradient-x'>
@@ -162,7 +162,7 @@ const App: React.FC = () => {
                 <div className='aspect-[16/9] rounded-lg overflow-hidden border shadow-2xl'>
                   <img
                     src='/api/placeholder/1200/675'
-                    alt='Synthetic App Interface - Main Editor'
+                    alt='synthesis App Interface - Main Editor'
                     className='w-full h-full object-cover'
                   />
                 </div>
@@ -201,7 +201,7 @@ const App: React.FC = () => {
               </h3>
               <p className='text-muted-foreground max-w-2xl mx-auto'>
                 Powerful features wrapped in a beautiful, intuitive interface.
-                Focus on your ideas while Synthetic takes care of the rest.
+                Focus on your ideas while synthesis takes care of the rest.
               </p>
             </div>
             <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
@@ -247,7 +247,7 @@ const App: React.FC = () => {
               </h3>
               <p className='text-muted-foreground mb-8'>
                 Join thousands of writers, researchers, and professionals who
-                use Synthetic to capture and develop their best ideas.
+                use synthesis to capture and develop their best ideas.
               </p>
               <div className='flex flex-col sm:flex-row gap-4 justify-center'>
                 <Button size='lg' className='w-full sm:w-auto'>
@@ -276,7 +276,7 @@ const App: React.FC = () => {
                 <div className='bg-primary/10 p-2 rounded-lg'>
                   <Pen className='w-6 h-6 text-primary' />
                 </div>
-                <span className='font-bold'>Synthetic</span>
+                <span className='font-bold'>synthesis</span>
               </div>
               <p className='text-sm text-muted-foreground'>
                 Open source note-taking,
@@ -357,7 +357,7 @@ const App: React.FC = () => {
           <div className='pt-8 border-t'>
             <div className='flex flex-col md:flex-row justify-between items-center gap-4'>
               <div className='text-sm text-muted-foreground'>
-                © {new Date().getFullYear()} Synthetic. All rights reserved.
+                © {new Date().getFullYear()} synthesis. All rights reserved.
               </div>
               <div className='flex space-x-6'>
                 <a
@@ -385,6 +385,4 @@ const App: React.FC = () => {
       </footer>
     </div>
   );
-};
-
-export default App;
+}

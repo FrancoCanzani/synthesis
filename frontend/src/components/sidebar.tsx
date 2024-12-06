@@ -53,8 +53,6 @@ export function AppSidebar() {
 
   const { user } = useAuth();
 
-  console.log(user);
-
   return (
     <Sidebar>
       <SidebarHeader>
@@ -73,7 +71,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className='rounded-r-md'>
         <SidebarGroup>
-          <SidebarGroupLabel>Synthetic</SidebarGroupLabel>
+          <SidebarGroupLabel>synthesis</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='flex-col justify-between h-full'>
               {items.map((item) => (
@@ -107,7 +105,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className='flex flex-row items-center justify-between space-x-4'>
+      <SidebarFooter className='flex flex-row items-center justify-between space-x-4 pb-4'>
         <ThemeToggle />
         <button
           className='text-sm px-2 py-1 text-start hover:bg-accent rounded-md'

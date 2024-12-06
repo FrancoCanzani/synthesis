@@ -1,12 +1,14 @@
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import App from './App';
+import App from './pages/landing-page';
 import NotesLayout from './pages/notes-layout';
 import { ProtectedRoute } from './components/protected-route';
 import { LoginPage } from './pages/login-page';
 import './index.css';
 import { useAuth } from './lib/hooks/use-auth';
 import { AuthProvider } from './lib/context/auth-provider';
+import NoteEditor from './components/note-editor';
+import NoteSelector from './components/note-selector';
 
 const root = document.getElementById('root');
 
@@ -24,13 +26,16 @@ ReactDOM.createRoot(root).render(
         <Route path='/' element={<RootRoute />} />
         <Route path='/login' element={<LoginPage />} />
         <Route
-          path='/notes/:id'
+          path='/notes'
           element={
             <ProtectedRoute>
               <NotesLayout />
             </ProtectedRoute>
           }
-        ></Route>
+        >
+          <Route index element={<NoteSelector />} />
+          <Route path=':id' element={<NoteEditor />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   </AuthProvider>
