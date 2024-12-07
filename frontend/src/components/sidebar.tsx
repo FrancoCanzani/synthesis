@@ -71,7 +71,6 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className='rounded-r-md'>
         <SidebarGroup>
-          <SidebarGroupLabel>synthesis</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='flex-col justify-between h-full'>
               {items.map((item) => (

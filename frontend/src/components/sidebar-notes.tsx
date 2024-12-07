@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useAuth } from '@/lib/hooks/use-auth';
 import { Link } from 'react-router';
 import {
   Tooltip,
@@ -35,22 +33,8 @@ function NoteContentPreview({ content }: { content: string }) {
 
 export default function SidebarNotes() {
   const params = useParams();
-  const { user } = useAuth();
-  const { notes, fetchNotes, error, isLoading, deleteNote } = useNotesStore();
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (user?.id) {
-      fetchNotes(user.id).then(() => {
-        if (!mounted) return;
-      });
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [user, fetchNotes]);
+  const { deleteNote } = useNotesStore();
+  const notes = useNotesStore((state) => state.notes);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -59,9 +43,6 @@ export default function SidebarNotes() {
       day: 'numeric',
     });
   };
-
-  if (error) return <div>Failed to load notes: {error}</div>;
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className='space-y-1 flex-col flex w-full justify-start'>

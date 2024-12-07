@@ -5,7 +5,7 @@ export default function NoteSelector() {
   const newNoteId = uuidv4();
 
   return (
-    <div className='h-4/5 m-auto text-xl lg:text2  flex flex-col items-center space-y-8 justify-center mx-auto'>
+    <div className='h-4/5 m-auto text-xl lg:text-2xl flex flex-col items-center space-y-4 justify-center mx-auto'>
       <p className='font-medium'>Select a note to start editing</p>
       <span className='italic'>or</span>
       <div>

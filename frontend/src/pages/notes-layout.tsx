@@ -4,13 +4,22 @@ import { AppSidebar } from '@/components/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useEffect } from 'react';
 import { useNotesStore } from '@/lib/store/use-note-store';
+import { useAuth } from '@/lib/hooks/use-auth';
+import { useParams } from 'react-router';
 
 export default function NotesLayout() {
-  const fetchNotes = useNotesStore((state) => state.fetchNotes);
+  const { user, loading } = useAuth();
+  const { fetchNotes, fetchNote } = useNotesStore();
+  const { id: currentNoteId } = useParams();
 
   useEffect(() => {
-    fetchNotes();
-  }, [fetchNotes]);
+    if (user && !loading) {
+      fetchNotes(user.id);
+      if (currentNoteId) {
+        fetchNote(currentNoteId);
+      }
+    }
+  }, [user, loading, currentNoteId, fetchNote, fetchNotes]);
 
   return (
     <TooltipProvider>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { EditorContent, type Extension, useEditor } from '@tiptap/react';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { extensions } from '@/lib/extensions';
@@ -10,31 +10,49 @@ import { useNotesStore } from '@/lib/store/use-note-store';
 import { SidebarTrigger } from './ui/sidebar';
 
 export default function NoteEditor() {
+  const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
-  const { currentNote, fetchNote, upsertNote } = useNotesStore();
-  const [localTitle, setLocalTitle] = useState('Untitled');
+  const { currentNote, notes, upsertNote, fetchNote } = useNotesStore();
+  const [localTitle, setLocalTitle] = useState(
+    currentNote?.title || 'Untitled'
+  );
 
   const editor = useEditor({
     extensions: extensions as Extension[],
-    content: '',
+    content: currentNote?.content || '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg mx-auto focus:outline-none',
+      },
+    },
   });
+
+  // Fetch note only if it's not in the store
+  useEffect(() => {
+    if (!noteId || !user) return;
+
+    const noteExists = notes.some((note) => note.id === noteId);
+    if (!noteExists && !currentNote) {
+      fetchNote(noteId).catch(() => {
+        navigate('/notes');
+      });
+    }
+  }, [noteId, user, notes, currentNote, fetchNote, navigate]);
 
   useEffect(() => {
     if (editor && currentNote) {
-      editor.commands.setContent(currentNote.content);
+      if (editor.getHTML() !== currentNote.content) {
+        editor.commands.setContent(currentNote.content);
+      }
+      setLocalTitle(currentNote.title);
     }
   }, [editor, currentNote]);
 
-  useEffect(() => {
-    if (currentNote?.title) {
-      setLocalTitle(currentNote.title);
-    }
-  }, [currentNote]);
-
   const debouncedSaveContent = useCallback(
     debounce((content: string) => {
-      if (!user) return;
+      if (!user || !noteId) return;
+
       upsertNote({
         id: noteId,
         user_id: user.id,
@@ -47,12 +65,13 @@ export default function NoteEditor() {
 
   const debouncedSaveTitle = useCallback(
     debounce((title: string) => {
-      if (!user) return;
+      if (!user || !noteId || !editor) return;
+
       upsertNote({
         id: noteId,
         user_id: user.id,
         title: title,
-        content: editor?.getHTML() || '',
+        content: editor.getHTML(),
       });
     }, 1000),
     [user, noteId, editor, upsertNote]
@@ -67,14 +86,16 @@ export default function NoteEditor() {
 
     editor.on('update', handler);
     return () => {
-      editor.off('update');
+      editor.off('update', handler);
     };
   }, [editor, debouncedSaveContent]);
 
   useEffect(() => {
-    if (!noteId || !editor || !user) return;
-    fetchNote(noteId);
-  }, [noteId, editor, user, fetchNote]);
+    return () => {
+      debouncedSaveContent.cancel();
+      debouncedSaveTitle.cancel();
+    };
+  }, [debouncedSaveContent, debouncedSaveTitle]);
 
   if (!editor) return null;
 
