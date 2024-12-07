@@ -13,7 +13,8 @@ export default function NoteEditor() {
   const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
-  const { currentNote, notes, upsertNote, fetchNote } = useNotesStore();
+  const { currentNote, notes, upsertNote, fetchNote, fetchNotes } =
+    useNotesStore();
   const [localTitle, setLocalTitle] = useState(
     currentNote?.title || 'Untitled'
   );
@@ -73,6 +74,8 @@ export default function NoteEditor() {
         title: title,
         content: editor.getHTML(),
       });
+
+      fetchNotes(noteId);
     }, 1000),
     [user, noteId, editor, upsertNote]
   );

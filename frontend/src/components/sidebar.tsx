@@ -107,7 +107,7 @@ export function AppSidebar() {
       <SidebarFooter className='flex flex-row items-center justify-between space-x-4 pb-4'>
         <ThemeToggle />
         <button
-          className='text-sm px-2 py-1 text-start hover:bg-accent rounded-md'
+          className='text-sm px-2 py-1 text-start hover:bg-accent rounded-md font-medium'
           onClick={async () => await signOut()}
         >
           Sign out
