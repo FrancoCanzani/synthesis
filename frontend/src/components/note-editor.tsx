@@ -13,15 +13,16 @@ export default function NoteEditor() {
   const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
-  const { currentNote, notes, upsertNote, fetchNote, fetchNotes } =
-    useNotesStore();
+  const { notes, upsertNote, fetchNotes } = useNotesStore();
+
+  const currentNote = notes.find((note) => note.id === noteId);
   const [localTitle, setLocalTitle] = useState(
     currentNote?.title || 'Untitled'
   );
 
   const editor = useEditor({
     extensions: extensions as Extension[],
-    content: currentNote?.content || '',
+    content: '',
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg mx-auto focus:outline-none',
@@ -29,32 +30,25 @@ export default function NoteEditor() {
     },
   });
 
-  // Fetch note only if it's not in the store
   useEffect(() => {
-    if (!noteId || !user) return;
-
-    const noteExists = notes.some((note) => note.id === noteId);
-    if (!noteExists && !currentNote) {
-      fetchNote(noteId).catch(() => {
-        navigate('/notes');
-      });
+    if (editor) {
+      editor.commands.setContent(currentNote?.content ?? '');
+      setLocalTitle(currentNote?.title ?? 'Untitled');
     }
-  }, [noteId, user, notes, currentNote, fetchNote, navigate]);
+  }, [noteId, editor, currentNote]);
 
   useEffect(() => {
-    if (editor && currentNote) {
-      if (editor.getHTML() !== currentNote.content) {
-        editor.commands.setContent(currentNote.content);
-      }
-      setLocalTitle(currentNote.title);
+    if (!noteId || !notes.length) return;
+    if (!currentNote && !upsertNote) {
+      navigate('/notes');
     }
-  }, [editor, currentNote]);
+  }, [noteId, notes, currentNote, navigate, upsertNote]);
 
   const debouncedSaveContent = useCallback(
-    debounce((content: string) => {
+    debounce(async (content: string) => {
       if (!user || !noteId) return;
 
-      upsertNote({
+      await upsertNote({
         id: noteId,
         user_id: user.id,
         title: localTitle,
@@ -65,19 +59,22 @@ export default function NoteEditor() {
   );
 
   const debouncedSaveTitle = useCallback(
-    debounce((title: string) => {
-      if (!user || !noteId || !editor) return;
+    debounce(async (newTitle: string) => {
+      if (!user?.id || !noteId || !editor) return;
 
-      upsertNote({
-        id: noteId,
-        user_id: user.id,
-        title: title,
-        content: editor.getHTML(),
-      });
-
-      fetchNotes(noteId);
+      try {
+        await upsertNote({
+          id: noteId,
+          user_id: user.id,
+          title: newTitle,
+          content: editor.getHTML(),
+        });
+        await fetchNotes(user.id);
+      } catch (error) {
+        console.error('Failed to save title:', error);
+      }
     }, 1000),
-    [user, noteId, editor, upsertNote]
+    [editor?.getHTML, fetchNotes, noteId, upsertNote, user?.id]
   );
 
   useEffect(() => {
@@ -90,15 +87,16 @@ export default function NoteEditor() {
     editor.on('update', handler);
     return () => {
       editor.off('update', handler);
-    };
-  }, [editor, debouncedSaveContent]);
-
-  useEffect(() => {
-    return () => {
       debouncedSaveContent.cancel();
       debouncedSaveTitle.cancel();
     };
-  }, [debouncedSaveContent, debouncedSaveTitle]);
+  }, [editor, debouncedSaveContent, debouncedSaveTitle]);
+
+  useEffect(() => {
+    if (localTitle) {
+      debouncedSaveTitle(localTitle);
+    }
+  }, [localTitle, debouncedSaveTitle]);
 
   if (!editor) return null;
 
@@ -110,10 +108,7 @@ export default function NoteEditor() {
         <input
           placeholder='Title'
           value={localTitle}
-          onChange={(e) => {
-            setLocalTitle(e.target.value);
-            debouncedSaveTitle(e.target.value);
-          }}
+          onChange={(e) => setLocalTitle(e.target.value)}
           autoFocus
           className='flex-1 border-none outline-none bg-background'
         />

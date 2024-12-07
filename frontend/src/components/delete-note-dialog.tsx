@@ -11,13 +11,16 @@ import {
 import { useNotesStore } from '@/lib/store/use-note-store';
 import { Trash } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 
-export function DeleteNoteDialog({ noteId }: { noteId: string }) {
+export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
   const { deleteNote } = useNotesStore();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     await deleteNote(noteId);
+    navigate('/notes');
     setOpen(false);
   };
 

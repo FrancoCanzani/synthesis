@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 import {
   Tooltip,
   TooltipContent,
@@ -9,7 +9,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { useParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import { useNotesStore } from '@/lib/store/use-note-store';
-import { Trash } from 'lucide-react';
+import DeleteNoteDialog from './delete-note-dialog';
 
 function NoteContentPreview({ content }: { content: string }) {
   const editor = useEditor({
@@ -33,8 +33,8 @@ function NoteContentPreview({ content }: { content: string }) {
 
 export default function SidebarNotes() {
   const params = useParams();
-  const { deleteNote } = useNotesStore();
   const notes = useNotesStore((state) => state.notes);
+  const navigate = useNavigate();
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -50,36 +50,31 @@ export default function SidebarNotes() {
         <Tooltip key={note.id}>
           <TooltipTrigger asChild>
             <div className='group/item flex items-center hover:bg-accent rounded-md px-2 py-1'>
-              <Link
-                to={`/notes/${note.id}`}
+              <button
                 className={cn(
                   'block text-sm text-start truncate flex-1 pr-1',
                   params.id === note.id && 'font-semibold'
                 )}
-              >
-                {note.title}
-              </Link>
-              <button
                 onClick={(e) => {
                   e.preventDefault();
-                  deleteNote(note.id);
+                  navigate(`/notes/${note.id}`);
                 }}
-                className='md:invisible md:group-hover/item:visible p-1 rounded-md'
               >
-                <Trash size={14} />
-                <span className='sr-only'>Delete</span>
+                {note.title}
               </button>
+              <DeleteNoteDialog noteId={note.id} />
             </div>
           </TooltipTrigger>
           <TooltipContent
             side='right'
-            className='w-56 p-4 space-y-2 bg-accent'
+            className='w-56 p-2 space-y-2 bg-accent'
             sideOffset={10}
           >
             <h3 className='font-medium'>{note.title}</h3>
             <NoteContentPreview content={note.content} />
-            <div className='text-xs text-muted-foreground'>
-              Created {formatDate(note.created_at)}
+            <div className='text-xs text-muted-foreground flex flex-col space-y-1'>
+              <span>Created - {formatDate(note.created_at)}</span>
+              <span>Updated - {formatDate(note.updated_at)}</span>
             </div>
           </TooltipContent>
         </Tooltip>

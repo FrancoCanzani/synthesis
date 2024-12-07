@@ -5,21 +5,16 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { useEffect } from 'react';
 import { useNotesStore } from '@/lib/store/use-note-store';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { useParams } from 'react-router';
 
 export default function NotesLayout() {
   const { user, loading } = useAuth();
-  const { fetchNotes, fetchNote } = useNotesStore();
-  const { id: currentNoteId } = useParams();
+  const { fetchNotes } = useNotesStore();
 
   useEffect(() => {
     if (user && !loading) {
       fetchNotes(user.id);
-      if (currentNoteId) {
-        fetchNote(currentNoteId);
-      }
     }
-  }, [user, loading, currentNoteId, fetchNote, fetchNotes]);
+  }, [user, loading, fetchNotes]);
 
   return (
     <TooltipProvider>
