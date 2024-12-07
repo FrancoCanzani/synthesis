@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -40,9 +41,28 @@ type service struct {
 }
 
 var (
-	dburl      = os.Getenv("BLUEPRINT_DB_URL")
+    dbPath = "./internal/database/dev.synthesis.db"
 	dbInstance *service
 )
+
+func init() {
+    // Check environment
+    env := os.Getenv("APP_ENV")
+    
+    switch env {
+    case "production":
+        // In production, use the fly.io volume path
+        dbPath = "./internal/database/prod.synthesis.db"
+    case "test":
+        dbPath = "./internal/database/test.synthesis.db"
+    }
+
+    // Ensure database directory exists
+    dir := filepath.Dir(dbPath)
+    if err := os.MkdirAll(dir, 0755); err != nil {
+        log.Fatalf("failed to create database directory: %v", err)
+    }
+}
 
 func New() Service {
     // Reuse Connection
@@ -50,9 +70,13 @@ func New() Service {
         return dbInstance
     }
 
-    db, err := sql.Open("sqlite3", dburl)
+    db, err := sql.Open("sqlite3", dbPath)
     if err != nil {
-        // This will not be a connection error, but a DSN parse error or
+        log.Fatal(err)
+    }
+
+    // Enable Write-Ahead Logging for better concurrent access
+    if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
         log.Fatal(err)
     }
 
@@ -60,7 +84,6 @@ func New() Service {
         db: db,
     }
 
-    // Call initTables as a method on dbInstance
     err = dbInstance.initTables()
     if err != nil {
         log.Fatal(err)
@@ -271,9 +294,8 @@ func (s *service) UpdateNote(ctx context.Context, note *Note) (*Note, error)  {
     return note, nil
 }
 
-// Close closes the database connection.
 func (s *service) Close() error {
-	log.Printf("Disconnected from database: %s", dburl)
+	log.Printf("Disconnected from database: %s", dbPath)
 	return s.db.Close()
 }
 
