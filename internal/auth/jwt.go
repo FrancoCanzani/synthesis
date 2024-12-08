@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -29,6 +30,9 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
         }
         
         secret := os.Getenv("SUPABASE_JWT_SECRET")
+        if secret == "" {
+            return nil, fmt.Errorf("JWT secret not configured")
+        }
         return []byte(secret), nil
     })
 
@@ -36,9 +40,15 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
         return nil, err
     }
 
-    if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-        return claims, nil
+    claims, ok := token.Claims.(jwt.MapClaims)
+    if !ok || !token.Valid {
+        return nil, fmt.Errorf("invalid token")
     }
 
-    return nil, fmt.Errorf("invalid token")
+    // Validate expiration
+    if exp, ok := claims["exp"].(float64); !ok || float64(time.Now().Unix()) > exp {
+        return nil, fmt.Errorf("token expired")
+    }
+
+    return claims, nil
 }

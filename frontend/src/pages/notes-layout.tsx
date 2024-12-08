@@ -21,7 +21,7 @@ export default function NotesLayout() {
       <SidebarProvider defaultOpen={true}>
         <div className='w-full flex bg-background'>
           <AppSidebar />
-          <div className='flex-1 flex flex-col p-4 lg:p-6'>
+          <div className='flex-1 flex flex-col p-4'>
             <Outlet />
           </div>
         </div>
