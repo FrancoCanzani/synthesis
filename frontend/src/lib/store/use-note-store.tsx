@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Note } from '@/lib/types';
+import { getToken } from '../helpers';
 
 interface NotesState {
   notes: Note[];
@@ -21,10 +22,16 @@ export const useNotesStore = create<NotesState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchNotes: async (userId: string) => {
+  fetchNotes: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/notes/all/${userId}`);
+      const token = await getToken();
+      console.log('Token:', token);
+      const response = await fetch(`${API_URL}/notes/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch notes');
       const notes = await response.json();
       set({ notes, isLoading: false });
@@ -36,7 +43,12 @@ export const useNotesStore = create<NotesState>((set) => ({
   fetchNote: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_URL}/notes/${id}`);
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/notes/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch note');
       const note = await response.json();
       set({ currentNote: note, isLoading: false });
@@ -47,9 +59,14 @@ export const useNotesStore = create<NotesState>((set) => ({
 
   upsertNote: async (note: Partial<Note>) => {
     try {
-      const response = await fetch(`${API_URL}/notes/upsert`, {
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/notes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
         body: JSON.stringify(note),
       });
       if (!response.ok) throw new Error('Failed to save note');
@@ -72,8 +89,13 @@ export const useNotesStore = create<NotesState>((set) => ({
   deleteNote: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
+      const token = await getToken();
+
       const response = await fetch(`${API_URL}/notes/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!response.ok) throw new Error('Failed to delete note');
       set((state) => ({

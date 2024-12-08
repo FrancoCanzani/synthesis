@@ -28,10 +28,10 @@ type Service interface {
 	Health() map[string]string
 
     CreateNote(ctx context.Context, note *Note) (*Note, error)
-	GetNote(ctx context.Context, id string) (*Note, error)
-    GetNotes(ctx context.Context, user_id string) ([]*Note, error)
-	UpdateNote(ctx context.Context, note *Note) (*Note, error) 
-    DeleteNote(ctx context.Context, id string) error
+	GetNote(ctx context.Context, id string, userId string) (*Note, error)
+    GetNotes(ctx context.Context, userId string) ([]*Note, error)
+	UpdateNote(ctx context.Context, note *Note, userId string) (*Note, error) 
+    DeleteNote(ctx context.Context, id string, userId string) error
 
 	Close() error
 }
@@ -182,15 +182,15 @@ func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {
     return note, nil
 }
 
-func (s *service) GetNote(ctx context.Context, id string) (*Note, error) {
+func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note, error) {
     query := `
         SELECT id, user_id, title, content, created_at, updated_at
         FROM notes
-        WHERE id = ?
+        WHERE id = ? AND user_id = ?
     `
-    
+
     note := &Note{}
-    err := s.db.QueryRowContext(ctx, query, id).Scan(
+    err := s.db.QueryRowContext(ctx, query, id, userId).Scan(
         &note.ID,
         &note.UserID,
         &note.Title,
@@ -241,13 +241,13 @@ func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error)
     return notes, nil
 }
 
-func (s *service) DeleteNote(ctx context.Context, id string) error {
+func (s *service) DeleteNote(ctx context.Context, id string, user_id string) error {
     query := `
         DELETE FROM notes
-        WHERE id = ?
+        WHERE id = ? AND user_id = ?
     `
     
-    result, err := s.db.ExecContext(ctx, query, id)
+    result, err := s.db.ExecContext(ctx, query, id, user_id)
     if err != nil {
         return fmt.Errorf("failed to delete note: %w", err)
     }
@@ -263,20 +263,21 @@ func (s *service) DeleteNote(ctx context.Context, id string) error {
     return nil
 }
 
-func (s *service) UpdateNote(ctx context.Context, note *Note) (*Note, error)  {
+func (s *service) UpdateNote(ctx context.Context, note *Note, userId string) (*Note, error)  {
     query := `
         UPDATE notes 
         SET title = ?, content = ?, user_id = ?, updated_at = ?
-        WHERE id = ?
+        WHERE id = ? AND user_id = ?
     `
     
     now := time.Now()
     result, err := s.db.ExecContext(ctx, query,
         note.Title,
         note.Content,
-        note.UserID,
+        userId,
         now,         
-        note.ID,     
+        note.ID,   
+        userId,  
     )
     if err != nil {
         return nil, fmt.Errorf("failed to update note: %w", err)

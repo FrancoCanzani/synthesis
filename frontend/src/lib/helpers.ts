@@ -15,3 +15,10 @@ export const fetcher = async <T>(
 
   return response.json() as Promise<T>;
 };
+
+export const getToken = async () => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token;
+};
