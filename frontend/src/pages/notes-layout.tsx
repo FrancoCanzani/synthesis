@@ -19,9 +19,9 @@ export default function NotesLayout() {
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className='w-full flex bg-background'>
+        <div className='w-full flex bg-background min-w-0'>
           <AppSidebar />
-          <div className='flex-1 flex flex-col p-4'>
+          <div className='flex-1 flex flex-col p-4 min-w-0'>
             <Outlet />
           </div>
         </div>

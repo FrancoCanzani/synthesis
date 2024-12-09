@@ -101,7 +101,7 @@ export default function NoteEditor() {
   if (!editor) return null;
 
   return (
-    <div className='border rounded-md pt-1.5 mb-3 min-h-full'>
+    <div className='border rounded-md pt-1.5 mb-3 h-full flex flex-col min-w-0'>
       <header className='border-b flex items-center px-2 py-1.5 bg-background space-x-2'>
         <SidebarTrigger />
         <Separator orientation='vertical' className='h-6' />
@@ -110,18 +110,22 @@ export default function NoteEditor() {
           value={localTitle}
           onChange={(e) => setLocalTitle(e.target.value)}
           autoFocus
-          className='flex-1 border-none outline-none bg-background'
+          className='flex-1 border-none outline-none bg-background min-w-0'
         />
       </header>
-      <main className='flex-1'>
-        <div className='mx-auto pb-4'>
-          <div className='flex w-full items-center py-2 px-2 border-b sticky top-0 left-0 bg-background z-20'>
-            <Toolbar editor={editor} />
+      <main className='flex-1 overflow-hidden flex flex-col min-w-0'>
+        <div className='w-full h-full overflow-auto'>
+          <div className='sticky top-0 left-0 bg-background z-20 border-b overflow-x-auto'>
+            <div className='flex items-center py-2 px-2 min-w-max'>
+              <Toolbar editor={editor} />
+            </div>
           </div>
-          <EditorContent
-            className='break-words whitespace-pre-wrap overflow-wrap-normal'
-            editor={editor}
-          />
+          <div className='px-4 w-full'>
+            <EditorContent
+              className='break-words whitespace-pre-wrap overflow-wrap-normal'
+              editor={editor}
+            />
+          </div>
         </div>
       </main>
     </div>

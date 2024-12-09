@@ -59,8 +59,15 @@
 }
 
 .ProseMirror {
-  @apply px-4 pt-2;
+  @apply px-4 pt-2 max-w-full; /* Add max-w-full */
   outline: none !important;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.ProseMirror p {
+  @apply whitespace-pre-wrap break-words;
 }
 
 /* Updated heading styles for all levels */
@@ -169,4 +176,29 @@
 
 .resize-cursor {
   cursor: col-resize;
+}
+
+.no-scrollbar {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.minimal-scrollbar {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 2px;
+  }
+  scrollbar-width: thin; /* Firefox */
 }

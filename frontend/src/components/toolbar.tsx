@@ -31,28 +31,26 @@ export function Toolbar({ editor }: ToolbarProps) {
 
   return (
     <ToolbarProvider editor={editor}>
-      <div className='w-full'>
-        <div className='flex items-center gap-2'>
-          <UndoToolbar />
-          <RedoToolbar />
-          <Separator orientation='vertical' className='h-7' />
-          <HeadingToolbar />
-          <BoldToolbar />
-          <ItalicToolbar />
-          <UnderlineToolbar />
-          <StrikeThroughToolbar />
-          <HighlightToolbar />
-          <TextAlignToolbar />
-          <LinkToolbar />
-          <BulletListToolbar />
-          <OrderedListToolbar />
-          <TableToolbar />
-          <CodeToolbar />
-          <CodeBlockToolbar />
-          <HorizontalRuleToolbar />
-          <BlockquoteToolbar />
-          <HardBreakToolbar />
-        </div>
+      <div className='flex items-center gap-2'>
+        <UndoToolbar />
+        <RedoToolbar />
+        <Separator orientation='vertical' className='h-7' />
+        <HeadingToolbar />
+        <BoldToolbar />
+        <ItalicToolbar />
+        <UnderlineToolbar />
+        <StrikeThroughToolbar />
+        <HighlightToolbar />
+        <TextAlignToolbar />
+        <LinkToolbar />
+        <BulletListToolbar />
+        <OrderedListToolbar />
+        <TableToolbar />
+        <CodeToolbar />
+        <CodeBlockToolbar />
+        <HorizontalRuleToolbar />
+        <BlockquoteToolbar />
+        <HardBreakToolbar />
       </div>
     </ToolbarProvider>
   );
