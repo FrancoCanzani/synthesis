@@ -1,6 +1,6 @@
 'use client';
 
-import { BoldIcon } from 'lucide-react';
+import { Underline } from 'lucide-react';
 import React from 'react';
 
 import { Button, type ButtonProps } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToolbar } from '@/components/toolbars/toolbar-provider';
 
-const BoldToolbar = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const UnderlineToolbar = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, onClick, children, ...props }, ref) => {
     const { editor } = useToolbar();
     return (
@@ -23,29 +23,29 @@ const BoldToolbar = React.forwardRef<HTMLButtonElement, ButtonProps>(
             size='icon'
             className={cn(
               'h-8 w-8',
-              editor?.isActive('bold') && 'bg-accent',
+              editor?.isActive('underline') && 'bg-accent',
               className
             )}
             onClick={(e) => {
-              editor?.chain().focus().toggleBold().run();
+              editor?.chain().focus().toggleUnderline().run();
               onClick?.(e);
             }}
-            disabled={!editor?.can().chain().focus().toggleBold().run()}
+            disabled={!editor?.can().chain().focus().toggleUnderline().run()}
             ref={ref}
             {...props}
           >
-            {children || <BoldIcon className='h-4 w-4' />}
+            {children || <Underline className='h-4 w-4' />}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <span>Bold</span>
-          <span className='ml-1 text-xs text-gray-11'>(cmd + b)</span>
+          <span>Underline</span>
+          <span className='ml-1 text-xs text-gray-11'>(cmd + u)</span>
         </TooltipContent>
       </Tooltip>
     );
   }
 );
 
-BoldToolbar.displayName = 'BoldToolbar';
+UnderlineToolbar.displayName = 'UnderlineToolbar';
 
-export { BoldToolbar };
+export { UnderlineToolbar };

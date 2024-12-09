@@ -23,56 +23,32 @@
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 224 71.4% 4.1%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
-    --background: 240 5.9% 10%;
-    --foreground: 240 4.8% 95.9%;
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
     --card: 224 71.4% 4.1%;
     --card-foreground: 210 20% 98%;
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
-    --primary: 224.3 76.3% 48%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
     --secondary: 215 27.9% 16.9%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 240 4.8% 95.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 240 3.7% 15.9%;
+    --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 217.2 91.2% 59.8%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --ring: 216 12.2% 83.9%;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
@@ -87,45 +63,110 @@
   outline: none !important;
 }
 
-h1.tiptap-heading {
-  @apply mb-6 mt-8 text-4xl font-bold;
+/* Updated heading styles for all levels */
+.ProseMirror h1.tiptap-heading,
+.ProseMirror h2.tiptap-heading,
+.ProseMirror h3.tiptap-heading,
+.ProseMirror h4.tiptap-heading,
+.ProseMirror h5.tiptap-heading,
+.ProseMirror h6.tiptap-heading {
+  @apply font-bold;
 }
 
-h2.tiptap-heading {
-  @apply mb-4 mt-6 text-3xl font-bold;
+.ProseMirror h1.tiptap-heading {
+  @apply text-4xl mb-6 mt-8;
 }
 
-h3.tiptap-heading {
-  @apply mb-3 mt-4 text-xl font-bold;
+.ProseMirror h2.tiptap-heading {
+  @apply text-3xl mb-4 mt-6;
 }
 
-h1.tiptap-heading:first-child,
-h2.tiptap-heading:first-child,
-h3.tiptap-heading:first-child {
-  margin-top: 0;
+.ProseMirror h3.tiptap-heading {
+  @apply text-2xl mb-3 mt-5;
 }
 
-h1.tiptap-heading + h2.tiptap-heading,
-h1.tiptap-heading + h3.tiptap-heading,
-h2.tiptap-heading + h1.tiptap-heading,
-h2.tiptap-heading + h3.tiptap-heading,
-h3.tiptap-heading + h1.tiptap-heading,
-h3.tiptap-heading + h2.tiptap-heading {
-  margin-top: 0;
+.ProseMirror h4.tiptap-heading {
+  @apply text-xl mb-2 mt-4;
+}
+
+.ProseMirror h5.tiptap-heading {
+  @apply text-lg mb-2 mt-3;
+}
+
+.ProseMirror h6.tiptap-heading {
+  @apply text-base mb-2 mt-2;
+}
+
+/* Adjust spacing for consecutive headings */
+.ProseMirror h1.tiptap-heading:first-child,
+.ProseMirror h2.tiptap-heading:first-child,
+.ProseMirror h3.tiptap-heading:first-child,
+.ProseMirror h4.tiptap-heading:first-child,
+.ProseMirror h5.tiptap-heading:first-child,
+.ProseMirror h6.tiptap-heading:first-child {
+  @apply mt-0;
+}
+
+.ProseMirror h1.tiptap-heading + h2.tiptap-heading,
+.ProseMirror h1.tiptap-heading + h3.tiptap-heading,
+.ProseMirror h1.tiptap-heading + h4.tiptap-heading,
+.ProseMirror h1.tiptap-heading + h5.tiptap-heading,
+.ProseMirror h1.tiptap-heading + h6.tiptap-heading,
+.ProseMirror h2.tiptap-heading + h3.tiptap-heading,
+.ProseMirror h2.tiptap-heading + h4.tiptap-heading,
+.ProseMirror h2.tiptap-heading + h5.tiptap-heading,
+.ProseMirror h2.tiptap-heading + h6.tiptap-heading,
+.ProseMirror h3.tiptap-heading + h4.tiptap-heading,
+.ProseMirror h3.tiptap-heading + h5.tiptap-heading,
+.ProseMirror h3.tiptap-heading + h6.tiptap-heading,
+.ProseMirror h4.tiptap-heading + h5.tiptap-heading,
+.ProseMirror h4.tiptap-heading + h6.tiptap-heading,
+.ProseMirror h5.tiptap-heading + h6.tiptap-heading {
+  @apply mt-2;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  @apply pointer-events-none float-left h-0 text-accent-foreground;
+  @apply pointer-events-none float-left h-0 text-muted-foreground;
   content: attr(data-placeholder);
 }
 
 .tiptap ul,
 .tiptap ol {
-  padding: 0 1rem;
+  @apply pl-4;
 }
 
 .tiptap blockquote {
-  border-left: 3px solid gray;
-  margin: 1.5rem 0;
-  padding-left: 1rem;
+  @apply border-l-4 border-muted pl-4 italic my-4;
+}
+
+/* Table styles */
+.ProseMirror table {
+  @apply border-collapse table-auto w-full my-4;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  @apply border border-border p-2 align-top;
+  min-width: 1em;
+}
+
+.ProseMirror table th {
+  @apply font-bold text-left bg-muted;
+}
+
+.ProseMirror table .selectedCell:after {
+  @apply absolute inset-0 bg-primary/20 pointer-events-none z-10;
+  content: '';
+}
+
+.ProseMirror table .column-resize-handle {
+  @apply absolute -right-px top-0 -bottom-px w-1 bg-primary pointer-events-none;
+}
+
+.tableWrapper {
+  @apply overflow-x-auto;
+}
+
+.resize-cursor {
+  cursor: col-resize;
 }

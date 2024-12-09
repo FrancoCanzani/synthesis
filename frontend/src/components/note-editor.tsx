@@ -102,7 +102,7 @@ export default function NoteEditor() {
 
   return (
     <div className='border rounded-md pt-1.5 mb-3 min-h-full'>
-      <header className='border-b flex items-center px-4 py-1.5 bg-background space-x-2'>
+      <header className='border-b flex items-center px-2 py-1.5 bg-background space-x-2'>
         <SidebarTrigger />
         <Separator orientation='vertical' className='h-6' />
         <input
@@ -115,10 +115,13 @@ export default function NoteEditor() {
       </header>
       <main className='flex-1'>
         <div className='mx-auto pb-4'>
-          <div className='flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20'>
+          <div className='flex w-full items-center py-2 px-2 border-b sticky top-0 left-0 bg-background z-20'>
             <Toolbar editor={editor} />
           </div>
-          <EditorContent className='overflow-y-auto' editor={editor} />
+          <EditorContent
+            className='break-words whitespace-pre-wrap overflow-wrap-normal'
+            editor={editor}
+          />
         </div>
       </main>
     </div>

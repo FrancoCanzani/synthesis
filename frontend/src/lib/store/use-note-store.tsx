@@ -26,7 +26,6 @@ export const useNotesStore = create<NotesState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const token = await getToken();
-      console.log('Token:', token);
       const response = await fetch(`${API_URL}/notes/all`, {
         headers: {
           Authorization: `Bearer ${token}`,

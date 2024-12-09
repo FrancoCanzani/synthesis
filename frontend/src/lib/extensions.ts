@@ -1,7 +1,18 @@
 import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TextAlign from '@tiptap/extension-text-align';
+import Gapcursor from '@tiptap/extension-gapcursor';
+import Heading from '@tiptap/extension-heading';
+import Highlight from '@tiptap/extension-highlight';
+import Link from '@tiptap/extension-link';
 
 export const extensions = [
   StarterKit.configure({
+    heading: false, // Disable the default heading to use our custom configuration
     orderedList: {
       HTMLAttributes: {
         class: 'list-decimal',
@@ -24,14 +35,32 @@ export const extensions = [
     },
     codeBlock: {
       HTMLAttributes: {
-        class: 'bg-primary text-primary-foreground p-2 text-sm rounded-md p-1',
+        class: 'bg-primary text-primary-foreground p-2 text-sm rounded-md',
       },
     },
-    heading: {
-      levels: [1, 2, 3, 4],
-      HTMLAttributes: {
-        class: 'tiptap-heading',
-      },
+  }),
+  Underline,
+  Table.configure({
+    resizable: true,
+  }),
+  Heading.configure({
+    levels: [1, 2, 3, 4, 5, 6],
+    HTMLAttributes: {
+      class: 'tiptap-heading',
+    },
+  }),
+  TableRow,
+  TableHeader,
+  TableCell,
+  TextAlign.configure({
+    types: ['heading', 'paragraph'],
+  }),
+  Gapcursor,
+  Highlight,
+  Link.configure({
+    openOnClick: false,
+    HTMLAttributes: {
+      class: 'text-blue-500 underline',
     },
   }),
 ];

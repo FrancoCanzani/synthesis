@@ -13,6 +13,12 @@ import { RedoToolbar } from '@/components/toolbars/redo';
 import { UndoToolbar } from './toolbars/undo';
 import { StrikeThroughToolbar } from '@/components/toolbars/strikethrough';
 import { ToolbarProvider } from '@/components/toolbars/toolbar-provider';
+import { UnderlineToolbar } from './toolbars/underline';
+import { TableToolbar } from './toolbars/table';
+import { TextAlignToolbar } from './toolbars/text-align';
+import { HeadingToolbar } from './toolbars/heading';
+import { HighlightToolbar } from './toolbars/highlight';
+import { LinkToolbar } from './toolbars/link';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -25,20 +31,28 @@ export function Toolbar({ editor }: ToolbarProps) {
 
   return (
     <ToolbarProvider editor={editor}>
-      <div className='flex items-center gap-2 overflow-y-scroll'>
-        <UndoToolbar />
-        <RedoToolbar />
-        <Separator orientation='vertical' className='h-7' />
-        <BoldToolbar />
-        <ItalicToolbar />
-        <StrikeThroughToolbar />
-        <BulletListToolbar />
-        <OrderedListToolbar />
-        <CodeToolbar />
-        <CodeBlockToolbar />
-        <HorizontalRuleToolbar />
-        <BlockquoteToolbar />
-        <HardBreakToolbar />
+      <div className='w-full'>
+        <div className='flex items-center gap-2'>
+          <UndoToolbar />
+          <RedoToolbar />
+          <Separator orientation='vertical' className='h-7' />
+          <HeadingToolbar />
+          <BoldToolbar />
+          <ItalicToolbar />
+          <UnderlineToolbar />
+          <StrikeThroughToolbar />
+          <HighlightToolbar />
+          <TextAlignToolbar />
+          <LinkToolbar />
+          <BulletListToolbar />
+          <OrderedListToolbar />
+          <TableToolbar />
+          <CodeToolbar />
+          <CodeBlockToolbar />
+          <HorizontalRuleToolbar />
+          <BlockquoteToolbar />
+          <HardBreakToolbar />
+        </div>
       </div>
     </ToolbarProvider>
   );
