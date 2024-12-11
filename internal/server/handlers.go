@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gocolly/colly"
 )
 
 
@@ -169,4 +170,32 @@ func (s * Server) GetNotesHandler(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, notes)
+}
+
+func (s *Server) GetArticleContent(c *gin.Context) {
+    websiteUrl := c.Query("url")
+
+    collector := colly.NewCollector()
+    
+
+    var content string
+
+    collector.OnHTML("p", func(e *colly.HTMLElement) {
+        content = e.Text
+    })
+
+    // Handle errors
+    collector.OnError(func(r *colly.Response, err error) {
+        c.JSON(500, gin.H{"error": err.Error()})
+    })
+
+    err := collector.Visit(websiteUrl)
+    if err != nil {
+        c.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(200, gin.H{
+        "content": content,
+    })
 }

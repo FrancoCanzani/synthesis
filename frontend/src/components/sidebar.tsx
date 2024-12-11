@@ -19,11 +19,10 @@ import { Link } from 'react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/lib/hooks/use-auth';
 
-// Menu items.
 const items = [
   {
     title: 'Home',
-    url: '#',
+    url: '/notes',
     icon: Home,
   },
   {

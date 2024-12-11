@@ -33,5 +33,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		notes.DELETE("/:id", s.DeleteNoteHandler)
 	}
 
+	r.GET("/article", s.GetArticleContent)
+
 	return r
 }
