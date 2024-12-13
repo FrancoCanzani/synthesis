@@ -2,25 +2,43 @@ import { useEffect, useState } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+type ArticleData = {
+  title: string;
+  site_name: string;
+  url: string;
+  author: string;
+  description: string;
+  image: string;
+  content: string;
+  html_content: string;
+  publish_date: string;
+  category: string;
+  language: string;
+  reading_time: number;
+  scraped_at: string;
+};
+
 export default function Article() {
-  const [article, setArticle] = useState(null);
+  const [article, setArticle] = useState<ArticleData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchArticle() {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_URL}/article?url=https://www.lanacion.com.ar/economia/cuanto-hay-que-ganar-para-ser-de-clase-media-en-buenos-aires-nid11122024/`
+          `${API_URL}/article?url=https://www.clarin.com/politica/javier-milei-cargo-victoria-villarruel-aseguro-sesion-senado-echo-edgardo-kueider-invalida_0_zMDtbrVwsn.html`
         );
-        if (!response.ok) throw new Error('Failed to fetch article');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch article: ${response.statusText}`);
+        }
         const data = await response.json();
-        console.log('Fetched data:', data); // Debug log
         setArticle(data);
-      } catch (error) {
-        console.error('Fetch error:', error); // Debug log
-        setError(error.message);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to fetch article'
+        );
       } finally {
         setLoading(false);
       }
@@ -29,96 +47,117 @@ export default function Article() {
     fetchArticle();
   }, []);
 
-  // Debug logs
-  console.log('Current article state:', article);
-  console.log('Loading state:', loading);
-  console.log('Error state:', error);
-
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-white'>
+        <div className='animate-pulse text-lg text-gray-600'>
+          Loading article...
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-white'>
+        <div className='bg-red-50 p-6 rounded-lg text-red-700 max-w-md'>
+          <h2 className='text-lg font-semibold mb-2'>Error</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!article) {
-    return <div>No article data</div>;
+    return (
+      <div className='flex items-center justify-center min-h-screen bg-white'>
+        <div className='bg-gray-50 p-6 rounded-lg text-gray-600'>
+          No article content available
+        </div>
+      </div>
+    );
   }
 
-  // Destructure the data we need
-  const {
-    title,
-    site_title,
-    author,
-    description,
-    image,
-    content,
-    publish_date,
-    category,
-    reading_time,
-    headings,
-  } = article;
+  const formattedDate = article.publish_date
+    ? new Date(article.publish_date).toLocaleDateString('es-AR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : null;
 
   return (
-    <div className='max-w-4xl mx-auto px-4 py-8'>
-      <header className='mb-8'>
-        <h1 className='text-4xl font-bold mb-4'>{title}</h1>
-        <div className='flex items-center gap-4 text-gray-600 mb-4'>
-          {author && (
-            <div>
-              Por <span className='font-medium'>{author}</span>
+    <div className='min-h-screen bg-white'>
+      <main className='max-w-3xl mx-auto px-4 py-12'>
+        <article className='prose prose-slate lg:prose-lg prose-headings:font-serif prose-p:font-normal prose-p:leading-relaxed mx-auto'>
+          <header className='not-prose mb-12'>
+            <h1 className='text-4xl font-serif font-bold text-gray-900 mb-6 leading-tight'>
+              {article.title}
+            </h1>
+
+            <div className='flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-6'>
+              {article.author && (
+                <span className='font-medium'>{article.author}</span>
+              )}
+              {formattedDate && (
+                <time dateTime={article.publish_date}>{formattedDate}</time>
+              )}
+              {article.site_name && <span>{article.site_name}</span>}
             </div>
+
+            {article.description && (
+              <p className='text-xl text-gray-700 leading-relaxed font-serif'>
+                {article.description}
+              </p>
+            )}
+          </header>
+
+          {article.image && (
+            <figure className='my-8 not-prose'>
+              <img
+                src={article.image}
+                alt={article.title}
+                className='w-full h-auto rounded-lg shadow-lg'
+              />
+            </figure>
           )}
-          <div>{new Date(publish_date).toLocaleDateString('es-AR')}</div>
-          <div>{site_title}</div>
-        </div>
-        {description && <p className='text-xl text-gray-700'>{description}</p>}
-      </header>
 
-      {image && (
-        <div className='mb-8'>
-          <img src={image} alt={title} className='w-full h-auto rounded-lg' />
-        </div>
-      )}
-
-      <article className='prose prose-lg max-w-none'>
-        {content &&
-          content.split('. ').map(
-            (paragraph, index) =>
-              paragraph.trim() && (
-                <p key={index} className='mb-4'>
-                  {paragraph.trim()}.
-                </p>
-              )
-          )}
-      </article>
-
-      <footer className='mt-8 pt-8 border-t border-gray-200'>
-        <div className='flex gap-4'>
-          {category && (
-            <span className='bg-gray-100 px-3 py-1 rounded-full'>
-              {category}
-            </span>
-          )}
-          <span className='bg-gray-100 px-3 py-1 rounded-full'>
-            {reading_time} min de lectura
-          </span>
-        </div>
-
-        {headings && headings.length > 0 && (
           <div className='mt-8'>
-            <h2 className='text-xl font-bold mb-4'>Más en {site_title}</h2>
-            <ul className='space-y-2'>
-              {headings.slice(3).map((heading, index) => (
-                <li key={index} className='text-gray-700'>
-                  • {heading}
-                </li>
-              ))}
-            </ul>
+            {article.html_content ? (
+              <div
+                dangerouslySetInnerHTML={{ __html: article.html_content }}
+                className='prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-blue-500'
+              />
+            ) : article.content ? (
+              <div className='prose-p:my-4 prose-p:leading-relaxed whitespace-pre-wrap'>
+                {article.content}
+              </div>
+            ) : (
+              <p className='text-gray-500 italic'>No content available</p>
+            )}
           </div>
-        )}
-      </footer>
+        </article>
+
+        <footer className='mt-12 pt-6 border-t border-gray-200 not-prose'>
+          <div className='flex flex-wrap gap-2 items-center text-sm'>
+            {article.category && (
+              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
+                {article.category}
+              </span>
+            )}
+            {article.reading_time && (
+              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
+                {article.reading_time} min read
+              </span>
+            )}
+            {article.language && (
+              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
+                {article.language.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </footer>
+      </main>
     </div>
   );
 }
