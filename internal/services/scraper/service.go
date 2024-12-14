@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/text/language"
+	"golang.org/x/text/language/display"
 )
 
 type ArticleMetadata struct {
@@ -32,7 +34,7 @@ var contentSelectors = []string{
 	"article",
 	".article-text",
 	".article-body",
-	".nota-contenido",  // Common in Spanish news sites
+	".nota-contenido",
 	".article__content",
 	".article-content",
 	"[itemprop='articleBody']",
@@ -63,6 +65,17 @@ var excludeSelectors = []string{
 	"footer",
 }
 
+// Category selectors commonly used across news sites
+var categorySelectors = []string{
+	`meta[property="article:section"]`,
+	`meta[name="category"]`,
+	".category",
+	"[class*='category']",
+	"[class*='section']",
+	".breadcrumb",
+	"[itemtype='http://schema.org/BreadcrumbList']",
+}
+
 func createHTTPClient() *http.Client {
 	return &http.Client{
 		Timeout: 30 * time.Second,
@@ -81,7 +94,6 @@ func buildRequest(url string) (*http.Request, error) {
 		return nil, err
 	}
 
-	// Add common headers to mimic a browser
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
@@ -90,20 +102,149 @@ func buildRequest(url string) (*http.Request, error) {
 }
 
 func cleanText(text string) string {
-	// Remove extra whitespace
 	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
-	// Remove special characters
 	text = regexp.MustCompile(`[^\p{L}\p{N}\p{P}\s]`).ReplaceAllString(text, "")
 	return strings.TrimSpace(text)
+}
+
+func extractSiteName(doc *goquery.Document, url string) string {
+	// Try meta tags first
+	if siteName, exists := doc.Find(`meta[property="og:site_name"]`).Attr("content"); exists {
+		return cleanText(siteName)
+	}
+
+	// Try structured data
+	if siteName := doc.Find(`[itemtype="http://schema.org/Organization"] [itemprop="name"]`).First().Text(); siteName != "" {
+		return cleanText(siteName)
+	}
+
+	// Try common site name locations
+	siteNameSelectors := []string{
+		".site-name",
+		"#site-name",
+		".brand",
+		".logo",
+		"[class*='brand']",
+		"[class*='logo']",
+	}
+
+	for _, selector := range siteNameSelectors {
+		if siteName := doc.Find(selector).First().Text(); siteName != "" {
+			return cleanText(siteName)
+		}
+	}
+
+	// Extract domain name as fallback
+	if domain := regexp.MustCompile(`^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)`).FindStringSubmatch(url); len(domain) > 1 {
+		return domain[1]
+	}
+
+	return ""
+}
+
+func extractMainImage(doc *goquery.Document) string {
+	// Try Open Graph image
+	if image, exists := doc.Find(`meta[property="og:image"]`).Attr("content"); exists {
+		return image
+	}
+
+	// Try Twitter image
+	if image, exists := doc.Find(`meta[name="twitter:image"]`).Attr("content"); exists {
+		return image
+	}
+
+	// Try schema.org image
+	if image, exists := doc.Find(`[itemtype="http://schema.org/Article"] [itemprop="image"]`).Attr("content"); exists {
+		return image
+	}
+
+	// Try article featured image
+	imageSelectors := []string{
+		".featured-image img",
+		".article-image img",
+		".post-thumbnail img",
+		"article img",
+	}
+
+	for _, selector := range imageSelectors {
+		if image := doc.Find(selector).First(); image.Length() > 0 {
+			if src, exists := image.Attr("src"); exists {
+				return src
+			}
+		}
+	}
+
+	return ""
+}
+
+func detectLanguage(doc *goquery.Document) string {
+	// Try HTML lang attribute
+	if htmlLang, exists := doc.Find("html").Attr("lang"); exists {
+		if tag, err := language.Parse(htmlLang); err == nil {
+			return display.English.Languages().Name(tag)
+		}
+	}
+
+	// Try meta tags
+	langSelectors := []string{
+		`meta[property="og:locale"]`,
+		`meta[http-equiv="content-language"]`,
+		`meta[name="language"]`,
+	}
+
+	for _, selector := range langSelectors {
+		if lang, exists := doc.Find(selector).Attr("content"); exists {
+			if tag, err := language.Parse(lang); err == nil {
+				return display.English.Languages().Name(tag)
+			}
+		}
+	}
+
+	// Try to detect from content (basic implementation)
+	content := doc.Find("body").Text()
+	if len(content) > 100 {
+		// Use golang.org/x/text/language's Matcher for more accurate detection
+		// This is a simplified example
+		commonWords := map[string]string{
+			"the|and|in|of|to": "English",
+			"el|la|en|de|los":  "Spanish",
+			"le|la|et|les|en":  "French",
+			"der|die|und|in":   "German",
+		}
+
+		for pattern, lang := range commonWords {
+			if regexp.MustCompile(`\b(`+pattern+`)\b`).MatchString(strings.ToLower(content)) {
+				return lang
+			}
+		}
+	}
+
+	return ""
+}
+
+func extractCategory(doc *goquery.Document) string {
+	for _, selector := range categorySelectors {
+		if category := doc.Find(selector).First(); category.Length() > 0 {
+			if content, exists := category.Attr("content"); exists {
+				return cleanText(content)
+			}
+			return cleanText(category.Text())
+		}
+	}
+
+	// Try extracting from URL breadcrumb or path
+	if urlPath := regexp.MustCompile(`/([^/]+)/[^/]+/?$`).FindStringSubmatch(doc.Url.Path); len(urlPath) > 1 {
+		return strings.Title(strings.ReplaceAll(urlPath[1], "-", " "))
+	}
+
+	return ""
 }
 
 func extractContent(doc *goquery.Document) string {
 	var content strings.Builder
 	
-	// First remove unwanted elements
 	doc.Find(strings.Join(excludeSelectors, ", ")).Remove()
 
-	// Try each content selector
 	for _, selector := range contentSelectors {
 		articles := doc.Find(selector)
 		if articles.Length() > 0 {
@@ -121,11 +262,10 @@ func extractContent(doc *goquery.Document) string {
 		}
 	}
 
-	// If no content found with selectors, try generic paragraph extraction
 	if content.Len() == 0 {
 		doc.Find("p").Each(func(i int, s *goquery.Selection) {
 			text := cleanText(s.Text())
-			if len(text) > 50 { // Only include paragraphs with substantial content
+			if len(text) > 50 {
 				content.WriteString(text)
 				content.WriteString("\n\n")
 			}
@@ -138,13 +278,11 @@ func extractContent(doc *goquery.Document) string {
 func GetArticle(url string) (ArticleMetadata, error) {
 	client := createHTTPClient()
 	
-	// Create request with headers
 	req, err := buildRequest(url)
 	if err != nil {
 		return ArticleMetadata{}, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Fetch the page
 	resp, err := client.Do(req)
 	if err != nil {
 		return ArticleMetadata{}, fmt.Errorf("failed to fetch URL: %v", err)
@@ -155,37 +293,35 @@ func GetArticle(url string) (ArticleMetadata, error) {
 		return ArticleMetadata{}, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
 	}
 
-	// Read the body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ArticleMetadata{}, fmt.Errorf("failed to read response body: %v", err)
 	}
 
-	// Parse the HTML
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 	if err != nil {
 		return ArticleMetadata{}, fmt.Errorf("failed to parse HTML: %v", err)
 	}
 
-	// Create article metadata
 	article := ArticleMetadata{
 		URL:       url,
 		ScrapedAt: time.Now(),
 	}
 
-	// Extract metadata with fallbacks
-	article.Title = doc.Find("h1").First().Text()
+	// Extract all metadata
+	article.Title = cleanText(doc.Find("h1").First().Text())
 	if article.Title == "" {
-		article.Title = doc.Find("title").Text()
-	}
-	article.Title = cleanText(article.Title)
-
-	article.Description, _ = doc.Find(`meta[name="description"]`).Attr("content")
-	if article.Description == "" {
-		article.Description, _ = doc.Find(`meta[property="og:description"]`).Attr("content")
+		article.Title = cleanText(doc.Find("title").Text())
 	}
 
-	// Extract author with multiple selectors
+	article.SiteTitle = extractSiteName(doc, url)
+	article.Description = cleanText(doc.Find(`meta[name="description"]`).AttrOr("content", 
+		doc.Find(`meta[property="og:description"]`).AttrOr("content", "")))
+	article.Image = extractMainImage(doc)
+	article.Language = detectLanguage(doc)
+	article.Category = extractCategory(doc)
+
+	// Author extraction
 	authorSelectors := []string{
 		`meta[name="author"]`,
 		`[class*="author"]`,
@@ -197,7 +333,7 @@ func GetArticle(url string) (ArticleMetadata, error) {
 	for _, selector := range authorSelectors {
 		if author := doc.Find(selector).First(); author.Length() > 0 {
 			if content, exists := author.Attr("content"); exists {
-				article.Author = content
+				article.Author = cleanText(content)
 				break
 			}
 			article.Author = cleanText(author.Text())
@@ -207,7 +343,7 @@ func GetArticle(url string) (ArticleMetadata, error) {
 		}
 	}
 
-	// Extract publish date
+	// Date extraction
 	dateSelectors := []string{
 		`meta[property="article:published_time"]`,
 		`meta[name="publication_date"]`,
@@ -232,14 +368,12 @@ func GetArticle(url string) (ArticleMetadata, error) {
 		}
 	}
 
-	// Extract content
 	article.Content = extractContent(doc)
 	if article.Content == "" {
 		log.Printf("Warning: No content extracted for URL: %s", url)
 		return article, fmt.Errorf("no content found in article")
 	}
 
-	// Calculate reading time
 	article.ReadingTime = len(strings.Fields(article.Content)) / 200
 
 	return article, nil

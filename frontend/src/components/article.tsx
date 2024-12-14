@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Clock, Calendar, User, Globe, Folder } from 'lucide-react';
+import useSWR from 'swr';
+import { Badge } from '@/components/ui/badge';
+import { fetcher } from '@/lib/helpers';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,39 +22,21 @@ type ArticleData = {
 };
 
 export default function Article() {
-  const [article, setArticle] = useState<ArticleData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: article,
+    error,
+    isLoading,
+  } = useSWR<ArticleData>(
+    `${API_URL}/article?url=https://www.lanacion.com.ar/politica/la-cancilleria-pidio-la-inmediata-liberacion-del-gendarme-argentino-detenido-en-venezuela-nid13122024/`,
+    fetcher
+  );
 
-  useEffect(() => {
-    async function fetchArticle() {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${API_URL}/article?url=https://www.lanacion.com.ar/politica/la-cancilleria-pidio-la-inmediata-liberacion-del-gendarme-argentino-detenido-en-venezuela-nid13122024/`
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to fetch article: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setArticle(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch article'
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchArticle();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-white'>
-        <div className='animate-pulse text-lg text-gray-600'>
-          Loading article...
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin' />
+          <div>Loading article...</div>
         </div>
       </div>
     );
@@ -59,10 +44,10 @@ export default function Article() {
 
   if (error) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-white'>
-        <div className='bg-red-50 p-6 rounded-lg text-red-700 max-w-md'>
-          <h2 className='text-lg font-semibold mb-2'>Error</h2>
-          <p>{error}</p>
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='p-6 rounded-md max-w-md'>
+          <h2 className='text-lg font-semibold mb-2'>Error Loading Article</h2>
+          <p>{error.message}</p>
         </div>
       </div>
     );
@@ -70,10 +55,8 @@ export default function Article() {
 
   if (!article) {
     return (
-      <div className='flex items-center justify-center min-h-screen bg-white'>
-        <div className='bg-gray-50 p-6 rounded-lg text-gray-600'>
-          No article content available
-        </div>
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='p-6 rounded-md'>No article content available</div>
       </div>
     );
   }
@@ -87,77 +70,87 @@ export default function Article() {
     : null;
 
   return (
-    <div className='min-h-screen bg-white'>
-      <main className='max-w-3xl mx-auto px-4 py-12'>
-        <article className='prose prose-slate lg:prose-lg prose-headings:font-serif prose-p:font-normal prose-p:leading-relaxed mx-auto'>
-          <header className='not-prose mb-12'>
-            <h1 className='text-4xl font-serif font-bold text-gray-900 mb-6 leading-tight'>
-              {article.title}
-            </h1>
+    <div className='min-h-screen'>
+      <article className='rounded-md p-8 max-w-4xl mx-auto'>
+        <header className='mb-8'>
+          <h1 className='text-4xl font-serif font-bold mb-6 leading-tight'>
+            {article.title}
+          </h1>
 
-            <div className='flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-6'>
-              {article.author && (
-                <span className='font-medium'>{article.author}</span>
-              )}
-              {formattedDate && (
-                <time dateTime={article.publish_date}>{formattedDate}</time>
-              )}
-              {article.site_name && <span>{article.site_name}</span>}
-            </div>
-
-            {article.description && (
-              <p className='text-xl text-gray-700 leading-relaxed font-serif'>
-                {article.description}
-              </p>
-            )}
-          </header>
-
-          {article.image && (
-            <figure className='my-8 not-prose'>
-              <img
-                src={article.image}
-                alt={article.title}
-                className='w-full h-auto rounded-lg shadow-lg'
-              />
-            </figure>
-          )}
-
-          <div className='mt-8'>
-            {article.html_content ? (
-              <div
-                dangerouslySetInnerHTML={{ __html: article.html_content }}
-                className='prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-blue-500'
-              />
-            ) : article.content ? (
-              <div className='prose-p:my-4 prose-p:leading-relaxed whitespace-pre-wrap'>
-                {article.content}
+          <div className='flex flex-wrap items-center gap-6 text-sm mb-6'>
+            {article.reading_time && (
+              <div className='flex items-center gap-2'>
+                <Clock className='w-4 h-4' />
+                <span>{article.reading_time} min read</span>
               </div>
-            ) : (
-              <p className='text-gray-500 italic'>No content available</p>
+            )}
+            {article.author && (
+              <div className='flex items-center gap-2'>
+                <User className='w-4 h-4' />
+                <span>{article.author}</span>
+              </div>
+            )}
+            {formattedDate && (
+              <div className='flex items-center gap-2'>
+                <Calendar className='w-4 h-4' />
+                <time dateTime={article.publish_date}>{formattedDate}</time>
+              </div>
             )}
           </div>
-        </article>
 
-        <footer className='mt-12 pt-6 border-t border-gray-200 not-prose'>
-          <div className='flex flex-wrap gap-2 items-center text-sm'>
+          <div className='flex flex-wrap gap-4 mb-6'>
             {article.category && (
-              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
-                {article.category}
-              </span>
-            )}
-            {article.reading_time && (
-              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
-                {article.reading_time} min read
-              </span>
+              <Badge
+                variant='secondary'
+                className='flex items-center rounded-md gap-2'
+              >
+                <Folder className='w-4 h-4' />
+                <span>{article.category}</span>
+              </Badge>
             )}
             {article.language && (
-              <span className='bg-gray-100 px-3 py-1.5 rounded-full text-gray-700'>
-                {article.language.toUpperCase()}
-              </span>
+              <Badge
+                variant='secondary'
+                className='flex items-center rounded-md gap-2'
+              >
+                <Globe className='w-4 h-4' />
+                <span>{article.language.toUpperCase()}</span>
+              </Badge>
             )}
           </div>
-        </footer>
-      </main>
+
+          {article.description && (
+            <p className='text-xl leading-relaxed font-serif'>
+              {article.description}
+            </p>
+          )}
+        </header>
+
+        {article.image && (
+          <figure className='my-8'>
+            <img
+              src={article.image}
+              alt={article.title}
+              className='w-full h-auto rounded-md'
+            />
+          </figure>
+        )}
+
+        <div className='mt-8 prose lg:prose-lg dark:text-white/80 max-w-none'>
+          {article.html_content ? (
+            <div
+              dangerouslySetInnerHTML={{ __html: article.html_content }}
+              className='prose-img:rounded-md prose-a:no-underline hover:prose-a:underline'
+            />
+          ) : article.content ? (
+            <div className='prose-p:my-4 prose-p:leading-relaxed whitespace-pre-wrap'>
+              {article.content}
+            </div>
+          ) : (
+            <p className='italic'>No content available</p>
+          )}
+        </div>
+      </article>
     </div>
   );
 }
