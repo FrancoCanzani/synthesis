@@ -1,14 +1,15 @@
 package scraper
 
 import (
-	"errors"
 	"fmt"
-	"net/url"
+	"io"
+	"log"
+	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/gocolly/colly"
 )
 
 type ArticleMetadata struct {
@@ -19,7 +20,6 @@ type ArticleMetadata struct {
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
 	Content     string    `json:"content"`
-	HTMLContent string    `json:"html_content"`
 	PublishDate string    `json:"publish_date"`
 	Category    string    `json:"category"`
 	Language    string    `json:"language"`
@@ -27,196 +27,220 @@ type ArticleMetadata struct {
 	ScrapedAt   time.Time `json:"scraped_at"`
 }
 
-func cleanContent(doc *goquery.Document) (string, string) {
-	htmlDoc := goquery.CloneDocument(doc)
-	textDoc := goquery.CloneDocument(doc)
+// Common article content selectors for different news sites
+var contentSelectors = []string{
+	"article",
+	".article-text",
+	".article-body",
+	".nota-contenido",  // Common in Spanish news sites
+	".article__content",
+	".article-content",
+	"[itemprop='articleBody']",
+	".entry-content",
+	".post-content",
+	".main-content",
+	".content-body",
+	".story-body",
+	"#article-body",
+	".body-content",
+}
 
-	// Only remove non-content structural elements
-	unwantedSelectors := []string{
-		// Interactive elements
-		"script", "style", "iframe", "form", "button", "input",
-		
-		// Navigation elements
-		"nav", "header", "footer", "aside", "noscript",
-		
-		// Common non-content areas
-		"[role='complementary']", "[role='navigation']",
-		"[role='banner']", "[role='contentinfo']",
-		
-		// Generic ads and widgets
-		"[class*='ad']", "[id*='ad']",
-		"[class*='social']", "[class*='share']",
-		"[class*='comment']", "[id*='comment']",
-		"[class*='popup']",
-		
-		// Generic supplementary content
-		"aside", ".sidebar", "[role='complementary']",
+// Elements to exclude
+var excludeSelectors = []string{
+	"script",
+	"style",
+	"iframe",
+	"form",
+	".advertisement",
+	".social-share",
+	".related-articles",
+	".newsletter",
+	".comments",
+	".tags",
+	".sidebar",
+	"nav",
+	"header",
+	"footer",
+}
+
+func createHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 {
+				return fmt.Errorf("too many redirects")
+			}
+			return nil
+		},
+	}
+}
+
+func buildRequest(url string) (*http.Request, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	for _, selector := range unwantedSelectors {
-		textDoc.Find(selector).Remove()
-		htmlDoc.Find(selector).Remove()
-	}
+	// Add common headers to mimic a browser
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	
+	return req, nil
+}
 
-	// Only keep semantic HTML attributes
-	elemAttrs := map[string][]string{
-		"a":       {"href", "title"},
-		"img":     {"src", "alt", "title"},
-		"table":   {"summary"},
-		"th":      {"scope"},
-		"td":      {"colspan", "rowspan"},
-		"figure":  {"role"},
-		"article": {"role"},
-		"main":    {"role"},
-	}
+func cleanText(text string) string {
+	// Remove extra whitespace
+	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
+	// Remove special characters
+	text = regexp.MustCompile(`[^\p{L}\p{N}\p{P}\s]`).ReplaceAllString(text, "")
+	return strings.TrimSpace(text)
+}
 
-	htmlDoc.Find("*").Each(func(_ int, s *goquery.Selection) {
-		tag := goquery.NodeName(s)
-		
-		// Keep only allowed attributes for each element type
-		if allowedAttrs, ok := elemAttrs[tag]; ok {
-			attrValues := make(map[string]string)
-			for _, attr := range allowedAttrs {
-				if val, exists := s.Attr(attr); exists {
-					attrValues[attr] = val
+func extractContent(doc *goquery.Document) string {
+	var content strings.Builder
+	
+	// First remove unwanted elements
+	doc.Find(strings.Join(excludeSelectors, ", ")).Remove()
+
+	// Try each content selector
+	for _, selector := range contentSelectors {
+		articles := doc.Find(selector)
+		if articles.Length() > 0 {
+			articles.Find("p").Each(func(i int, s *goquery.Selection) {
+				text := cleanText(s.Text())
+				if len(text) > 0 {
+					content.WriteString(text)
+					content.WriteString("\n\n")
 				}
-			}
-			html, _ := s.Html()
-			s.SetHtml(html)
-			for attr, val := range attrValues {
-				s.SetAttr(attr, val)
-			}
-		} else {
-			// Remove all attributes for other elements
-			html, _ := s.Html()
-			s.SetHtml(html)
-		}
-	})
-
-	// Focus on semantic content containers
-	selectors := []string{
-		"article",
-		"[role='article']",
-		"[itemprop='articleBody']",
-		"main",
-		"[role='main']",
-	}
-
-	var htmlContent string
-	for _, selector := range selectors {
-		if content := htmlDoc.Find(selector).First(); content.Length() > 0 {
-			html, err := content.Html()
-			if err == nil {
-				htmlContent = html
+			})
+			
+			if content.Len() > 0 {
 				break
 			}
 		}
 	}
 
-	// Fallback to body if no semantic containers found
-	if htmlContent == "" {
-		if body := htmlDoc.Find("body"); body.Length() > 0 {
-			html, err := body.Html()
-			if err == nil {
-				htmlContent = html
+	// If no content found with selectors, try generic paragraph extraction
+	if content.Len() == 0 {
+		doc.Find("p").Each(func(i int, s *goquery.Selection) {
+			text := cleanText(s.Text())
+			if len(text) > 50 { // Only include paragraphs with substantial content
+				content.WriteString(text)
+				content.WriteString("\n\n")
+			}
+		})
+	}
+
+	return strings.TrimSpace(content.String())
+}
+
+func GetArticle(url string) (ArticleMetadata, error) {
+	client := createHTTPClient()
+	
+	// Create request with headers
+	req, err := buildRequest(url)
+	if err != nil {
+		return ArticleMetadata{}, fmt.Errorf("failed to create request: %v", err)
+	}
+
+	// Fetch the page
+	resp, err := client.Do(req)
+	if err != nil {
+		return ArticleMetadata{}, fmt.Errorf("failed to fetch URL: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return ArticleMetadata{}, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+	}
+
+	// Read the body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return ArticleMetadata{}, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Parse the HTML
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+	if err != nil {
+		return ArticleMetadata{}, fmt.Errorf("failed to parse HTML: %v", err)
+	}
+
+	// Create article metadata
+	article := ArticleMetadata{
+		URL:       url,
+		ScrapedAt: time.Now(),
+	}
+
+	// Extract metadata with fallbacks
+	article.Title = doc.Find("h1").First().Text()
+	if article.Title == "" {
+		article.Title = doc.Find("title").Text()
+	}
+	article.Title = cleanText(article.Title)
+
+	article.Description, _ = doc.Find(`meta[name="description"]`).Attr("content")
+	if article.Description == "" {
+		article.Description, _ = doc.Find(`meta[property="og:description"]`).Attr("content")
+	}
+
+	// Extract author with multiple selectors
+	authorSelectors := []string{
+		`meta[name="author"]`,
+		`[class*="author"]`,
+		`[rel="author"]`,
+		`.author`,
+		`.byline`,
+	}
+	
+	for _, selector := range authorSelectors {
+		if author := doc.Find(selector).First(); author.Length() > 0 {
+			if content, exists := author.Attr("content"); exists {
+				article.Author = content
+				break
+			}
+			article.Author = cleanText(author.Text())
+			if article.Author != "" {
+				break
 			}
 		}
 	}
 
-	return strings.TrimSpace(textDoc.Text()), strings.TrimSpace(htmlContent)
-}
-
-func GetArticleContent(websiteURL string) (*ArticleMetadata, error) {
-	parsedURL, err := url.Parse(websiteURL)
-	if err != nil || (!strings.HasPrefix(parsedURL.Scheme, "http") && !strings.HasPrefix(parsedURL.Scheme, "https")) {
-		return nil, errors.New("invalid URL format")
+	// Extract publish date
+	dateSelectors := []string{
+		`meta[property="article:published_time"]`,
+		`meta[name="publication_date"]`,
+		`time[datetime]`,
+		`[class*="date"]`,
+	}
+	
+	for _, selector := range dateSelectors {
+		if date := doc.Find(selector).First(); date.Length() > 0 {
+			if content, exists := date.Attr("content"); exists {
+				article.PublishDate = content
+				break
+			}
+			if content, exists := date.Attr("datetime"); exists {
+				article.PublishDate = content
+				break
+			}
+			article.PublishDate = cleanText(date.Text())
+			if article.PublishDate != "" {
+				break
+			}
+		}
 	}
 
-	collector := colly.NewCollector(
-		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"),
-		colly.AllowURLRevisit(),
-		colly.MaxDepth(1),
-		colly.Async(true),
-	)
-
-	collector.SetRequestTimeout(15 * time.Second)
-
-	metadata := &ArticleMetadata{
-		URL:       websiteURL,
-		ScrapedAt: time.Now(),
+	// Extract content
+	article.Content = extractContent(doc)
+	if article.Content == "" {
+		log.Printf("Warning: No content extracted for URL: %s", url)
+		return article, fmt.Errorf("no content found in article")
 	}
 
-	var doc *goquery.Document
-	collector.OnHTML("html", func(e *colly.HTMLElement) {
-		html, err := e.DOM.Html()
-		if err != nil {
-			return
-		}
-		doc, err = goquery.NewDocumentFromReader(strings.NewReader(html))
-		if err != nil {
-			return
-		}
-	})
+	// Calculate reading time
+	article.ReadingTime = len(strings.Fields(article.Content)) / 200
 
-	collector.OnHTML("head", func(e *colly.HTMLElement) {
-		if title := e.ChildAttr("meta[property='og:title']", "content"); title != "" {
-			metadata.Title = title
-		} else if title := e.ChildAttr("meta[name='twitter:title']", "content"); title != "" {
-			metadata.Title = title
-		} else {
-			metadata.Title = e.ChildText("title")
-		}
-
-		if author := e.ChildAttr("meta[name='author']", "content"); author != "" {
-			metadata.Author = author
-		} else if author := e.ChildAttr("meta[property='article:author']", "content"); author != "" {
-			metadata.Author = author
-		}
-
-		if date := e.ChildAttr("meta[property='article:published_time']", "content"); date != "" {
-			metadata.PublishDate = date
-		} else if date := e.ChildAttr("meta[name='published_date']", "content"); date != "" {
-			metadata.PublishDate = date
-		}
-
-		if desc := e.ChildAttr("meta[property='og:description']", "content"); desc != "" {
-			metadata.Description = desc
-		} else if desc := e.ChildAttr("meta[name='description']", "content"); desc != "" {
-			metadata.Description = desc
-		}
-
-		if img := e.ChildAttr("meta[property='og:image']", "content"); img != "" {
-			metadata.Image = img
-		} else if img := e.ChildAttr("meta[name='twitter:image']", "content"); img != "" {
-			metadata.Image = img
-		}
-
-		if lang := e.ChildAttr("html", "lang"); lang != "" {
-			metadata.Language = lang
-		}
-	})
-
-	err = collector.Visit(websiteURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch content: %w", err)
-	}
-
-	collector.Wait()
-
-	if doc == nil {
-		return nil, errors.New("no content found")
-	}
-
-	plainText, htmlContent := cleanContent(doc)
-	if plainText == "" {
-		return nil, errors.New("no content found after cleaning")
-	}
-
-	metadata.Content = plainText
-	metadata.HTMLContent = htmlContent
-
-	wordCount := len(strings.Fields(plainText))
-	metadata.ReadingTime = (wordCount + 199) / 200
-
-	return metadata, nil
+	return article, nil
 }

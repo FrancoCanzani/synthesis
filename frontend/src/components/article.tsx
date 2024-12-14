@@ -28,7 +28,7 @@ export default function Article() {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API_URL}/article?url=https://www.clarin.com/politica/javier-milei-cargo-victoria-villarruel-aseguro-sesion-senado-echo-edgardo-kueider-invalida_0_zMDtbrVwsn.html`
+          `${API_URL}/article?url=https://www.lanacion.com.ar/politica/la-cancilleria-pidio-la-inmediata-liberacion-del-gendarme-argentino-detenido-en-venezuela-nid13122024/`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch article: ${response.statusText}`);

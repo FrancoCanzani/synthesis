@@ -120,11 +120,8 @@ export default function NoteEditor() {
               <Toolbar editor={editor} />
             </div>
           </div>
-          <div className='px-4 w-full'>
-            <EditorContent
-              className='break-words whitespace-pre-wrap overflow-wrap-normal'
-              editor={editor}
-            />
+          <div className='p-4 w-full' onClick={() => editor.commands.focus()}>
+            <EditorContent editor={editor} />
           </div>
         </div>
       </main>

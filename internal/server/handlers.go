@@ -5,6 +5,7 @@ import (
 	"synthesis/internal/database"
 	"synthesis/internal/services/scraper"
 
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -176,13 +177,23 @@ func (s * Server) GetNotesHandler(c *gin.Context) {
 func (s *Server) GetArticleContent(c *gin.Context) {
     websiteURL := c.Query("url")
     
- 
-    metadata, err := scraper.GetArticleContent(websiteURL)
-
-    if err != nil {
-        c.JSON(404, nil)
+    if websiteURL == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "URL parameter is required"})
+        return
     }
 
-    c.Header("Content-Type", "application/json")
+    // Validate URL format
+    _, err := url.Parse(websiteURL)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL format"})
+        return
+    }
+
+    metadata, err := scraper.GetArticle(websiteURL)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
     c.JSON(http.StatusOK, metadata)
 }
