@@ -35,7 +35,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.GET("/article", s.GetArticleContent)
 
-	r.GET("/speech", s.GetSpeech)
+	r.GET("/ai/generate", s.GetAiCompletion)
 
 	return r
 }

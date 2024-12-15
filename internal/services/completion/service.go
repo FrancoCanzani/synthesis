@@ -9,16 +9,17 @@ import (
 )
 
 
-func GenerateTextCompletion(text string) (chan string, error) {
+func GenerateTextCompletion(prompt string) (chan string, error) {
     client := openai.NewClient()
     ctx := context.Background()
-
+    
     stream := client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
         Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
-            openai.UserMessage(text),
+            openai.SystemMessage("You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents."),
+            openai.UserMessage(prompt),
         }),
         Seed:  openai.Int(1),
-        Model: openai.F(openai.ChatModelGPT4o),
+        Model: openai.F(openai.ChatModelGPT4oMini),
     })
 
     messages := make(chan string)
