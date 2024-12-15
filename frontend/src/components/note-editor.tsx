@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router';
 import { EditorContent, type Extension, useEditor } from '@tiptap/react';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { extensions } from '@/lib/extensions';
-import { Separator } from '@/components/ui/separator';
-import { Toolbar } from '@/components/toolbar';
 import debounce from 'lodash/debounce';
 import { useNotesStore } from '@/lib/store/use-note-store';
+import { Toolbar } from './toolbar';
+import { Separator } from './ui/separator';
 import { SidebarTrigger } from './ui/sidebar';
 
 export default function NoteEditor() {
@@ -25,7 +25,8 @@ export default function NoteEditor() {
     content: '',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg mx-auto focus:outline-none',
+        class:
+          'prose prose-sm dark:prose-invert sm:prose lg:prose-lg mx-auto focus:outline-none',
       },
     },
   });
@@ -101,7 +102,7 @@ export default function NoteEditor() {
   if (!editor) return null;
 
   return (
-    <div className='border rounded-md pt-1.5 mb-3 h-full flex flex-col min-w-0'>
+    <div className='h-[calc(100vh-2rem)] border rounded-md flex flex-col'>
       <header className='border-b flex items-center px-2 py-1.5 bg-background space-x-2'>
         <SidebarTrigger />
         <Separator orientation='vertical' className='h-6' />
@@ -113,18 +114,18 @@ export default function NoteEditor() {
           className='flex-1 border-none outline-none bg-background min-w-0'
         />
       </header>
-      <main className='flex-1 overflow-hidden flex flex-col min-w-0'>
-        <div className='w-full h-full overflow-auto'>
-          <div className='sticky top-0 left-0 bg-background z-20 border-b overflow-x-auto'>
-            <div className='flex items-center py-2 px-2 min-w-max'>
-              <Toolbar editor={editor} />
-            </div>
-          </div>
-          <div className='p-4 w-full' onClick={() => editor.commands.focus()}>
+      <div className='sticky top-0 left-0 bg-background z-20 border-b overflow-x-auto'>
+        <div className='flex items-center py-2 px-2 min-w-max'>
+          <Toolbar editor={editor} />
+        </div>
+      </div>
+      <div className='flex-1 flex overflow-hidden'>
+        <div className='flex-1 overflow-y-auto'>
+          <div className='p-4' onClick={() => editor.commands.focus()}>
             <EditorContent editor={editor} />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

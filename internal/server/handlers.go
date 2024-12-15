@@ -1,8 +1,10 @@
 package server
 
 import (
+	"io"
 	"net/http"
 	"synthesis/internal/database"
+	"synthesis/internal/services/completion"
 	"synthesis/internal/services/scraper"
 
 	"net/url"
@@ -182,7 +184,6 @@ func (s *Server) GetArticleContent(c *gin.Context) {
         return
     }
 
-    // Validate URL format
     _, err := url.Parse(websiteURL)
     if err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL format"})
@@ -196,4 +197,35 @@ func (s *Server) GetArticleContent(c *gin.Context) {
     }
 
     c.JSON(http.StatusOK, metadata)
+}
+
+func (s *Server) GetSpeech(c *gin.Context) {
+    rawText := c.DefaultQuery("text", "Write a list of the best soccer players in 2008")
+
+    messages, err := completion.GenerateTextCompletion(rawText)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.Header("Content-Type", "text/event-stream")
+    c.Header("Cache-Control", "no-cache")
+    c.Header("Connection", "keep-alive")
+    c.Header("Access-Control-Allow-Origin", "*") // Add CORS header
+    c.Status(http.StatusOK)
+
+    c.Stream(func(w io.Writer) bool {
+        select {
+        case <-c.Request.Context().Done():
+            return false
+        case msg, ok := <-messages:
+            if !ok {
+                return false
+            }
+            // Send properly formatted SSE
+            c.SSEvent("message", msg)
+            c.Writer.Flush()
+            return true
+        }
+    })
 }

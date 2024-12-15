@@ -19,6 +19,7 @@ import { TextAlignToolbar } from './toolbars/text-align';
 import { HeadingToolbar } from './toolbars/heading';
 import { HighlightToolbar } from './toolbars/highlight';
 import { LinkToolbar } from './toolbars/link';
+import AiAssistantDialog from './ai-assistant-dialog';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -34,6 +35,8 @@ export function Toolbar({ editor }: ToolbarProps) {
       <div className='flex items-center gap-2'>
         <UndoToolbar />
         <RedoToolbar />
+        <Separator orientation='vertical' className='h-7' />
+        <AiAssistantDialog />
         <Separator orientation='vertical' className='h-7' />
         <HeadingToolbar />
         <BoldToolbar />
