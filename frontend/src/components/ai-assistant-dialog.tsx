@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -7,9 +7,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sparkles, SendHorizonal, LoaderCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useScrollToBottom } from '@/lib/hooks/use-scroll-to-bottom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,13 +19,8 @@ export default function AiAssistantDialog() {
   const [generatedContent, setGeneratedContent] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  };
+  const [messagesContainerRef, messagesEndRef] =
+    useScrollToBottom<HTMLDivElement>();
 
   const streamAiResponse = useCallback(() => {
     setIsStreaming(true);
@@ -45,9 +40,8 @@ export default function AiAssistantDialog() {
       }
 
       setGeneratedContent((prev) => {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(scrollToBottom, 0);
-        return prev + event.data;
+        const updatedContent = prev + event.data;
+        return updatedContent;
       });
     };
 
@@ -64,11 +58,6 @@ export default function AiAssistantDialog() {
     };
   }, [prompt]);
 
-  const handleInsert = () => {
-    // TipTap insertion logic here
-    setIsOpen(false);
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <Tooltip>
@@ -82,7 +71,7 @@ export default function AiAssistantDialog() {
                 isOpen && 'bg-accent/50'
               )}
             >
-              <Sparkles className='h-4 w-4 text-muted-foreground' />
+              <Sparkles className='h-4 w-4' />
               <span className='sr-only'>AI Generate</span>
             </Button>
           </DialogTrigger>
@@ -92,19 +81,23 @@ export default function AiAssistantDialog() {
         </TooltipContent>
       </Tooltip>
 
-      <DialogContent className='sm:max-w-[550px] p-2'>
-        <ScrollArea className='h-[400px]' ref={scrollRef}>
+      <DialogContent className='sm:max-w-[550px] p-2 flex flex-col w-full max-w-md mx-auto stretch'>
+        <div
+          className='h-[400px] whitespace-pre-wrap overflow-y-scroll p-2'
+          ref={messagesContainerRef}
+        >
           <div className='space-y-2 min-h-full'>
             {generatedContent && (
-              <div className='rounded-md bg-muted/50 h-full p-2'>
+              <div className='rounded-md bg-muted/30 h-full p-4'>
                 <p className='text-sm whitespace-pre-wrap'>
                   {generatedContent}
                 </p>
               </div>
             )}
           </div>
-        </ScrollArea>
-        <div className='p-2 border-t'>
+          <div ref={messagesEndRef} className='shrink-0' />
+        </div>
+        <div className='px-2 pt-2 border-t'>
           <div className='flex items-center space-x-2'>
             <Input
               value={prompt}
@@ -118,7 +111,12 @@ export default function AiAssistantDialog() {
                 }
               }}
             />
-            <Button variant={'ghost'} size={'icon'}>
+            <Button
+              disabled={prompt.length == 0 || isStreaming}
+              variant={'ghost'}
+              size={'icon'}
+              onClick={streamAiResponse}
+            >
               {isStreaming ? (
                 <LoaderCircle className='animate-spin' />
               ) : (
