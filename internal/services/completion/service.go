@@ -32,11 +32,13 @@ func GenerateTextCompletion(prompt string) (chan string, error) {
             evt := stream.Current()
             if len(evt.Choices) > 0 {
                 chunk := evt.Choices[0].Delta.Content
-                // Accumulate in buffer
                 buffer = append(buffer, chunk...)
 
                 // Send if we hit sentence end markers or buffer is getting large
-                if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 100 {
+                if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 50 {
+                    if len(buffer) > 0 && buffer[len(buffer) - 1] == '.' {
+                        buffer = append(buffer, ' ')
+                    }
                     messages <- string(buffer)
                     fmt.Println(string(buffer))
                     buffer = buffer[:0]
