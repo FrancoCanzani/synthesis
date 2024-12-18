@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"synthesis/internal/database"
+	"synthesis/internal/models"
 	"synthesis/internal/services/completion"
 	"synthesis/internal/services/scraper"
 
@@ -200,9 +202,15 @@ func (s *Server) GetArticleContent(c *gin.Context) {
 }
 
 func (s *Server) GetAiCompletion(c *gin.Context) {
-    prompt := c.DefaultQuery("prompt", "Write a list of the best soccer players in 2008")
+    var chatContent models.ChatContent
 
-    messages, err := completion.GenerateTextCompletion(prompt)
+    if err := c.ShouldBindJSON(&chatContent); err != nil {
+        fmt.Println(chatContent)
+        c.JSON(400, gin.H{"error": err.Error()})
+        return
+    }
+
+    messages, err := completion.GenerateTextCompletion(models.ChatContent(chatContent))
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -221,7 +229,7 @@ func (s *Server) GetAiCompletion(c *gin.Context) {
             if !ok {
                 return false
             }
-            c.SSEvent("message", msg)
+            fmt.Fprint(w, msg) 
             c.Writer.Flush()
             return true
         }

@@ -5,7 +5,6 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TextAlign from '@tiptap/extension-text-align';
-import Gapcursor from '@tiptap/extension-gapcursor';
 import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
@@ -55,7 +54,6 @@ export const extensions = [
   TextAlign.configure({
     types: ['heading', 'paragraph'],
   }),
-  Gapcursor,
   Highlight,
   Link.configure({
     openOnClick: false,

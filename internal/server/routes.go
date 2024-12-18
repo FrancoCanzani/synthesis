@@ -34,8 +34,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	}
 
 	r.GET("/article", s.GetArticleContent)
-
-	r.GET("/ai/generate", s.GetAiCompletion)
+	r.POST("/ai/generate", s.GetAiCompletion)
 
 	return r
 }

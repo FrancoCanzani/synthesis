@@ -10,6 +10,7 @@ import { AuthProvider } from './lib/context/auth-provider';
 import NoteEditor from './components/note-editor';
 import NoteSelector from './components/note-selector';
 import Article from './components/article';
+import { Toaster } from 'sonner';
 
 const root = document.getElementById('root');
 
@@ -23,6 +24,7 @@ function RootRoute() {
 ReactDOM.createRoot(root).render(
   <AuthProvider>
     <BrowserRouter>
+      <Toaster />
       <Routes>
         <Route path='/' element={<RootRoute />} />
         <Route path='/login' element={<LoginPage />} />

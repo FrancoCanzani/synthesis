@@ -4,61 +4,71 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"synthesis/internal/models"
 
 	"github.com/openai/openai-go"
 )
 
+func GenerateTextCompletion(chatContent models.ChatContent) (chan string, error) {
+	client := openai.NewClient()
+	ctx := context.Background()
 
-func GenerateTextCompletion(prompt string) (chan string, error) {
-    client := openai.NewClient()
-    ctx := context.Background()
-    
-    stream := client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
-        Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
-            openai.SystemMessage("You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary, special characters or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or another formatting."),
-            openai.UserMessage(prompt),
-        }),
-        Seed:  openai.Int(1),
-        Model: openai.F(openai.ChatModelGPT4oMini),
-    })
+	var messageParams []openai.ChatCompletionMessageParamUnion
 
-    messages := make(chan string)
-    
-    go func() {
-        defer close(messages)
+	messageParams = append(messageParams, openai.SystemMessage(
+		"You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary, special characters, or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or other formatting.",
+	))
 
-        buffer := make([]byte, 0, 1024)
-        for stream.Next() {
-            evt := stream.Current()
-            if len(evt.Choices) > 0 {
-                chunk := evt.Choices[0].Delta.Content
-                buffer = append(buffer, chunk...)
+	for _, msg := range chatContent.Messages {
+		switch msg.Role {
+		case "user":
+			messageParams = append(messageParams, openai.UserMessage(msg.Content))
+		case "assistant":
+			messageParams = append(messageParams, openai.AssistantMessage(msg.Content))
+		case "system":
+			messageParams = append(messageParams, openai.SystemMessage(msg.Content))
+		}
+	}
 
-                // Send if we hit sentence end markers or buffer is getting large
-                if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 50 {
-                    if len(buffer) > 0 && buffer[len(buffer) - 1] == '.' {
-                        buffer = append(buffer, ' ')
-                    }
-                    messages <- string(buffer)
-                    fmt.Println(string(buffer))
-                    buffer = buffer[:0]
-                }
+	messageParams = append(messageParams, openai.UserMessage(chatContent.Prompt))
 
-            }
-        }
+	stream := client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
+		Messages: openai.F(messageParams),
+		Seed:     openai.Int(1),
+		Model:    openai.F(openai.ChatModelGPT4oMini),
+	})
 
-        // Send any remaining text
-        if len(buffer) > 0 {
-            messages <- string(buffer)
-        }
+	messages := make(chan string)
 
-        if err := stream.Err(); err != nil {
-            fmt.Printf("Stream error: %v\n", err)
-            messages <- fmt.Sprintf("Error: %v", err)
-        }
-    }()
+	go func() {
+		defer close(messages)
 
-    return messages, nil
+		buffer := make([]byte, 0, 1024)
+		for stream.Next() {
+			evt := stream.Current()
+
+			if len(evt.Choices) > 0 {
+				chunk := evt.Choices[0].Delta.Content
+				buffer = append(buffer, chunk...)
+
+				// Send if we hit sentence end markers or buffer is getting large
+				if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 25 {
+					messages <- string(buffer)
+					buffer = buffer[:0]
+				}
+			}
+		}
+
+		// Send any remaining text
+		if len(buffer) > 0 {
+			messages <- string(buffer)
+		}
+
+		if err := stream.Err(); err != nil {
+			fmt.Printf("Stream error: %v\n", err)
+			messages <- fmt.Sprintf("Error: %v", err)
+		}
+	}()
+
+	return messages, nil
 }
-
-
