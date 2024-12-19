@@ -8,6 +8,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
+import CharacterCount from '@tiptap/extension-character-count';
 
 export const extensions = [
   StarterKit.configure({
@@ -55,6 +56,7 @@ export const extensions = [
     types: ['heading', 'paragraph'],
   }),
   Highlight,
+  CharacterCount,
   Link.configure({
     openOnClick: false,
     HTMLAttributes: {

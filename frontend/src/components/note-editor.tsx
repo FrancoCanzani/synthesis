@@ -8,6 +8,7 @@ import { useNotesStore } from '@/lib/store/use-note-store';
 import { Toolbar } from './toolbar';
 import { Separator } from './ui/separator';
 import { SidebarTrigger } from './ui/sidebar';
+import { LoaderCircle, Save } from 'lucide-react';
 
 export default function NoteEditor() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function NoteEditor() {
   const [localTitle, setLocalTitle] = useState(
     currentNote?.title || 'Untitled'
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   const editor = useEditor({
     extensions: extensions as Extension[],
@@ -26,7 +28,7 @@ export default function NoteEditor() {
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm dark:prose-invert sm:prose lg:prose-lg mx-auto focus:outline-none',
+          'prose prose-sm dark:prose-invert sm:prose-base sm:max-w-[80ch] mx-auto focus:outline-none',
       },
     },
   });
@@ -47,6 +49,8 @@ export default function NoteEditor() {
 
   const debouncedSaveContent = useCallback(
     debounce(async (content: string) => {
+      setIsSaving(true);
+
       if (!user || !noteId) return;
 
       await upsertNote({
@@ -55,6 +59,7 @@ export default function NoteEditor() {
         title: localTitle,
         content: content,
       });
+      setIsSaving(false);
     }, 1000),
     [user, noteId, localTitle, upsertNote]
   );
@@ -71,6 +76,7 @@ export default function NoteEditor() {
           content: editor.getHTML(),
         });
         await fetchNotes(user.id);
+        setIsSaving(false);
       } catch (error) {
         console.error('Failed to save title:', error);
       }
@@ -97,12 +103,15 @@ export default function NoteEditor() {
     if (localTitle) {
       debouncedSaveTitle(localTitle);
     }
+    return () => {
+      debouncedSaveTitle.cancel();
+    };
   }, [localTitle, debouncedSaveTitle]);
 
   if (!editor) return null;
 
   return (
-    <div className='h-[calc(100vh-2rem)] border rounded-md flex flex-col'>
+    <div className='h-svh flex flex-col'>
       <header className='border-b flex items-center px-2 py-1.5 bg-background space-x-2'>
         <SidebarTrigger />
         <Separator orientation='vertical' className='h-6' />
@@ -126,6 +135,20 @@ export default function NoteEditor() {
           </div>
         </div>
       </div>
+      <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2 py-1.5 w-full'>
+        <div title={isSaving ? 'Saving...' : 'Saved'}>
+          {isSaving ? (
+            <LoaderCircle size={17} className='animate-spin' />
+          ) : (
+            <Save size={17} />
+          )}
+        </div>
+        <div className='flex items-center justify-end space-x-2'>
+          <p>{editor.storage.characterCount.characters()} characters</p>
+          <span>/</span>
+          <p>{editor.storage.characterCount.words()} words</p>
+        </div>
+      </footer>
     </div>
   );
 }
