@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"synthesis/internal/database"
@@ -202,15 +201,14 @@ func (s *Server) GetArticleContent(c *gin.Context) {
 }
 
 func (s *Server) GetAiCompletion(c *gin.Context) {
-    var chatContent models.ChatContent
+    var completionRequest models.CompletionRequest
 
-    if err := c.ShouldBindJSON(&chatContent); err != nil {
-        fmt.Println(chatContent)
+    if err := c.ShouldBindJSON(&completionRequest); err != nil {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
 
-    messages, err := completion.GenerateTextCompletion(models.ChatContent(chatContent))
+    messages, err := completion.GenerateTextCompletion(completionRequest)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -225,11 +223,10 @@ func (s *Server) GetAiCompletion(c *gin.Context) {
         select {
         case <-c.Request.Context().Done():
             return false
-        case msg, ok := <-messages:
+        case _, ok := <-messages:
             if !ok {
                 return false
             }
-            fmt.Fprint(w, msg) 
             c.Writer.Flush()
             return true
         }

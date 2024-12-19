@@ -27,7 +27,7 @@ export default function Article() {
     error,
     isLoading,
   } = useSWR<ArticleData>(
-    `${API_URL}/article?url=https://www.lanacion.com.ar/politica/la-cancilleria-pidio-la-inmediata-liberacion-del-gendarme-argentino-detenido-en-venezuela-nid13122024/`,
+    `${API_URL}/articles?url=https://www.lanacion.com.ar/politica/la-cancilleria-pidio-la-inmediata-liberacion-del-gendarme-argentino-detenido-en-venezuela-nid13122024/`,
     fetcher
   );
 

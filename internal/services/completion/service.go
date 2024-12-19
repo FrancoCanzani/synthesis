@@ -9,7 +9,7 @@ import (
 	"github.com/openai/openai-go"
 )
 
-func GenerateTextCompletion(chatContent models.ChatContent) (chan string, error) {
+func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan string, error) {
 	client := openai.NewClient()
 	ctx := context.Background()
 
@@ -19,7 +19,7 @@ func GenerateTextCompletion(chatContent models.ChatContent) (chan string, error)
 		"You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary, special characters, or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or other formatting.",
 	))
 
-	for _, msg := range chatContent.Messages {
+	for _, msg := range completionRequest.Messages {
 		switch msg.Role {
 		case "user":
 			messageParams = append(messageParams, openai.UserMessage(msg.Content))
@@ -30,7 +30,7 @@ func GenerateTextCompletion(chatContent models.ChatContent) (chan string, error)
 		}
 	}
 
-	messageParams = append(messageParams, openai.UserMessage(chatContent.Prompt))
+	messageParams = append(messageParams, openai.UserMessage(completionRequest.Prompt))
 
 	stream := client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
 		Messages: openai.F(messageParams),

@@ -27,7 +27,7 @@ export function useAiChat() {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
     try {
-      const response = await fetch(`${API_URL}/ai/generate`, {
+      const response = await fetch(`${API_URL}/ai/assistant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

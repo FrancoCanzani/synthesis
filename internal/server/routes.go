@@ -10,9 +10,9 @@ import (
 
 
 func (s *Server) RegisterRoutes() http.Handler {
-	r := gin.Default()
+	router := gin.Default()
 
-	r.Use(cors.New(cors.Config{
+	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
@@ -20,10 +20,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true,
 	}))
 
-	r.GET("/", s.HelloWorldHandler)
-	r.GET("/health", s.HealthHandler)
+	router.GET("/", s.HelloWorldHandler)
+	router.GET("/health", s.HealthHandler)
 
-	notes := r.Group("/notes")
+	notes := router.Group("/notes")
 
 	notes.Use(auth.AuthRequired())
 	{
@@ -33,8 +33,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 		notes.DELETE("/:id", s.DeleteNoteHandler)
 	}
 
-	r.GET("/article", s.GetArticleContent)
-	r.POST("/ai/generate", s.GetAiCompletion)
+	router.GET("/articles", s.GetArticleContent)
 
-	return r
+	ai := router.Group("/ai")
+	ai.POST("/assistant", s.GetAiCompletion)
+
+	return router
 }
