@@ -10,6 +10,8 @@ import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
 import CharacterCount from '@tiptap/extension-character-count';
 import SearchAndReplace from '@/components/extensions/search-and-replace';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
 
 export const extensions = [
   StarterKit.configure({
@@ -41,6 +43,11 @@ export const extensions = [
     },
   }),
   Underline,
+  TextStyle,
+  Color,
+  Highlight.configure({
+    multicolor: true,
+  }),
   Table.configure({
     resizable: true,
   }),

@@ -69,24 +69,31 @@ export const LinkToolbar = React.forwardRef<HTMLButtonElement>((props, ref) => {
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
-          <PopoverContent className='w-80'>
+          <PopoverContent className='w-80 bg-background'>
             <div className='flex flex-col space-y-2.5'>
               <Label htmlFor='url'>URL</Label>
               <Input
                 id='url'
                 placeholder='https://example.com'
                 value={url}
+                className='h-9 text-sm'
                 onChange={(e) => setUrl(e.target.value)}
               />
               <div className='flex justify-between'>
                 <Button
                   variant='outline'
                   size='sm'
+                  className='border-red-600 hover:bg-red-500 h-8'
                   onClick={() => setIsOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button variant='outline' size='sm' onClick={setLink}>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className='h-8'
+                  onClick={setLink}
+                >
                   {editor.isActive('link') ? 'Update Link' : 'Add Link'}
                 </Button>
               </div>

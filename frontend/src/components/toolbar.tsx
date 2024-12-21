@@ -21,6 +21,7 @@ import { HighlightToolbar } from './toolbars/highlight';
 import { LinkToolbar } from './toolbars/link';
 import AiAssistantDialog from './ai-assistant-dialog';
 import { SearchAndReplaceToolbar } from './toolbars/search-and-replace-toolbar';
+import { ColorHighlightToolbar } from './toolbars/color-and-highlight';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -39,6 +40,7 @@ export function Toolbar({ editor }: ToolbarProps) {
         <Separator orientation='vertical' className='h-7' />
         <AiAssistantDialog />
         <Separator orientation='vertical' className='h-7' />
+        <ColorHighlightToolbar />
         <HeadingToolbar />
         <BoldToolbar />
         <ItalicToolbar />

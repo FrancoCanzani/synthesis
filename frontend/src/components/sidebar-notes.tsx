@@ -25,7 +25,7 @@ function NoteContentPreview({ content }: { content: string }) {
   });
 
   return (
-    <div className='max-h-[150px] bg-background/50 border rounded-md p-2 overflow-y-auto [&_.ProseMirror]:!p-0 [&_.ProseMirror]:!m-0 [&_.ProseMirror_p]:!m-0'>
+    <div className='max-h-[150px] bg-background/50 border  rounded-md p-2 overflow-y-auto [&_.ProseMirror]:!p-0 [&_.ProseMirror]:!m-0 [&_.ProseMirror_p]:!m-0'>
       <EditorContent editor={editor} />
     </div>
   );

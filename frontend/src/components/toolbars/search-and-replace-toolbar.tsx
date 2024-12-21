@@ -90,19 +90,19 @@ export function SearchAndReplaceToolbar() {
         onEscapeKeyDown={() => {
           setOpen(false);
         }}
-        className='relative flex w-[400px] px-3 py-2.5'
+        className='relative flex w-[400px] px-3 py-2.5 bg-background'
       >
         {!replacing ? (
           <div className={cn('relative flex gap-1.5 items-center')}>
             <Input
               value={searchText}
-              className=' w-48'
+              className='w-48 h-8 px-1.5 mr-1.5 text-sm'
               onChange={(e) => {
                 setSearchText(e.target.value);
               }}
               placeholder='Search...'
             />
-            <span>
+            <span className='text-sm'>
               {results?.length === 0 ? selectedResult : selectedResult + 1}/
               {results?.length}
             </span>
@@ -150,7 +150,7 @@ export function SearchAndReplaceToolbar() {
               onClick={() => {
                 setOpen(false);
               }}
-              className='absolute right-3 top-3 h-4 w-4 cursor-pointer'
+              className='absolute right-1 top-1.5 h-4 w-4 cursor-pointer'
             />
             <div className='flex w-full items-center gap-3'>
               <Button
@@ -169,22 +169,25 @@ export function SearchAndReplaceToolbar() {
             <div className='my-2 w-full'>
               <div className='mb-3'>
                 <Label className='mb-1 text-xs text-gray-11'>Search</Label>
-                <Input
-                  value={searchText}
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                  }}
-                  placeholder='Search...'
-                />
-                {results?.length === 0 ? selectedResult : selectedResult + 1}/
-                {results?.length}
+                <div className='mb-3 flex items-center justify-start gap-x-2 text-sm'>
+                  <Input
+                    value={searchText}
+                    onChange={(e) => {
+                      setSearchText(e.target.value);
+                    }}
+                    placeholder='Search...'
+                    className='h-8 px-1.5'
+                  />
+                  {results?.length === 0 ? selectedResult : selectedResult + 1}/
+                  {results?.length}
+                </div>
               </div>
               <div className='mb-2'>
                 <Label className='mb-1 text-xs text-gray-11'>
                   Replace with
                 </Label>
                 <Input
-                  className='w-full'
+                  className='h-8 px-1.5'
                   value={replaceText}
                   onChange={(e) => {
                     setReplaceText(e.target.value);

@@ -40,7 +40,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   description,
 }) => {
   return (
-    <div className='bg-background p-6 rounded-lg border hover:border-primary/50 transition-colors group cursor-pointer'>
+    <div className='bg-background p-6 rounded-lg border hover:/50 transition-colors group cursor-pointer'>
       <div className='w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors'>
         {icon}
       </div>
