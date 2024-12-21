@@ -10,6 +10,7 @@ import { useParams } from 'react-router';
 import { cn } from '@/lib/utils';
 import { useNotesStore } from '@/lib/store/use-note-store';
 import DeleteNoteDialog from './delete-note-dialog';
+import { formatDate } from '@/lib/helpers';
 
 function NoteContentPreview({ content }: { content: string }) {
   const editor = useEditor({
@@ -35,14 +36,6 @@ export default function SidebarNotes() {
   const params = useParams();
   const notes = useNotesStore((state) => state.notes);
   const navigate = useNavigate();
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   return (
     <div className='space-y-1 flex-col flex w-full justify-start'>
@@ -73,8 +66,8 @@ export default function SidebarNotes() {
             <h3 className='font-medium'>{note.title}</h3>
             <NoteContentPreview content={note.content} />
             <div className='text-xs text-muted-foreground flex flex-col space-y-1'>
-              <span>Created - {formatDate(note.created_at)}</span>
-              <span>Updated - {formatDate(note.updated_at)}</span>
+              <span>Created ‧ {formatDate(note.created_at)}</span>
+              <span>Updated ‧ {formatDate(note.updated_at)}</span>
             </div>
           </TooltipContent>
         </Tooltip>

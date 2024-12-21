@@ -22,3 +22,11 @@ export const getToken = async () => {
   } = await supabase.auth.getSession();
   return session?.access_token;
 };
+
+export const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};

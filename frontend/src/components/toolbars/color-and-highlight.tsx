@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useToolbar } from '@/components/toolbars/toolbar-provider';
-import { Check, ChevronDown } from 'lucide-react';
+import { Baseline, Check } from 'lucide-react';
 
 const TEXT_COLORS = [
   { name: 'Default', color: 'var(--text-default)' },
@@ -112,14 +112,14 @@ export const ColorHighlightToolbar = () => {
                 style={{
                   color: currentColor,
                 }}
-                className={cn('h-8 w-14 p-0 font-normal')}
+                className={cn('h-8 w-8')}
               >
-                <span className='text-md'>A</span>
-                <ChevronDown className='h-4 w-4' />
+                <Baseline className='h-4 w-4' />
+                <span className='sr-only'>Text color</span>
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
-          <TooltipContent>Text Color & Highlight</TooltipContent>
+          <TooltipContent>Text Color</TooltipContent>
         </Tooltip>
 
         <PopoverContent align='start' className='w-56 p-1 dark:bg-gray-2'>

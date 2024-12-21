@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'dark' | 'light' | 'sepia';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check if theme is stored in localStorage
     const stored = localStorage.getItem('theme') as Theme;
     if (stored) return stored;
 
-    // Check system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
@@ -18,7 +16,7 @@ export function useTheme() {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove('light', 'dark', 'sepia');
     root.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
@@ -27,5 +25,5 @@ export function useTheme() {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  return { theme, toggleTheme };
+  return { theme, toggleTheme, setTheme };
 }

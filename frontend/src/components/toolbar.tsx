@@ -19,8 +19,6 @@ import { TextAlignToolbar } from './toolbars/text-align';
 import { HeadingToolbar } from './toolbars/heading';
 import { HighlightToolbar } from './toolbars/highlight';
 import { LinkToolbar } from './toolbars/link';
-import AiAssistantDialog from './ai-assistant-dialog';
-import { SearchAndReplaceToolbar } from './toolbars/search-and-replace-toolbar';
 import { ColorHighlightToolbar } from './toolbars/color-and-highlight';
 
 interface ToolbarProps {
@@ -37,8 +35,6 @@ export function Toolbar({ editor }: ToolbarProps) {
       <div className='flex items-center gap-2'>
         <UndoToolbar />
         <RedoToolbar />
-        <Separator orientation='vertical' className='h-7' />
-        <AiAssistantDialog />
         <Separator orientation='vertical' className='h-7' />
         <ColorHighlightToolbar />
         <HeadingToolbar />
@@ -57,7 +53,6 @@ export function Toolbar({ editor }: ToolbarProps) {
         <HorizontalRuleToolbar />
         <BlockquoteToolbar />
         <HardBreakToolbar />
-        <SearchAndReplaceToolbar />
       </div>
     </ToolbarProvider>
   );

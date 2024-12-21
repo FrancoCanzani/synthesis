@@ -63,7 +63,6 @@ export const extensions = [
   TextAlign.configure({
     types: ['heading', 'paragraph'],
   }),
-  Highlight,
   CharacterCount,
   SearchAndReplace,
   Link.configure({

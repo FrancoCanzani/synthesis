@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { SearchAndReplaceStorage } from '@/components/extensions/search-and-replace';
 import { useToolbar } from '@/components/toolbars/toolbar-provider';
+import { useSearchParams } from 'react-router';
 
 export function SearchAndReplaceToolbar() {
   const { editor } = useToolbar();
@@ -28,6 +29,10 @@ export function SearchAndReplaceToolbar() {
   const [searchText, setSearchText] = useState('');
   const [replaceText, setReplaceText] = useState('');
   const [checked, setChecked] = useState(false);
+
+  const [searchParams] = useSearchParams();
+
+  const editorMode = searchParams.get('editorMode');
 
   const results = editor?.storage?.searchAndReplace
     .results as SearchAndReplaceStorage['results'];
@@ -93,10 +98,10 @@ export function SearchAndReplaceToolbar() {
         className='relative flex w-[400px] px-3 py-2.5 bg-background'
       >
         {!replacing ? (
-          <div className={cn('relative flex gap-1.5 items-center')}>
+          <div className={cn('relative flex gap-1.5 items-center w-full')}>
             <Input
               value={searchText}
-              className='w-48 h-8 px-1.5 mr-1.5 text-sm'
+              className='flex-1 h-8 px-1.5 mr-1.5 text-sm'
               onChange={(e) => {
                 setSearchText(e.target.value);
               }}
@@ -123,16 +128,18 @@ export function SearchAndReplaceToolbar() {
               <ArrowRight className='h-4 w-4' />
             </Button>
             <Separator orientation='vertical' className='h-7 mx-0.5' />
-            <Button
-              onClick={() => {
-                setReplacing(true);
-              }}
-              size='icon'
-              className='size-7'
-              variant='ghost'
-            >
-              <Repeat className='h-4 w-4' />
-            </Button>
+            {editorMode != 'read' && (
+              <Button
+                onClick={() => {
+                  setReplacing(true);
+                }}
+                size='icon'
+                className='size-7'
+                variant='ghost'
+              >
+                <Repeat className='h-4 w-4' />
+              </Button>
+            )}
             <Button
               onClick={() => {
                 setOpen(false);

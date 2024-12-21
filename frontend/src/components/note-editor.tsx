@@ -6,15 +6,20 @@ import { extensions } from '@/lib/extensions';
 import debounce from 'lodash/debounce';
 import { useNotesStore } from '@/lib/store/use-note-store';
 import { Toolbar } from './toolbar';
-import { Separator } from './ui/separator';
-import { SidebarTrigger } from './ui/sidebar';
+import { formatDate } from '@/lib/helpers';
 import { LoaderCircle, Save } from 'lucide-react';
+import EditorSideMenu from './editor-side-menu';
+import { useSearchParams } from 'react-router';
+import NoteEditorHeader from './note-editor-header';
 
 export default function NoteEditor() {
   const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
   const { notes, upsertNote, fetchNotes } = useNotesStore();
+  const [searchParams] = useSearchParams();
+
+  const mode = searchParams.get('editorMode');
 
   const currentNote = notes.find((note) => note.id === noteId);
   const [localTitle, setLocalTitle] = useState(
@@ -112,35 +117,51 @@ export default function NoteEditor() {
 
   return (
     <div className='h-svh flex flex-col'>
-      <header className='border-b flex items-center px-2 py-1.5 bg-background space-x-2'>
-        <SidebarTrigger />
-        <Separator orientation='vertical' className='h-6' />
-        <input
-          placeholder='Title'
-          value={localTitle}
-          onChange={(e) => setLocalTitle(e.target.value)}
-          autoFocus
-          className='flex-1 border-none outline-none bg-background min-w-0'
-        />
-      </header>
-      <div className='sticky top-0 left-0 bg-background z-20 border-b overflow-x-auto'>
-        <div className='flex items-center py-1 px-2 min-w-max'>
-          <Toolbar editor={editor} />
+      <NoteEditorHeader editor={editor} />
+      {mode != 'read' && (
+        <div className='sticky top-0 left-0 z-20 overflow-x-auto'>
+          <div className='flex items-center justify-center pt-4 px-2 min-w-max'>
+            <Toolbar editor={editor} />
+          </div>
         </div>
-      </div>
+      )}
       <div className='flex-1 flex overflow-hidden'>
         <div className='flex-1 overflow-y-auto'>
-          <div className='p-4' onClick={() => editor.commands.focus()}>
+          <div className='p-4 flex items-center justify-center flex-col sm:max-w-[80ch] mx-auto'>
+            {mode != 'read' ? (
+              <input
+                type='text'
+                value={localTitle}
+                placeholder='Title'
+                onChange={(e) => setLocalTitle(e.target.value)}
+                className='px-4 font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
+              />
+            ) : (
+              <h1 className='px-4 font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
+                {localTitle}
+              </h1>
+            )}
+            <EditorSideMenu editor={editor} />
             <EditorContent editor={editor} />
           </div>
         </div>
       </div>
       <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
-        <div title={isSaving ? 'Saving...' : 'Saved'}>
-          {isSaving ? (
-            <LoaderCircle size={17} className='animate-spin' />
-          ) : (
-            <Save size={17} />
+        <div className='flex items-center justify-start gap-x-2'>
+          {mode != 'read' && (
+            <div title={isSaving ? 'Saving...' : 'Saved'}>
+              {isSaving ? (
+                <LoaderCircle size={17} className='animate-spin' />
+              ) : (
+                <Save size={17} />
+              )}
+            </div>
+          )}
+          {currentNote && (
+            <div className='sm:flex items-center justify-start gap-x-2 hidden'>
+              <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
+              <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
+            </div>
           )}
         </div>
         <div className='flex items-center justify-end space-x-2'>
