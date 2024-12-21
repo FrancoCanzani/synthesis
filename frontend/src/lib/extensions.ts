@@ -9,6 +9,7 @@ import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
 import CharacterCount from '@tiptap/extension-character-count';
+import SearchAndReplace from '@/components/extensions/search-and-replace';
 
 export const extensions = [
   StarterKit.configure({
@@ -57,6 +58,7 @@ export const extensions = [
   }),
   Highlight,
   CharacterCount,
+  SearchAndReplace,
   Link.configure({
     openOnClick: false,
     HTMLAttributes: {

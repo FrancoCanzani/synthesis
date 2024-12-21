@@ -20,6 +20,7 @@ import { HeadingToolbar } from './toolbars/heading';
 import { HighlightToolbar } from './toolbars/highlight';
 import { LinkToolbar } from './toolbars/link';
 import AiAssistantDialog from './ai-assistant-dialog';
+import { SearchAndReplaceToolbar } from './toolbars/search-and-replace-toolbar';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -54,6 +55,7 @@ export function Toolbar({ editor }: ToolbarProps) {
         <HorizontalRuleToolbar />
         <BlockquoteToolbar />
         <HardBreakToolbar />
+        <SearchAndReplaceToolbar />
       </div>
     </ToolbarProvider>
   );
