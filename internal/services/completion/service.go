@@ -53,6 +53,7 @@ func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan st
 
 				// Send if we hit sentence end markers or buffer is getting large
 				if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 25 {
+					fmt.Println("Sending chunk:", string(buffer)) // Debug print
 					messages <- string(buffer)
 					buffer = buffer[:0]
 				}

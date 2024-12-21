@@ -209,6 +209,7 @@ func (s *Server) GetAiCompletion(c *gin.Context) {
     }
 
     messages, err := completion.GenerateTextCompletion(completionRequest)
+    
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -223,10 +224,11 @@ func (s *Server) GetAiCompletion(c *gin.Context) {
         select {
         case <-c.Request.Context().Done():
             return false
-        case _, ok := <-messages:
+        case msg, ok := <-messages:
             if !ok {
                 return false
             }
+            io.WriteString(w, msg)
             c.Writer.Flush()
             return true
         }

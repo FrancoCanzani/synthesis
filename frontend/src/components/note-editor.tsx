@@ -124,7 +124,7 @@ export default function NoteEditor() {
         />
       </header>
       <div className='sticky top-0 left-0 bg-background z-20 border-b overflow-x-auto'>
-        <div className='flex items-center py-2 px-2 min-w-max'>
+        <div className='flex items-center py-1 px-2 min-w-max'>
           <Toolbar editor={editor} />
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function NoteEditor() {
           </div>
         </div>
       </div>
-      <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2 py-1.5 w-full'>
+      <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
         <div title={isSaving ? 'Saving...' : 'Saved'}>
           {isSaving ? (
             <LoaderCircle size={17} className='animate-spin' />
