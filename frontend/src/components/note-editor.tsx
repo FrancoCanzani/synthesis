@@ -33,7 +33,7 @@ export default function NoteEditor() {
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm text-black dark:prose-invert sm:prose-base sm:max-w-[80ch] mx-auto focus:outline-none',
+          'prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] mx-auto focus:outline-none',
       },
     },
   });
@@ -134,10 +134,10 @@ export default function NoteEditor() {
                 value={localTitle}
                 placeholder='Title'
                 onChange={(e) => setLocalTitle(e.target.value)}
-                className='px-4 text-black font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
+                className='px-4 text-black dark:text-white font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
               />
             ) : (
-              <h1 className='px-4 text-black font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
+              <h1 className='px-4 text-black dark:text-white font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
                 {localTitle}
               </h1>
             )}

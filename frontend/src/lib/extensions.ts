@@ -63,7 +63,9 @@ export const extensions = [
   TextAlign.configure({
     types: ['heading', 'paragraph'],
   }),
-  CharacterCount,
+  CharacterCount.configure({
+    limit: 100000,
+  }),
   SearchAndReplace,
   Link.configure({
     openOnClick: false,
