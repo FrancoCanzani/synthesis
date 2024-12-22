@@ -17,4 +17,5 @@ type Message struct {
 type CompletionRequest struct {
     Prompt   string    `json:"prompt"`
     Messages []Message `json:"messages"`
+    Content   string    `json:"content"`
 }

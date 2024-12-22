@@ -10,7 +10,7 @@ import {
   LoaderCircle,
   MoreHorizontal,
   SendHorizonal,
-  Wand2,
+  BotMessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -20,11 +20,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAiChat } from '@/lib/hooks/use-ai-chat';
+import { useToolbar } from './toolbars/toolbar-provider';
+import { copyToClipboard } from '@/lib/helpers';
 
 export default function AiAssistantDialog() {
   const [isOpen, setIsOpen] = useState(false);
+  const { editor } = useToolbar();
+
   const { messages, handleInputChange, handleSubmit, inputPrompt, isLoading } =
-    useAiChat();
+    useAiChat(editor.getText());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -35,13 +39,6 @@ export default function AiAssistantDialog() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const handleActionOnMessage = (messageId: string) => {
-    const targetMessage = messages.find((msg) => msg.id === messageId);
-    if (targetMessage) {
-      handleSubmit();
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -56,7 +53,7 @@ export default function AiAssistantDialog() {
                 isOpen && 'bg-accent/50'
               )}
             >
-              <Wand2 className='h-4 w-4' />
+              <BotMessageSquare className='h-4 w-4' />
               <span className='sr-only'>AI Assistant</span>
             </Button>
           </DialogTrigger>
@@ -68,7 +65,7 @@ export default function AiAssistantDialog() {
 
       <DialogContent className='sm:max-w-[550px] p-2 flex flex-col w-full max-w-md mx-auto text-sm'>
         <div className='flex-1 overflow-hidden'>
-          <div className='h-[400px] overflow-y-auto p-2 rounded-md bg-muted/20'>
+          <div className='h-[400px] overflow-y-auto p-2 rounded-sm bg-muted/20'>
             {messages.length > 0 ? (
               <div className='space-y-2'>
                 {messages.map((message) => (
@@ -104,25 +101,32 @@ export default function AiAssistantDialog() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end'>
                               <DropdownMenuItem
-                                onClick={() =>
-                                  handleActionOnMessage(message.id)
-                                }
+                                onClick={() => copyToClipboard(message.content)}
                               >
-                                Provide context
+                                Copy
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  handleActionOnMessage(message.id)
+                                  editor.commands.insertContent(message.content)
                                 }
                               >
-                                Rewrite message
+                                Insert in editor
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() =>
-                                  handleActionOnMessage(message.id)
-                                }
+                                onClick={() => {
+                                  const { view } = editor;
+                                  const { from, to } = view.state.selection;
+                                  editor.commands.command(({ tr }) => {
+                                    tr.replaceWith(
+                                      from,
+                                      to,
+                                      editor.schema.text(message.content)
+                                    );
+                                    return true;
+                                  });
+                                }}
                               >
-                                Summarize message
+                                Replace selection
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

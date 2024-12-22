@@ -1,4 +1,5 @@
 import supabase from './supabase';
+import { toast } from 'sonner';
 
 export async function signOut() {
   await supabase.auth.signOut();
@@ -30,3 +31,13 @@ export const formatDate = (date: string) => {
     day: 'numeric',
   });
 };
+
+export async function copyToClipboard(text: string): Promise<void> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    }
+  } catch {
+    toast.error('Failed to copy to clipboard');
+  }
+}

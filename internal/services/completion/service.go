@@ -15,10 +15,18 @@ func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan st
 
 	var messageParams []openai.ChatCompletionMessageParamUnion
 
+	// Initial system message to set the context
 	messageParams = append(messageParams, openai.SystemMessage(
 		"You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary, special characters, or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or other formatting.",
 	))
 
+	// Add the current editor content as context
+	if completionRequest.Content != "" {
+		contextMessage := fmt.Sprintf("Current document content:\n%s", completionRequest.Content)
+		messageParams = append(messageParams, openai.SystemMessage(contextMessage))
+	}
+
+	// Add existing conversation history
 	for _, msg := range completionRequest.Messages {
 		switch msg.Role {
 		case "user":
@@ -30,6 +38,7 @@ func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan st
 		}
 	}
 
+	// Add the current prompt
 	messageParams = append(messageParams, openai.UserMessage(completionRequest.Prompt))
 
 	stream := client.Chat.Completions.NewStreaming(ctx, openai.ChatCompletionNewParams{
@@ -53,7 +62,6 @@ func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan st
 
 				// Send if we hit sentence end markers or buffer is getting large
 				if strings.ContainsAny(chunk, ".!?\n") || len(buffer) > 25 {
-					fmt.Println("Sending chunk:", string(buffer)) // Debug print
 					messages <- string(buffer)
 					buffer = buffer[:0]
 				}

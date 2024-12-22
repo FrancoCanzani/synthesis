@@ -207,7 +207,7 @@ func (s *Server) GetAiCompletion(c *gin.Context) {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
-
+    
     messages, err := completion.GenerateTextCompletion(completionRequest)
     
     if err != nil {

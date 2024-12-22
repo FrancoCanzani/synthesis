@@ -46,7 +46,7 @@ export default function EditorSideMenu({ editor }: { editor: Editor }) {
   const editorMode = searchParams.get('editorMode');
 
   return (
-    <div className='fixed z-50 right-9 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-4 p-1 border rounded-md transition-opacity duration-300 ease-in-out bg-background opacity-70 md:opacity-100 hover:opacity-100'>
+    <div className='fixed z-50 right-9 bottom-12 lg:bottom-1/2 lg:translate-y-1/4 flex flex-col items-center space-y-2 p-1 border rounded-md transition-opacity duration-300 ease-in-out bg-background opacity-50 lg:opacity-100 hover:opacity-100'>
       <EditorSideMenuButton
         icon={BookOpen}
         label='Enter read mode'

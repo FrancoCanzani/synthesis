@@ -8,7 +8,7 @@ interface Message {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export function useAiChat() {
+export function useAiChat(editorContent: string) {
   const [inputPrompt, setInputPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,11 @@ export function useAiChat() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: inputPrompt, messages: messages }),
+        body: JSON.stringify({
+          prompt: inputPrompt,
+          messages: messages,
+          content: editorContent,
+        }),
       });
 
       if (!response.ok) {
