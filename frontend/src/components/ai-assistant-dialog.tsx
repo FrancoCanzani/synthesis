@@ -59,7 +59,7 @@ export default function AiAssistantDialog() {
           </DialogTrigger>
         </TooltipTrigger>
         <TooltipContent>
-          <span className='text-xs'>AI Assistant</span>
+          <span>AI Assistant</span>
         </TooltipContent>
       </Tooltip>
 

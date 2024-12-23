@@ -35,7 +35,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		notes.DELETE("/:id", s.DeleteNoteHandler)
 	}
 
-	router.GET("/articles", s.GetArticleContent)
+	router.GET("/article", s.GetArticleContent)
 
 	ai := router.Group("/ai")
 	ai.POST("/assistant", s.GetAiCompletion)

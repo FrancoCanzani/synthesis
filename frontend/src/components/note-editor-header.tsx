@@ -5,6 +5,7 @@ import { ToolbarProvider } from './toolbars/toolbar-provider';
 import { Editor } from '@tiptap/core';
 import AiAssistantDialog from './ai-assistant-dialog';
 import { TextToSpeechToolbar } from './toolbars/text-to-speech';
+import GetArticleDialog from './get-article-dialog';
 
 export default function NoteEditorHeader({ editor }: { editor: Editor }) {
   return (
@@ -16,6 +17,7 @@ export default function NoteEditorHeader({ editor }: { editor: Editor }) {
       <div>
         <ToolbarProvider editor={editor}>
           <AiAssistantDialog />
+          <GetArticleDialog />
           <TextToSpeechToolbar />
           <SearchAndReplaceToolbar />
         </ToolbarProvider>

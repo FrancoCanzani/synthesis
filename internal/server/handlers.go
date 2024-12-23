@@ -192,6 +192,7 @@ func (s *Server) GetArticleContent(c *gin.Context) {
     }
 
     metadata, err := scraper.GetArticle(websiteURL)
+    
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
