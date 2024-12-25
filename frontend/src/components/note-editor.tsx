@@ -147,7 +147,7 @@ export default function NoteEditor() {
                   {localTitle}
                 </h1>
               )}
-              <EditorContent editor={editor} />
+              <EditorContent editor={editor} className='w-full' />
             </div>
           </div>
         </div>

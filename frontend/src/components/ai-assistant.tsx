@@ -133,7 +133,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
           <Button
             variant='ghost'
             size='sm'
-            className='h-8'
+            className='h-8 text-xs'
             onClick={() => setMessages([])}
           >
             Clear
@@ -245,7 +245,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
           value={inputPrompt}
           onChange={handleInputChange}
           placeholder='Ask the AI assistant...'
-          className='flex-1 outline-none px-2 bg-transparent'
+          className='flex-1 outline-none bg-transparent'
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -259,9 +259,9 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
           className={cn('pr-2', { 'opacity-70': inputPrompt.length === 0 })}
         >
           {isLoading ? (
-            <LoaderCircle className='animate-spin' size={20} />
+            <LoaderCircle className='animate-spin' size={17} />
           ) : (
-            <SendHorizonal size={20} />
+            <SendHorizonal size={17} />
           )}
         </button>
       </div>
