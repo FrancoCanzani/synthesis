@@ -8,9 +8,10 @@ import { useNotesStore } from '@/lib/store/use-note-store';
 import { Toolbar } from './toolbar';
 import { formatDate } from '@/lib/helpers';
 import { LoaderCircle, Save } from 'lucide-react';
-import EditorSideMenu from './editor-side-menu';
 import { useSearchParams } from 'react-router';
 import NoteEditorHeader from './note-editor-header';
+import { RightSidebar } from './right-sidebar';
+import AiAssistant from './ai-assistant';
 
 export default function NoteEditor() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function NoteEditor() {
   const { user } = useAuth();
   const { notes, upsertNote, fetchNotes } = useNotesStore();
   const [searchParams] = useSearchParams();
-
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const mode = searchParams.get('editorMode');
 
   const currentNote = notes.find((note) => note.id === noteId);
@@ -33,7 +34,7 @@ export default function NoteEditor() {
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] mx-auto focus:outline-none',
+          'prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] focus:outline-none',
       },
     },
   });
@@ -116,60 +117,69 @@ export default function NoteEditor() {
   if (!editor) return null;
 
   return (
-    <div className='h-svh flex flex-col'>
-      <NoteEditorHeader editor={editor} />
-      {mode != 'read' && (
-        <div className='sticky top-0 left-0 z-20 overflow-x-auto'>
-          <div className='flex items-center justify-center pt-4 px-2 min-w-max'>
-            <Toolbar editor={editor} />
+    <div className='h-svh flex w-full'>
+      <div className='h-svh flex flex-col flex-1 w-full transition-transform duration-200'>
+        <NoteEditorHeader
+          editor={editor}
+          rightSidebarOpen={rightSidebarOpen}
+          setRightSidebarOpen={setRightSidebarOpen}
+        />
+        {mode != 'read' && (
+          <div className='sticky top-0 left-0 z-20 overflow-x-auto'>
+            <div className='flex items-center justify-center pt-4 px-2 min-w-max'>
+              <Toolbar editor={editor} />
+            </div>
           </div>
-        </div>
-      )}
-      <div className='flex-1 flex overflow-hidden'>
-        <div className='flex-1 overflow-y-auto'>
-          <div className='p-4 flex items-center justify-center flex-col sm:max-w-[80ch] mx-auto'>
-            {mode != 'read' ? (
-              <input
-                type='text'
-                value={localTitle}
-                placeholder='Title'
-                onChange={(e) => setLocalTitle(e.target.value)}
-                className='px-4 text-black dark:text-white font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
-              />
-            ) : (
-              <h1 className='px-4 text-black dark:text-white font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
-                {localTitle}
-              </h1>
-            )}
-            <EditorSideMenu editor={editor} />
-            <EditorContent editor={editor} />
-          </div>
-        </div>
-      </div>
-      <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
-        <div className='flex items-center justify-start gap-x-2'>
-          {mode != 'read' && (
-            <div title={isSaving ? 'Saving...' : 'Saved'}>
-              {isSaving ? (
-                <LoaderCircle size={17} className='animate-spin' />
+        )}
+        <div className='flex-1 flex overflow-hidden'>
+          <div className='flex-1 overflow-y-auto'>
+            <div className='p-4 flex items-center justify-start flex-col sm:max-w-[80ch] mx-auto'>
+              {mode != 'read' ? (
+                <input
+                  type='text'
+                  value={localTitle}
+                  placeholder='Title'
+                  onChange={(e) => setLocalTitle(e.target.value)}
+                  className='px-4 text-black dark:text-white font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
+                />
               ) : (
-                <Save size={17} />
+                <h1 className='px-4 text-black dark:text-white font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
+                  {localTitle}
+                </h1>
               )}
+              <EditorContent editor={editor} autoFocus className='flex-1' />
             </div>
-          )}
-          {currentNote && (
-            <div className='sm:flex items-center justify-start gap-x-2 hidden'>
-              <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
-              <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
-            </div>
-          )}
+          </div>
         </div>
-        <div className='flex items-center justify-end space-x-2'>
-          <p>{editor.storage.characterCount.characters()} characters</p>
-          <span>/</span>
-          <p>{editor.storage.characterCount.words()} words</p>
-        </div>
-      </footer>
+        <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
+          <div className='flex items-center justify-start gap-x-2'>
+            {mode != 'read' && (
+              <div title={isSaving ? 'Saving...' : 'Saved'}>
+                {isSaving ? (
+                  <LoaderCircle size={17} className='animate-spin' />
+                ) : (
+                  <Save size={17} />
+                )}
+              </div>
+            )}
+            {currentNote && (
+              <div className='sm:flex items-center justify-start gap-x-2 hidden'>
+                <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
+                <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
+              </div>
+            )}
+          </div>
+          <div className='flex items-center justify-end space-x-2'>
+            <p>{editor.storage.characterCount.characters()} characters</p>
+            <span>/</span>
+            <p>{editor.storage.characterCount.words()} words</p>
+          </div>
+        </footer>
+      </div>
+
+      <RightSidebar open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
+        <AiAssistant editor={editor} />
+      </RightSidebar>
     </div>
   );
 }
