@@ -1,16 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  LoaderCircle,
-  MoreHorizontal,
-  SendHorizonal,
-  Sparkles,
-  FileText,
-  ArrowDownToLine,
-  BookOpen,
-  Text,
-  ListTodo,
-} from 'lucide-react';
+import { LoaderCircle, MoreHorizontal, SendHorizonal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -24,42 +14,7 @@ import { copyToClipboard } from '@/lib/helpers';
 import { Editor } from '@tiptap/core';
 import { Separator } from './ui/separator';
 
-type QuickPrompt = {
-  title: string;
-  prompt: string;
-  icon: React.ReactNode;
-};
-
-const quickPrompts: QuickPrompt[] = [
-  {
-    title: 'Summarize',
-    prompt: 'Summarize this text concisely',
-    icon: <FileText className='h-4 w-4' />,
-  },
-  {
-    title: 'Expand',
-    prompt: 'Expand on this topic with more details',
-    icon: <ArrowDownToLine className='h-4 w-4' />,
-  },
-  {
-    title: 'Explain',
-    prompt: 'Explain this concept in simple terms',
-    icon: <BookOpen className='h-4 w-4' />,
-  },
-  {
-    title: 'Rewrite',
-    prompt: 'Rewrite this text to make it more engaging',
-    icon: <Text className='h-4 w-4' />,
-  },
-  {
-    title: 'Action Items',
-    prompt: 'Extract actionable tasks from this text',
-    icon: <ListTodo className='h-4 w-4' />,
-  },
-];
-
 export default function AiAssistant({ editor }: { editor: Editor }) {
-  const [selectedText, setSelectedText] = useState('');
   const {
     messages,
     setMessages,
@@ -67,7 +22,6 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
     handleSubmit,
     inputPrompt,
     isLoading,
-    setInputPrompt,
   } = useAiChat(editor.getText());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
@@ -77,26 +31,6 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    const updateSelectedText = () => {
-      const selection = editor.state.selection;
-      const text = editor.state.doc.textBetween(selection.from, selection.to);
-      setSelectedText(text);
-    };
-
-    editor.on('selectionUpdate', updateSelectedText);
-    return () => {
-      editor.off('selectionUpdate', updateSelectedText);
-    };
-  }, [editor]);
-
-  const handleQuickPrompt = (prompt: string) => {
-    const text = selectedText;
-    const combinedPrompt = `${prompt}\n${text}`;
-    setInputPrompt(combinedPrompt);
-    handleSubmit(combinedPrompt);
-  };
 
   const applyAIResponse = (
     content: string,
@@ -133,7 +67,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
           <Button
             variant='ghost'
             size='sm'
-            className='h-8 text-xs'
+            className='h-8'
             onClick={() => setMessages([])}
           >
             Clear
@@ -221,26 +155,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
           )}
         </div>
       </div>
-      <div className='flex items-center space-x-3 border-t pt-2 pl-1'>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant='ghost' size='sm' className='h-8 w-8'>
-              <Sparkles className='h-4 w-4' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='start' className='w-48'>
-            {quickPrompts.map((item) => (
-              <DropdownMenuItem
-                key={item.title}
-                onClick={() => handleQuickPrompt(item.prompt)}
-                className='flex items-center'
-              >
-                {item.icon}
-                <span className='ml-2'>{item.title}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className='flex items-center space-x-3 border-t pt-3 pb-1 px-2'>
         <input
           value={inputPrompt}
           onChange={handleInputChange}

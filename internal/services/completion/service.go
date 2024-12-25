@@ -17,7 +17,7 @@ func GenerateTextCompletion(completionRequest models.CompletionRequest) (chan st
 
 	// Initial system message to set the context
 	messageParams = append(messageParams, openai.SystemMessage(
-		"You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately with paragraphs and lists when needed. Avoid meta-commentary, special characters, or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or other formatting.",
+		"You are a text editor assistant. Keep responses clear, concise, and ready to insert into documents. Format text appropriately prioritizing paragraphs, not lists. Avoid meta-commentary, special characters, or explanations about your role. Focus on delivering publication-ready content that fits naturally into documents. Your reply has to be in plain text, do not use markdown or other formatting.",
 	))
 
 	// Add the current editor content as context

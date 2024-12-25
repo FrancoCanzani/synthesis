@@ -12,6 +12,7 @@ import { useSearchParams } from 'react-router';
 import NoteEditorHeader from './note-editor-header';
 import { RightSidebar } from './right-sidebar';
 import AiAssistant from './ai-assistant';
+import { NoteEditorBubbleMenu } from './note-editor-bubble-menu';
 
 export default function NoteEditor() {
   const navigate = useNavigate();
@@ -147,6 +148,7 @@ export default function NoteEditor() {
                   {localTitle}
                 </h1>
               )}
+              <NoteEditorBubbleMenu editor={editor} />
               <EditorContent editor={editor} className='w-full' />
             </div>
           </div>
