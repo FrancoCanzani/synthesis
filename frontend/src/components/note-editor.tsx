@@ -147,7 +147,7 @@ export default function NoteEditor() {
                   {localTitle}
                 </h1>
               )}
-              <EditorContent editor={editor} autoFocus className='flex-1' />
+              <EditorContent editor={editor} />
             </div>
           </div>
         </div>

@@ -17,13 +17,16 @@ export function useAiChat(editorContent: string) {
     setInputPrompt(e.target.value);
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (prompt?: string) => {
     setIsLoading(true);
+
+    const messageContent = prompt ?? inputPrompt;
     const newUserMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputPrompt,
+      content: messageContent,
     };
+
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
 
     try {
@@ -33,8 +36,8 @@ export function useAiChat(editorContent: string) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: inputPrompt,
-          messages: messages,
+          prompt: messageContent,
+          messages: [...messages, newUserMessage],
           content: editorContent,
         }),
       });
@@ -84,5 +87,13 @@ export function useAiChat(editorContent: string) {
     }
   };
 
-  return { inputPrompt, handleInputChange, messages, isLoading, handleSubmit };
+  return {
+    inputPrompt,
+    setInputPrompt,
+    handleInputChange,
+    messages,
+    setMessages,
+    isLoading,
+    handleSubmit,
+  };
 }
