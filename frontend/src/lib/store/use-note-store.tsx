@@ -71,15 +71,23 @@ export const useNotesStore = create<NotesState>((set) => ({
       if (!response.ok) throw new Error('Failed to save note');
       const updatedNote = await response.json();
 
-      set((state) => ({
-        notes: state.notes.map((n) =>
-          n.id === updatedNote.id ? updatedNote : n
-        ),
-        currentNote:
-          state.currentNote?.id === updatedNote.id
-            ? updatedNote
-            : state.currentNote,
-      }));
+      set((state) => {
+        const existingNoteIndex = state.notes.findIndex(
+          (n) => n.id === updatedNote.id
+        );
+        const newNotes = [...state.notes];
+
+        if (existingNoteIndex >= 0) {
+          newNotes[existingNoteIndex] = updatedNote;
+        } else {
+          newNotes.push(updatedNote);
+        }
+
+        return {
+          notes: newNotes,
+          currentNote: updatedNote,
+        };
+      });
     } catch (error) {
       set({ error: (error as Error).message });
     }

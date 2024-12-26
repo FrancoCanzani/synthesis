@@ -3,6 +3,10 @@ export interface Note {
   user_id: string;
   title: string;
   content: string;
+  public: boolean;
+  public_url: string | null;
+  deleted: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

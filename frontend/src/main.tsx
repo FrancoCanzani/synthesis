@@ -10,6 +10,7 @@ import { AuthProvider } from './lib/context/auth-provider';
 import NoteEditor from './components/note-editor';
 import NoteSelector from './components/note-selector';
 import { Toaster } from 'sonner';
+import NotFoundPage from './pages/404-page';
 
 const root = document.getElementById('root');
 
@@ -38,6 +39,7 @@ ReactDOM.createRoot(root).render(
           <Route index element={<NoteSelector />} />
           <Route path=':id' element={<NoteEditor />} />
         </Route>
+        <Route path='*' element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   </AuthProvider>

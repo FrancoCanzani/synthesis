@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { EditorContent, type Extension, useEditor } from '@tiptap/react';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -18,12 +18,18 @@ export default function NoteEditor() {
   const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
-  const { notes, upsertNote, fetchNotes } = useNotesStore();
+  const { notes, upsertNote } = useNotesStore();
+
   const [searchParams] = useSearchParams();
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+
   const mode = searchParams.get('editorMode');
 
-  const currentNote = notes.find((note) => note.id === noteId);
+  const currentNote = useMemo(
+    () => notes?.find((note) => note.id === noteId),
+    [notes, noteId]
+  );
+
   const [localTitle, setLocalTitle] = useState(
     currentNote?.title || 'Untitled'
   );
@@ -48,7 +54,7 @@ export default function NoteEditor() {
   }, [noteId, editor, currentNote]);
 
   useEffect(() => {
-    if (!noteId || !notes.length) return;
+    if (!noteId || !notes?.length) return;
     if (!currentNote && !upsertNote) {
       navigate('/notes');
     }
@@ -82,13 +88,12 @@ export default function NoteEditor() {
           title: newTitle,
           content: editor.getHTML(),
         });
-        await fetchNotes(user.id);
         setIsSaving(false);
       } catch (error) {
         console.error('Failed to save title:', error);
       }
     }, 1000),
-    [editor?.getHTML, fetchNotes, noteId, upsertNote, user?.id]
+    [editor?.getHTML, noteId, upsertNote, user?.id]
   );
 
   useEffect(() => {
@@ -166,8 +171,8 @@ export default function NoteEditor() {
             )}
             {currentNote && (
               <div className='sm:flex items-center justify-start gap-x-2 hidden'>
-                <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
-                <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
+                <span>Created ‧ {formatDate(currentNote?.created_at)}</span>/
+                <span>Updated ‧ {formatDate(currentNote?.updated_at)}</span>
               </div>
             )}
           </div>

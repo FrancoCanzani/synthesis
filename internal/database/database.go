@@ -20,9 +20,9 @@ type Note struct {
     Title     string    `json:"title"`
     Content   string    `json:"content"`
     Public    bool      `json:"public"`
-    PublicURL string    `json:"public_url"`
+    PublicURL *string    `json:"public_url"`  // Can be null
     Deleted   bool      `json:"deleted"`
-    Deleted_at time.Time `json:"deleted_at"`
+    DeletedAt *time.Time `json:"deleted_at"`  // Can be null    
     CreatedAt time.Time `json:"created_at"`
     UpdatedAt time.Time `json:"updated_at"`
 }
@@ -207,7 +207,7 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note,
         &note.Public,
         &note.PublicURL,
         &note.Deleted,
-        &note.Deleted_at,
+        &note.DeletedAt,
         &note.CreatedAt,
         &note.UpdatedAt,
     )
@@ -245,7 +245,7 @@ func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error)
             &note.Public,
             &note.PublicURL,
             &note.Deleted,
-            &note.Deleted_at,
+            &note.DeletedAt,
             &note.CreatedAt,
             &note.UpdatedAt,
         )
@@ -296,7 +296,7 @@ func (s *service) UpdateNote(ctx context.Context, note *Note, userId string) (*N
         note.Public,
         note.PublicURL,
         note.Deleted,
-        note.Deleted_at,   
+        note.DeletedAt,   
         note.ID,   
         userId,  
     )
