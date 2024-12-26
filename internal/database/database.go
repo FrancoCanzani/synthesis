@@ -19,6 +19,10 @@ type Note struct {
     UserID    string     `json:"user_id"`
     Title     string    `json:"title"`
     Content   string    `json:"content"`
+    Public    bool      `json:"public"`
+    PublicURL string    `json:"public_url"`
+    Deleted   bool      `json:"deleted"`
+    Deleted_at time.Time `json:"deleted_at"`
     CreatedAt time.Time `json:"created_at"`
     UpdatedAt time.Time `json:"updated_at"`
 }
@@ -85,6 +89,7 @@ func New() Service {
     }
 
     err = dbInstance.initTables()
+    
     if err != nil {
         log.Fatal(err)
     }
@@ -150,6 +155,10 @@ func (s *service) initTables() error {
 		user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
+        public BOOLEAN NOT NULL DEFAULT FALSE,
+        public_url TEXT,
+        deleted BOOLEAN NOT NULL DEFAULT FALSE,
+        deleted_at DATETIME,
         created_at DATETIME NOT NULL,
 		updated_at DATETIME NOT NULL
     )`
@@ -184,7 +193,7 @@ func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {
 
 func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note, error) {
     query := `
-        SELECT id, user_id, title, content, created_at, updated_at
+        SELECT *
         FROM notes
         WHERE id = ? AND user_id = ?
     `
@@ -195,6 +204,10 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note,
         &note.UserID,
         &note.Title,
         &note.Content,
+        &note.Public,
+        &note.PublicURL,
+        &note.Deleted,
+        &note.Deleted_at,
         &note.CreatedAt,
         &note.UpdatedAt,
     )
@@ -210,7 +223,7 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note,
 
 func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error) {
     query := `
-        SELECT id, user_id, title, content, created_at, updated_at
+        SELECT *
         FROM notes
         WHERE user_id = ?
     `
@@ -229,6 +242,10 @@ func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error)
             &note.UserID,
             &note.Title,
             &note.Content,
+            &note.Public,
+            &note.PublicURL,
+            &note.Deleted,
+            &note.Deleted_at,
             &note.CreatedAt,
             &note.UpdatedAt,
         )
@@ -266,7 +283,7 @@ func (s *service) DeleteNote(ctx context.Context, id string, user_id string) err
 func (s *service) UpdateNote(ctx context.Context, note *Note, userId string) (*Note, error)  {
     query := `
         UPDATE notes 
-        SET title = ?, content = ?, user_id = ?, updated_at = ?
+        SET title = ?, content = ?, user_id = ?, updated_at = ?, public = ?, public_url = ?, deleted = ?, deleted_at = ?
         WHERE id = ? AND user_id = ?
     `
     
@@ -275,7 +292,11 @@ func (s *service) UpdateNote(ctx context.Context, note *Note, userId string) (*N
         note.Title,
         note.Content,
         userId,
-        now,         
+        now,      
+        note.Public,
+        note.PublicURL,
+        note.Deleted,
+        note.Deleted_at,   
         note.ID,   
         userId,  
     )
