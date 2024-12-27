@@ -37,40 +37,34 @@ export default function NoteEditor() {
 
   const editor = useEditor({
     extensions: extensions as Extension[],
-    content: '',
+    content: currentNote?.content || '',
     editorProps: {
       attributes: {
         class:
           'prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] focus:outline-none',
       },
     },
+    onUpdate: ({ editor }) => {
+      debouncedSaveContent(editor.getHTML());
+    },
+    onPaste: ({ clipboardData }) => {
+      const text = clipboardData?.getData('text/plain');
+      if (text) {
+        const updatedText = text.replace(/\n/g, '<br/>');
+        editor?.commands.insertContent(updatedText);
+      }
+    },
   });
-
-  useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(currentNote?.content ?? '');
-      setLocalTitle(currentNote?.title ?? 'Untitled');
-    }
-  }, [noteId, editor, currentNote]);
-
-  useEffect(() => {
-    if (!noteId || !notes?.length) return;
-    if (!currentNote && !upsertNote) {
-      navigate('/notes');
-    }
-  }, [noteId, notes, currentNote, navigate, upsertNote]);
 
   const debouncedSaveContent = useCallback(
     debounce(async (content: string) => {
-      setIsSaving(true);
-
       if (!user || !noteId) return;
-
+      setIsSaving(true);
       await upsertNote({
         id: noteId,
         user_id: user.id,
         title: localTitle,
-        content: content,
+        content,
       });
       setIsSaving(false);
     }, 1000),
@@ -80,44 +74,35 @@ export default function NoteEditor() {
   const debouncedSaveTitle = useCallback(
     debounce(async (newTitle: string) => {
       if (!user?.id || !noteId || !editor) return;
-
-      try {
-        await upsertNote({
-          id: noteId,
-          user_id: user.id,
-          title: newTitle,
-          content: editor.getHTML(),
-        });
-        setIsSaving(false);
-      } catch (error) {
-        console.error('Failed to save title:', error);
-      }
+      setIsSaving(true);
+      await upsertNote({
+        id: noteId,
+        user_id: user.id,
+        title: newTitle,
+        content: editor.getHTML(),
+      });
+      setIsSaving(false);
     }, 1000),
-    [editor?.getHTML, noteId, upsertNote, user?.id]
+    [editor, noteId, upsertNote, user?.id]
   );
 
   useEffect(() => {
-    if (!editor) return;
-
-    const handler = () => {
-      debouncedSaveContent(editor.getHTML());
-    };
-
-    editor.on('update', handler);
-    return () => {
-      editor.off('update', handler);
-      debouncedSaveContent.cancel();
-      debouncedSaveTitle.cancel();
-    };
-  }, [editor, debouncedSaveContent, debouncedSaveTitle]);
+    if (!noteId || !notes?.length) return;
+    if (!currentNote && !upsertNote) navigate('/notes');
+  }, [noteId, notes, currentNote, navigate, upsertNote]);
 
   useEffect(() => {
-    if (localTitle) {
-      debouncedSaveTitle(localTitle);
+    if (!editor || !currentNote) return;
+    const isContentDifferent = editor.getHTML() !== currentNote.content;
+    if (isContentDifferent) {
+      editor.commands.setContent(currentNote.content || '');
     }
-    return () => {
-      debouncedSaveTitle.cancel();
-    };
+    setLocalTitle(currentNote.title || 'Untitled');
+  }, [noteId, editor, currentNote]);
+
+  useEffect(() => {
+    if (localTitle) debouncedSaveTitle(localTitle);
+    return () => debouncedSaveTitle.cancel();
   }, [localTitle, debouncedSaveTitle]);
 
   if (!editor) return null;
@@ -130,7 +115,7 @@ export default function NoteEditor() {
           rightSidebarOpen={rightSidebarOpen}
           setRightSidebarOpen={setRightSidebarOpen}
         />
-        {mode != 'read' && (
+        {mode !== 'read' && (
           <div className='sticky top-0 left-0 z-20 overflow-x-auto'>
             <div className='flex items-center justify-center pt-4 px-2 min-w-max'>
               <Toolbar editor={editor} />
@@ -140,7 +125,7 @@ export default function NoteEditor() {
         <div className='flex-1 flex overflow-hidden'>
           <div className='flex-1 overflow-y-auto'>
             <div className='p-4 flex items-center justify-start flex-col sm:max-w-[80ch] mx-auto'>
-              {mode != 'read' ? (
+              {mode !== 'read' ? (
                 <input
                   type='text'
                   value={localTitle}
@@ -159,8 +144,8 @@ export default function NoteEditor() {
           </div>
         </div>
         <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
-          <div className='flex items-center justify-start gap-x-2'>
-            {mode != 'read' && (
+          <div className='flex items-center gap-x-2'>
+            {mode !== 'read' && (
               <div title={isSaving ? 'Saving...' : 'Saved'}>
                 {isSaving ? (
                   <LoaderCircle size={17} className='animate-spin' />
@@ -170,20 +155,19 @@ export default function NoteEditor() {
               </div>
             )}
             {currentNote && (
-              <div className='sm:flex items-center justify-start gap-x-2 hidden'>
-                <span>Created ‧ {formatDate(currentNote?.created_at)}</span>/
-                <span>Updated ‧ {formatDate(currentNote?.updated_at)}</span>
+              <div className='sm:flex items-center gap-x-2 hidden'>
+                <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
+                <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
               </div>
             )}
           </div>
-          <div className='flex items-center justify-end space-x-2'>
+          <div className='flex items-center space-x-2'>
             <p>{editor.storage.characterCount.characters()} characters</p>
             <span>/</span>
             <p>{editor.storage.characterCount.words()} words</p>
           </div>
         </footer>
       </div>
-
       <RightSidebar open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
         <AiAssistant editor={editor} />
       </RightSidebar>

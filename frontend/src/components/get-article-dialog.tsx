@@ -185,7 +185,8 @@ export default function GetArticleDialog() {
                 size='icon'
                 className={cn('h-7 w-7 hover:bg-accent/50')}
                 onClick={() => {
-                  editor.commands.insertContent(article.content);
+                  const updatedText = article.content.replace(/\n/g, '<br/>');
+                  editor.commands.insertContent(updatedText);
                   setIsOpen(false);
                   setArticle(null);
                   setInput('');
