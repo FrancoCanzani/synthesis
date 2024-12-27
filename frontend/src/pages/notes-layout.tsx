@@ -1,10 +1,9 @@
-import { Outlet } from 'react-router';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/sidebar';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { useEffect } from 'react';
-import { useNotesStore } from '@/lib/store/use-note-store';
-import { useAuth } from '@/lib/hooks/use-auth';
+import { AppSidebar } from "@/components/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { useNotesStore } from "@/lib/store/use-note-store";
+import { useEffect } from "react";
+import { Outlet } from "react-router";
 
 export default function NotesLayout() {
   const { user, loading } = useAuth();
@@ -17,15 +16,13 @@ export default function NotesLayout() {
   }, [user, loading, fetchNotes]);
 
   return (
-    <TooltipProvider>
-      <SidebarProvider defaultOpen={true}>
-        <div className='w-full flex bg-background min-w-0'>
-          <AppSidebar />
-          <div className='flex-1 flex flex-col min-w-0'>
-            <Outlet />
-          </div>
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex w-full min-w-0 bg-background">
+        <AppSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Outlet />
         </div>
-      </SidebarProvider>
-    </TooltipProvider>
+      </div>
+    </SidebarProvider>
   );
 }
