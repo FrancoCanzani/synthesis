@@ -1,5 +1,3 @@
-'use client';
-
 import { CornerUpLeft } from 'lucide-react';
 import React from 'react';
 

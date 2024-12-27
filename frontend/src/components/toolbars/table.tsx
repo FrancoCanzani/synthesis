@@ -1,5 +1,3 @@
-'use client';
-
 import { TableIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 

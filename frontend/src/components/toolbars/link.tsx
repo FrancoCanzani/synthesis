@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useCallback } from 'react';
 import { LinkIcon, UnlinkIcon } from 'lucide-react';
 
@@ -79,24 +77,14 @@ export const LinkToolbar = React.forwardRef<HTMLButtonElement>((props, ref) => {
                 className='h-9 text-sm'
                 onChange={(e) => setUrl(e.target.value)}
               />
-              <div className='flex justify-between'>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='border-red-600 hover:bg-red-500 h-8'
-                  onClick={() => setIsOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className='h-8'
-                  onClick={setLink}
-                >
-                  {editor.isActive('link') ? 'Update Link' : 'Add Link'}
-                </Button>
-              </div>
+              <Button
+                variant='outline'
+                size='sm'
+                className='h-8'
+                onClick={setLink}
+              >
+                {editor.isActive('link') ? 'Update Link' : 'Add Link'}
+              </Button>
             </div>
           </PopoverContent>
         </Popover>

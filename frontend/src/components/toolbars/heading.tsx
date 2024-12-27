@@ -1,5 +1,3 @@
-'use client';
-
 import { Type } from 'lucide-react';
 import { Level } from '@tiptap/extension-heading';
 
