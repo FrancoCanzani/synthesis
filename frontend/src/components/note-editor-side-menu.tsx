@@ -6,7 +6,7 @@ import {
 import { useTheme } from "@/lib/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/core";
-import { BookOpen, Glasses, List } from "lucide-react";
+import { BookOpen, Glasses, HighlighterIcon } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { Button } from "./ui/button";
 
@@ -59,7 +59,7 @@ export default function NoteEditorSideMenu({ editor }: { editor: Editor }) {
   };
 
   return (
-    <div className="fixed bottom-12 right-9 z-50 flex flex-col items-center space-y-2 rounded-md border bg-background p-1 opacity-50 transition-opacity duration-300 ease-in-out hover:opacity-100 lg:bottom-1/2 lg:translate-y-1/4 lg:opacity-100">
+    <div className="fixed bottom-12 right-9 z-50 flex flex-col items-center space-y-2 rounded-md border bg-transparent p-1 opacity-50 transition-opacity duration-300 ease-in-out hover:bg-background hover:opacity-100 lg:bottom-1/2 lg:translate-y-1/4 lg:bg-background lg:opacity-100">
       <NoteEditorSideMenuButton
         icon={BookOpen}
         label="Enter read mode"
@@ -80,7 +80,12 @@ export default function NoteEditorSideMenu({ editor }: { editor: Editor }) {
         onClick={toggleTheme}
         isActive={theme === "reader"}
       />
-      <NoteEditorSideMenuButton icon={List} label="List" />
+      <NoteEditorSideMenuButton
+        icon={HighlighterIcon}
+        label="Highlight"
+        isActive={editor.isActive("highlight")}
+        onClick={() => editor.chain().focus().toggleHighlight().run()}
+      />
     </div>
   );
 }
