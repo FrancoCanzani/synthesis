@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,12 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { useNotesStore } from '@/lib/store/use-note-store';
-import { Trash } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { toast } from 'sonner';
+} from "@/components/ui/dialog";
+import { useNotesStore } from "@/lib/store/use-note-store";
+import { Trash } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
   const { deleteNote } = useNotesStore();
@@ -21,20 +21,20 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
 
   const handleDelete = async () => {
     await deleteNote(noteId);
-    toast('Note deleted successfully');
-    navigate('/notes');
+    toast.success("Note deleted successfully");
+    navigate("/notes");
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className='md:invisible md:group-hover/item:visible p-1 rounded-md bg-background/50 hover:bg-background'>
+        <button className="rounded-md bg-background/50 p-1 hover:bg-background md:invisible md:group-hover/item:visible">
           <Trash size={14} />
-          <span className='sr-only'>Delete</span>
+          <span className="sr-only">Delete</span>
         </button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-[425px]'>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Delete Note</DialogTitle>
           <DialogDescription>
@@ -42,19 +42,19 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
             undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className='gap-2 sm:gap-0 text-sm'>
+        <DialogFooter className="gap-2 text-sm sm:gap-0">
           <Button
-            variant='ghost'
-            size={'sm'}
-            className='h-7 px-2 py-1 hover:bg-accent'
+            variant="ghost"
+            size={"sm"}
+            className="h-7 px-2 py-1 hover:bg-accent"
             onClick={() => setOpen(false)}
           >
             Cancel
           </Button>
           <Button
-            variant='destructive'
-            size={'sm'}
-            className='h-7 px-2 py-1'
+            variant="destructive"
+            size={"sm"}
+            className="h-7 px-2 py-1"
             onClick={handleDelete}
           >
             Delete

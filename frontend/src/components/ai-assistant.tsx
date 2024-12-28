@@ -1,18 +1,18 @@
-import { useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { LoaderCircle, MoreHorizontal, SendHorizonal } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { useAiChat } from '@/lib/hooks/use-ai-chat';
-import { copyToClipboard } from '@/lib/helpers';
-import { Editor } from '@tiptap/core';
-import { Separator } from './ui/separator';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { copyToClipboard, formatTextBeforeInsertion } from "@/lib/helpers";
+import { useAiChat } from "@/lib/hooks/use-ai-chat";
+import { cn } from "@/lib/utils";
+import { Editor } from "@tiptap/core";
+import { LoaderCircle, MoreHorizontal, SendHorizonal } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Separator } from "./ui/separator";
 
 export default function AiAssistant({ editor }: { editor: Editor }) {
   const {
@@ -25,7 +25,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
   } = useAiChat(editor.getText());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -34,82 +34,80 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
 
   const applyAIResponse = (
     content: string,
-    mode: 'insert' | 'replace' | 'append'
+    mode: "insert" | "replace" | "append",
   ) => {
-    const { view } = editor;
-    const { from, to } = view.state.selection;
-
     switch (mode) {
-      case 'insert':
-        editor.commands.insertContent(content);
+      case "insert":
+        editor.commands.insertContent(formatTextBeforeInsertion(content));
         break;
-      case 'replace':
-        editor.commands.command(({ tr }) => {
-          tr.replaceWith(from, to, editor.schema.text(content));
-          return true;
-        });
+      case "replace":
+        editor
+          .chain()
+          .deleteSelection()
+          .insertContent(formatTextBeforeInsertion(content))
+          .run();
         break;
-      case 'append':
+      case "append":
         editor.commands.insertContentAt(
           editor.state.doc.content.size,
-          '\n\n' + content
+          formatTextBeforeInsertion(content),
         );
         break;
     }
   };
 
   return (
-    <div className='pb-2 flex flex-col w-full mx-auto text-sm h-full'>
-      <div className='border-b flex items-center justify-between w-full px-2 py-1.5 bg-background space-x-2'>
-        <h3 className='font-medium'>AI Assistant</h3>
-        <div className='flex items-center justify-start space-x-2'>
-          <Separator orientation='vertical' className='h-6' />
+    <div className="mx-auto flex h-full w-full flex-col pb-2 text-sm">
+      <div className="flex w-full items-center justify-between space-x-2 border-b bg-background px-2 py-1.5">
+        <h3 className="font-medium">AI Assistant</h3>
+        <div className="flex items-center justify-start space-x-2">
+          <Separator orientation="vertical" className="h-6" />
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-8'
+            variant="ghost"
+            size="sm"
+            className="h-8"
             onClick={() => setMessages([])}
           >
             Clear
           </Button>
         </div>
       </div>
-      <div className='flex-1 overflow-hidden'>
-        <div className='h-full overflow-y-auto p-2'>
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto p-2">
           {messages.length > 0 ? (
-            <div className='space-y-2'>
+            <div className="space-y-2">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
-                    'flex',
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                    "flex",
+                    message.role === "user" ? "justify-end" : "justify-start",
                   )}
                 >
                   <div
                     className={cn(
-                      'max-w-[95%] rounded-md px-3 py-1.5',
-                      message.role === 'user'
-                        ? 'bg-primary/90 dark:bg-primary/20 text-primary-foreground'
-                        : 'bg-muted'
+                      "max-w-[95%] rounded-md px-3 py-1.5",
+                      message.role === "user"
+                        ? "bg-primary/90 text-primary-foreground dark:bg-primary/20"
+                        : "bg-muted",
                     )}
                   >
-                    <div className='flex items-start justify-between'>
-                      <p className='text-sm whitespace-pre-wrap'>
+                    <div className="flex items-start justify-between">
+                      <p className="whitespace-pre-wrap text-sm">
                         {message.content}
                       </p>
-                      {message.role === 'assistant' && (
+                      {message.role === "assistant" && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
-                              variant='ghost'
-                              size='sm'
-                              className='h-auto p-0 ml-2'
+                              variant="ghost"
+                              size="sm"
+                              className="ml-2 h-auto p-0"
                             >
-                              <MoreHorizontal className='h-4 w-4' />
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end'>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => copyToClipboard(message.content)}
                             >
@@ -118,21 +116,21 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() =>
-                                applyAIResponse(message.content, 'insert')
+                                applyAIResponse(message.content, "insert")
                               }
                             >
                               Insert at cursor
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                applyAIResponse(message.content, 'replace')
+                                applyAIResponse(message.content, "replace")
                               }
                             >
                               Replace selection
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
-                                applyAIResponse(message.content, 'append')
+                                applyAIResponse(message.content, "append")
                               }
                             >
                               Append to note
@@ -147,22 +145,22 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
               <div ref={messagesEndRef} />
             </div>
           ) : (
-            <div className='flex flex-col items-center justify-center h-full'>
-              <p className='text-sm text-center text-muted-foreground text-balance'>
+            <div className="flex h-full flex-col items-center justify-center">
+              <p className="text-balance text-center text-sm text-muted-foreground">
                 No AI-generated content yet. Enter a prompt below.
               </p>
             </div>
           )}
         </div>
       </div>
-      <div className='flex items-center space-x-3 border-t pt-3 pb-1 px-2'>
+      <div className="flex items-center space-x-3 border-t px-2 pb-1 pt-3">
         <input
           value={inputPrompt}
           onChange={handleInputChange}
-          placeholder='Ask the AI assistant...'
-          className='flex-1 outline-none bg-transparent'
+          placeholder="Ask the AI assistant..."
+          className="flex-1 bg-transparent outline-none"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               handleSubmit();
             }
@@ -171,10 +169,10 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
         <button
           disabled={inputPrompt.length === 0}
           onClick={() => handleSubmit()}
-          className={cn('pr-2', { 'opacity-70': inputPrompt.length === 0 })}
+          className={cn("pr-2", { "opacity-70": inputPrompt.length === 0 })}
         >
           {isLoading ? (
-            <LoaderCircle className='animate-spin' size={17} />
+            <LoaderCircle className="animate-spin" size={17} />
           ) : (
             <SendHorizonal size={17} />
           )}

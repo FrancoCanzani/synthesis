@@ -1,18 +1,17 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router';
-import { EditorContent, type Extension, useEditor } from '@tiptap/react';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { extensions } from '@/lib/extensions';
-import debounce from 'lodash/debounce';
-import { useNotesStore } from '@/lib/store/use-note-store';
-import { Toolbar } from './toolbar';
-import { formatDate } from '@/lib/helpers';
-import { LoaderCircle, Save } from 'lucide-react';
-import { useSearchParams } from 'react-router';
-import NoteEditorHeader from './note-editor-header';
-import { RightSidebar } from './right-sidebar';
-import AiAssistant from './ai-assistant';
-import { NoteEditorBubbleMenu } from './note-editor-bubble-menu';
+import { extensions } from "@/lib/extensions";
+import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { useNotesStore } from "@/lib/store/use-note-store";
+import { EditorContent, type Extension, useEditor } from "@tiptap/react";
+import debounce from "lodash/debounce";
+import { LoaderCircle, Save } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import AiAssistant from "./ai-assistant";
+import { NoteEditorBubbleMenu } from "./note-editor-bubble-menu";
+import NoteEditorHeader from "./note-editor-header";
+import { RightSidebar } from "./right-sidebar";
+import { Toolbar } from "./toolbar";
 
 export default function NoteEditor() {
   const navigate = useNavigate();
@@ -23,34 +22,34 @@ export default function NoteEditor() {
   const [searchParams] = useSearchParams();
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
-  const mode = searchParams.get('editorMode');
+  const mode = searchParams.get("editorMode");
 
   const currentNote = useMemo(
     () => notes?.find((note) => note.id === noteId),
-    [notes, noteId]
+    [notes, noteId],
   );
 
   const [localTitle, setLocalTitle] = useState(
-    currentNote?.title || 'Untitled'
+    currentNote?.title || "Untitled",
   );
   const [isSaving, setIsSaving] = useState(false);
 
   const editor = useEditor({
     extensions: extensions as Extension[],
-    content: currentNote?.content || '',
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] focus:outline-none',
+          "prose prose-sm text-black dark:text-white dark:prose-invert sm:prose-base sm:max-w-[80ch] focus:outline-none",
       },
     },
     onUpdate: ({ editor }) => {
       debouncedSaveContent(editor.getHTML());
     },
-    onPaste: ({ clipboardData }) => {
-      const text = clipboardData?.getData('text/plain');
+    onPaste: (e) => {
+      e.preventDefault();
+      const text = e.clipboardData?.getData("text/plain");
       if (text) {
-        const updatedText = text.replace(/\n/g, '<br/>');
+        const updatedText = formatTextBeforeInsertion(text);
         editor?.commands.insertContent(updatedText);
       }
     },
@@ -68,7 +67,7 @@ export default function NoteEditor() {
       });
       setIsSaving(false);
     }, 1000),
-    [user, noteId, localTitle, upsertNote]
+    [user, noteId, localTitle, upsertNote],
   );
 
   const debouncedSaveTitle = useCallback(
@@ -83,21 +82,28 @@ export default function NoteEditor() {
       });
       setIsSaving(false);
     }, 1000),
-    [editor, noteId, upsertNote, user?.id]
+    [editor, noteId, upsertNote, user?.id],
   );
 
   useEffect(() => {
     if (!noteId || !notes?.length) return;
-    if (!currentNote && !upsertNote) navigate('/notes');
+    if (!currentNote && !upsertNote) navigate("/notes");
   }, [noteId, notes, currentNote, navigate, upsertNote]);
 
   useEffect(() => {
-    if (!editor || !currentNote) return;
+    if (!editor) return;
+
+    if (!currentNote) {
+      editor.commands.setContent("");
+      setLocalTitle("Untitled");
+      return;
+    }
+
     const isContentDifferent = editor.getHTML() !== currentNote.content;
     if (isContentDifferent) {
-      editor.commands.setContent(currentNote.content || '');
+      editor.commands.setContent(currentNote.content || "");
     }
-    setLocalTitle(currentNote.title || 'Untitled');
+    setLocalTitle(currentNote.title || "Untitled");
   }, [noteId, editor, currentNote]);
 
   useEffect(() => {
@@ -108,60 +114,60 @@ export default function NoteEditor() {
   if (!editor) return null;
 
   return (
-    <div className='h-svh flex w-full'>
-      <div className='h-svh flex flex-col flex-1 w-full transition-transform duration-200'>
+    <div className="flex h-svh w-full">
+      <div className="flex h-svh w-full flex-1 flex-col transition-transform duration-200">
         <NoteEditorHeader
           editor={editor}
           rightSidebarOpen={rightSidebarOpen}
           setRightSidebarOpen={setRightSidebarOpen}
         />
-        {mode !== 'read' && (
-          <div className='sticky top-0 left-0 z-20 overflow-x-auto'>
-            <div className='flex items-center justify-center pt-4 px-2 min-w-max'>
+        {mode !== "read" && (
+          <div className="sticky left-0 top-0 z-20 overflow-x-auto">
+            <div className="flex min-w-max items-center justify-center px-2 pt-4">
               <Toolbar editor={editor} />
             </div>
           </div>
         )}
-        <div className='flex-1 flex overflow-hidden'>
-          <div className='flex-1 overflow-y-auto'>
-            <div className='p-4 flex items-center justify-start flex-col sm:max-w-[80ch] mx-auto'>
-              {mode !== 'read' ? (
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <div className="mx-auto flex flex-col items-center justify-start p-4 sm:max-w-[80ch]">
+              {mode !== "read" ? (
                 <input
-                  type='text'
+                  type="text"
                   value={localTitle}
-                  placeholder='Title'
+                  placeholder="Title"
                   onChange={(e) => setLocalTitle(e.target.value)}
-                  className='px-4 text-black dark:text-white font-medium bg-transparent focus:outline-none w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'
+                  className="prose prose-lg w-full bg-transparent px-4 font-medium text-black dark:prose-invert sm:prose-xl md:prose-2xl focus:outline-none dark:text-white"
                 />
               ) : (
-                <h1 className='px-4 text-black dark:text-white font-medium bg-transparent w-full prose prose-lg dark:prose-invert sm:prose-xl md:prose-2xl'>
+                <h1 className="prose prose-lg w-full bg-transparent px-4 font-medium text-black dark:prose-invert sm:prose-xl md:prose-2xl dark:text-white">
                   {localTitle}
                 </h1>
               )}
               <NoteEditorBubbleMenu editor={editor} />
-              <EditorContent editor={editor} className='w-full' />
+              <EditorContent editor={editor} className="w-full" />
             </div>
           </div>
         </div>
-        <footer className='bg-[--sidebar-background] border-t flex items-center justify-between text-xs px-2.5 py-1.5 w-full'>
-          <div className='flex items-center gap-x-2'>
-            {mode !== 'read' && (
-              <div title={isSaving ? 'Saving...' : 'Saved'}>
+        <footer className="flex w-full items-center justify-between border-t bg-[--sidebar-background] px-2.5 py-1.5 text-xs">
+          <div className="flex items-center gap-x-2">
+            {mode !== "read" && (
+              <div title={isSaving ? "Saving..." : "Saved"}>
                 {isSaving ? (
-                  <LoaderCircle size={17} className='animate-spin' />
+                  <LoaderCircle size={17} className="animate-spin" />
                 ) : (
                   <Save size={17} />
                 )}
               </div>
             )}
             {currentNote && (
-              <div className='sm:flex items-center gap-x-2 hidden'>
+              <div className="hidden items-center gap-x-2 sm:flex">
                 <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
                 <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
               </div>
             )}
           </div>
-          <div className='flex items-center space-x-2'>
+          <div className="flex items-center space-x-2">
             <p>{editor.storage.characterCount.characters()} characters</p>
             <span>/</span>
             <p>{editor.storage.characterCount.words()} words</p>

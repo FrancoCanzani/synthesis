@@ -1,5 +1,5 @@
-import supabase from './supabase';
-import { toast } from 'sonner';
+import { toast } from "sonner";
+import supabase from "./supabase";
 
 export async function signOut() {
   await supabase.auth.signOut();
@@ -25,10 +25,10 @@ export const getToken = async () => {
 };
 
 export const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
@@ -38,6 +38,16 @@ export async function copyToClipboard(text: string): Promise<void> {
       await navigator.clipboard.writeText(text);
     }
   } catch {
-    toast.error('Failed to copy to clipboard');
+    toast.error("Failed to copy to clipboard");
   }
+}
+
+export function formatTextBeforeInsertion(text: string) {
+  const map = text
+    .split("\n")
+    .filter((chunk) => chunk !== "")
+    .map((chunk) => `<p>${chunk}</p>`)
+    .join("");
+
+  return map;
 }
