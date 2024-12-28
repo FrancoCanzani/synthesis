@@ -8,6 +8,7 @@ import { LoaderCircle, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import AiAssistant from "./ai-assistant";
+import { NoteEditorBubbleMenu } from "./note-editor-bubble-menu";
 import NoteEditorHeader from "./note-editor-header";
 import NoteEditorSideMenu from "./note-editor-side-menu";
 import { RightSidebar } from "./right-sidebar";
@@ -146,7 +147,11 @@ export default function NoteEditor() {
                 </h1>
               )}
               <NoteEditorSideMenu editor={editor} />
-              <EditorContent editor={editor} className="w-full" />
+              <div>
+                {/* the div prevents bubble menu from breaking on mode change */}
+                <NoteEditorBubbleMenu editor={editor} />
+                <EditorContent editor={editor} className="w-full" />
+              </div>
             </div>
           </div>
         </div>
