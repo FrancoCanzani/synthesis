@@ -1,70 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { BubbleMenu, Editor } from '@tiptap/react';
-import { Button } from '@/components/ui/button';
-import {
-  FileText,
-  PenLine,
-  Wand2,
-  AlignLeft,
-  BookOpen,
-  Pencil,
-  Expand,
-} from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
+import { BubbleMenu, Editor } from "@tiptap/react";
+import {
+  AlignLeft,
+  BookOpen,
+  Expand,
+  FileText,
+  Pencil,
+  PenLine,
+  Wand2,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 type QuickPrompt = {
   title: string;
   prompt: string;
   icon: React.ReactNode;
-  insertMode: 'replace' | 'after';
+  insertMode: "replace" | "after";
 };
 
 const quickPrompts: QuickPrompt[] = [
   {
-    title: 'Summarize',
-    prompt: 'Summarize this text concisely',
-    icon: <FileText className='h-4 w-4' />,
-    insertMode: 'replace',
+    title: "Summarize",
+    prompt: "Summarize this text concisely",
+    icon: <FileText className="h-4 w-4" />,
+    insertMode: "replace",
   },
   {
-    title: 'Expand',
-    prompt: 'Expand on this topic with more details',
-    icon: <Expand className='h-4 w-4' />,
-    insertMode: 'after',
+    title: "Expand",
+    prompt: "Expand on this topic with more details",
+    icon: <Expand className="h-4 w-4" />,
+    insertMode: "after",
   },
   {
-    title: 'Rewrite',
-    prompt: 'Rewrite this text to make it more engaging',
-    icon: <PenLine className='h-4 w-4' />,
-    insertMode: 'replace',
+    title: "Rewrite",
+    prompt: "Rewrite this text to make it more engaging",
+    icon: <PenLine className="h-4 w-4" />,
+    insertMode: "replace",
   },
   {
-    title: 'Improve',
-    prompt: 'Improve this text by making it clearer and more professional',
-    icon: <Wand2 className='h-4 w-4' />,
-    insertMode: 'replace',
+    title: "Improve",
+    prompt: "Improve this text by making it clearer and more professional",
+    icon: <Wand2 className="h-4 w-4" />,
+    insertMode: "replace",
   },
   {
-    title: 'Simplify',
-    prompt: 'Make this text simpler and easier to understand',
-    icon: <AlignLeft className='h-4 w-4' />,
-    insertMode: 'replace',
+    title: "Simplify",
+    prompt: "Make this text simpler and easier to understand",
+    icon: <AlignLeft className="h-4 w-4" />,
+    insertMode: "replace",
   },
   {
-    title: 'Explain',
-    prompt: 'Explain this concept in detail with examples',
-    icon: <BookOpen className='h-4 w-4' />,
-    insertMode: 'after',
+    title: "Explain",
+    prompt: "Explain this concept in detail with examples",
+    icon: <BookOpen className="h-4 w-4" />,
+    insertMode: "after",
   },
   {
-    title: 'Continue',
-    prompt: 'Continue writing in the same style and context',
-    icon: <Pencil className='h-4 w-4' />,
-    insertMode: 'after',
+    title: "Continue",
+    prompt: "Continue writing in the same style and context",
+    icon: <Pencil className="h-4 w-4" />,
+    insertMode: "after",
   },
 ];
 
@@ -72,7 +72,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [lastSelectedText, setLastSelectedText] = useState('');
+  const [lastSelectedText, setLastSelectedText] = useState("");
   const [selectionFrom, setSelectionFrom] = useState<number | null>(null);
   const [selectionTo, setSelectionTo] = useState<number | null>(null);
 
@@ -88,14 +88,14 @@ export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
       }
     };
 
-    editor.on('selectionUpdate', updateSelectedText);
+    editor.on("selectionUpdate", updateSelectedText);
     return () => {
-      editor.off('selectionUpdate', updateSelectedText);
+      editor.off("selectionUpdate", updateSelectedText);
     };
   }, [editor]);
 
-  const handleRequest = async (prompt: string, mode: 'replace' | 'after') => {
-    if (!lastSelectedText && mode === 'replace') return;
+  const handleRequest = async (prompt: string, mode: "replace" | "after") => {
+    if (!lastSelectedText && mode === "replace") return;
 
     setIsLoading(true);
     const textToProcess = lastSelectedText || editor.getText();
@@ -104,9 +104,9 @@ export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
 
     try {
       const response = await fetch(`${API_URL}/ai/assistant`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt: `${prompt}\n${textToProcess}`,
@@ -115,23 +115,23 @@ export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
         }),
       });
 
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error("Network response was not ok");
 
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
       if (reader) {
-        if (mode === 'replace' && lastSelectedText) {
+        if (mode === "replace" && lastSelectedText) {
           editor.chain().focus().deleteRange({ from, to }).run();
         }
 
-        const insertPosition = mode === 'replace' ? from : to + 2;
+        const insertPosition = mode === "replace" ? from : to + 2;
 
-        if (mode === 'after') {
+        if (mode === "after") {
           editor
             .chain()
             .focus()
-            .insertContentAt(insertPosition - 2, '\n\n')
+            .insertContentAt(insertPosition - 2, "\n")
             .run();
         }
 
@@ -151,17 +151,40 @@ export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
                     ? 0
                     : editor.state.doc.textBetween(
                         insertPosition,
-                        editor.state.doc.content.size
+                        editor.state.doc.content.size,
                       ).length),
-                chunk
+                chunk,
               )
               .run();
             isFirstChunk = false;
           }
         }
+
+        // After the streaming is complete, get the inserted content and format it
+        const insertedContent = editor.state.doc.textBetween(
+          insertPosition,
+          editor.state.doc.content.size,
+        );
+
+        const formattedContent = insertedContent
+          .split("\n")
+          .filter((text) => text !== "")
+          .map((text) => `<p>${text}</p>`)
+          .join("");
+
+        // Replace the streamed content with the formatted version
+        editor
+          .chain()
+          .focus()
+          .deleteRange({
+            from: insertPosition,
+            to: editor.state.doc.content.size,
+          })
+          .insertContentAt(insertPosition, formattedContent)
+          .run();
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -171,25 +194,25 @@ export function NoteEditorBubbleMenu({ editor }: { editor: Editor }) {
     <BubbleMenu
       editor={editor}
       tippyOptions={{ duration: 100 }}
-      className='flex text-sm items-center rounded-md border bg-background p-0.5 shadow-md'
+      className="flex items-center rounded-md border bg-background p-0.5 text-sm shadow-md"
     >
-      <div className='flex items-center flex-wrap gap-0.5'>
+      <div className="flex flex-wrap items-center gap-0.5">
         {quickPrompts.map((item) => (
           <Tooltip key={item.title}>
             <TooltipTrigger asChild>
               <Button
-                size='sm'
-                variant='ghost'
+                size="sm"
+                variant="ghost"
                 onClick={() => handleRequest(item.prompt, item.insertMode)}
-                className='h-8'
+                className="h-8"
                 disabled={isLoading}
               >
                 {item.icon}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side='bottom' className='max-w-[200px]'>
-              <p className='font-medium'>{item.title}</p>
-              <p className='text-xs text-muted-foreground'>{item.prompt}</p>
+            <TooltipContent side="bottom" className="max-w-[200px]">
+              <p className="font-medium">{item.title}</p>
+              <p className="text-xs text-muted-foreground">{item.prompt}</p>
             </TooltipContent>
           </Tooltip>
         ))}
