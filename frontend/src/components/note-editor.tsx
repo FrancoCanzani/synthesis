@@ -10,6 +10,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 import AiAssistant from "./ai-assistant";
 import { NoteEditorBubbleMenu } from "./note-editor-bubble-menu";
 import NoteEditorHeader from "./note-editor-header";
+import NoteEditorSideMenu from "./note-editor-side-menu";
 import { RightSidebar } from "./right-sidebar";
 import { Toolbar } from "./toolbar";
 
@@ -145,6 +146,7 @@ export default function NoteEditor() {
                 </h1>
               )}
               <NoteEditorBubbleMenu editor={editor} />
+              <NoteEditorSideMenu editor={editor} />
               <EditorContent editor={editor} className="w-full" />
             </div>
           </div>
