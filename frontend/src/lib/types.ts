@@ -25,3 +25,9 @@ export interface Article {
   reading_time: number;
   scraped_at: string;
 }
+
+export interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}

@@ -88,7 +88,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>
             <div className='flex items-center justify-between w-full'>
-              Notes
+              Write
               <Link className='hover:underline' to={`/notes/${newNoteId}`}>
                 New
               </Link>

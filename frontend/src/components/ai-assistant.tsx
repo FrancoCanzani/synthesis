@@ -11,50 +11,56 @@ import { useAiChat } from "@/lib/hooks/use-ai-chat";
 import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/core";
 import { LoaderCircle, MoreHorizontal, SendHorizonal } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { useParams } from "react-router";
 import { Separator } from "./ui/separator";
 
 export default function AiAssistant({ editor }: { editor: Editor }) {
+  const { id: noteId } = useParams<{ id: string }>();
+
   const {
     messages,
-    setMessages,
     handleInputChange,
     handleSubmit,
     inputPrompt,
     isLoading,
-  } = useAiChat(editor.getText());
+    clearMessages,
+  } = useAiChat(noteId ?? "", editor.getText());
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollToBottom = () => {
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const applyAIResponse = (
-    content: string,
-    mode: "insert" | "replace" | "append",
-  ) => {
-    switch (mode) {
-      case "insert":
-        editor.commands.insertContent(formatTextBeforeInsertion(content));
-        break;
-      case "replace":
-        editor
-          .chain()
-          .deleteSelection()
-          .insertContent(formatTextBeforeInsertion(content))
-          .run();
-        break;
-      case "append":
-        editor.commands.insertContentAt(
-          editor.state.doc.content.size,
-          formatTextBeforeInsertion(content),
-        );
-        break;
-    }
-  };
+  const applyAIResponse = useCallback(
+    (content: string, mode: "insert" | "replace" | "append") => {
+      const formattedContent = formatTextBeforeInsertion(content);
+      switch (mode) {
+        case "insert":
+          editor.commands.insertContent(formattedContent);
+          break;
+        case "replace":
+          editor
+            .chain()
+            .deleteSelection()
+            .insertContent(formattedContent)
+            .run();
+          break;
+        case "append":
+          editor.commands.insertContentAt(
+            editor.state.doc.content.size,
+            formattedContent,
+          );
+          break;
+      }
+    },
+    [editor],
+  );
 
   return (
     <div className="mx-auto flex h-full w-full flex-col pb-2 text-sm">
@@ -66,7 +72,7 @@ export default function AiAssistant({ editor }: { editor: Editor }) {
             variant="ghost"
             size="sm"
             className="h-8"
-            onClick={() => setMessages([])}
+            onClick={clearMessages}
           >
             Clear
           </Button>
