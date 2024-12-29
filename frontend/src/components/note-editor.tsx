@@ -152,8 +152,8 @@ export default function NoteEditor() {
                 </h1>
               )}
               <NoteEditorSideMenu editor={editor} />
-              <div>
-                {/* the div prevents bubble menu from breaking on mode change */}
+              <div className="w-full">
+                {/* the div ⬆︎ prevents bubble menu from breaking on mode change */}
                 <NoteEditorBubbleMenu editor={editor} />
                 <EditorContent editor={editor} className="w-full" />
               </div>

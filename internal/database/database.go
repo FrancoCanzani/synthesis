@@ -8,33 +8,22 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"synthesis/internal/models"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Note struct {
-    ID        string     `json:"id"`
-    UserID    string     `json:"user_id"`
-    Title     string    `json:"title"`
-    Content   string    `json:"content"`
-    Public    bool      `json:"public"`
-    PublicURL *string    `json:"public_url"`  // Can be null
-    Deleted   bool      `json:"deleted"`
-    DeletedAt *time.Time `json:"deleted_at"`  // Can be null    
-    CreatedAt time.Time `json:"created_at"`
-    UpdatedAt time.Time `json:"updated_at"`
-}
 
 
 type Service interface {
 	Health() map[string]string
 
-    CreateNote(ctx context.Context, note *Note) (*Note, error)
-	GetNote(ctx context.Context, id string, userId string) (*Note, error)
-    GetNotes(ctx context.Context, userId string) ([]*Note, error)
-	UpdateNote(ctx context.Context, note *Note, userId string) (*Note, error) 
+    CreateNote(ctx context.Context, note *models.Note) (*models.Note, error)
+	GetNote(ctx context.Context, id string, userId string) (*models.Note, error)
+    GetNotes(ctx context.Context, userId string) ([]*models.Note, error)
+	UpdateNote(ctx context.Context, note *models.Note, userId string) (*models.Note, error) 
     DeleteNote(ctx context.Context, id string, userId string) error
 
 	Close() error
@@ -167,7 +156,7 @@ func (s *service) initTables() error {
     return err
 }
 
-func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {    
+func (s *service) CreateNote(ctx context.Context, note *models.Note) (*models.Note, error)  {    
     query := `
         INSERT INTO notes (id, user_id, title, content, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -191,14 +180,14 @@ func (s *service) CreateNote(ctx context.Context, note *Note) (*Note, error)  {
     return note, nil
 }
 
-func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note, error) {
+func (s *service) GetNote(ctx context.Context, id string, userId string) (*models.Note, error) {
     query := `
         SELECT *
         FROM notes
         WHERE id = ? AND user_id = ?
     `
 
-    note := &Note{}
+    note := &models.Note{}
     err := s.db.QueryRowContext(ctx, query, id, userId).Scan(
         &note.ID,
         &note.UserID,
@@ -221,7 +210,7 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*Note,
     return note, nil
 }
 
-func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error) {
+func (s *service) GetNotes(ctx context.Context, user_id string) ([]*models.Note, error) {
     query := `
         SELECT *
         FROM notes
@@ -234,9 +223,9 @@ func (s *service) GetNotes(ctx context.Context, user_id string) ([]*Note, error)
     }
     defer rows.Close()
 
-    var notes []*Note
+    var notes []*models.Note
     for rows.Next() {
-        note := &Note{}
+        note := &models.Note{}
         err := rows.Scan(
             &note.ID,
             &note.UserID,
@@ -280,7 +269,7 @@ func (s *service) DeleteNote(ctx context.Context, id string, user_id string) err
     return nil
 }
 
-func (s *service) UpdateNote(ctx context.Context, note *Note, userId string) (*Note, error)  {
+func (s *service) UpdateNote(ctx context.Context, note *models.Note, userId string) (*models.Note, error)  {
     query := `
         UPDATE notes 
         SET title = ?, content = ?, user_id = ?, updated_at = ?, public = ?, public_url = ?, deleted = ?, deleted_at = ?

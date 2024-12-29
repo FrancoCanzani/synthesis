@@ -3,26 +3,17 @@ package server
 import (
 	"io"
 	"net/http"
-	"synthesis/internal/database"
 	"synthesis/internal/models"
 	"synthesis/internal/services/completion"
 	"synthesis/internal/services/scraper"
+	"time"
 
 	"net/url"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 
-type Note struct {
-    ID        string    `json:"id"`
-    UserID    string     `json:"user_id"`
-    Title     string    `json:"title"`
-    Content   string    `json:"content"`
-    CreatedAt string    `json:"created_at"`
-    UpdatedAt string    `json:"updated_at"`
-}
 
 func (s *Server) HelloWorldHandler(c *gin.Context) {
     resp := make(map[string]string)
@@ -36,7 +27,7 @@ func (s *Server) HealthHandler(c *gin.Context) {
 }
 
 func (s *Server) UpsertNoteHandler(c *gin.Context) {
-    var note *Note
+    var note *models.Note
     
     if err := c.BindJSON(&note); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json structure"})
@@ -61,11 +52,12 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
     existing, err := s.db.GetNote(c.Request.Context(), note.ID, userId)
     if err != nil {
         // Note doesn't exist, create it
-        dbNote := &database.Note{
+        dbNote := &models.Note{
             ID:      note.ID,     
             UserID:  userId,  
             Title:   note.Title,
             Content: note.Content,
+            CreatedAt: time.Now(),
         }
 
         result, err := s.db.CreateNote(c.Request.Context(), dbNote)
@@ -74,8 +66,8 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
             return
         }
 
-        note.CreatedAt = result.CreatedAt.Format(time.RFC3339)
-        note.UpdatedAt = result.UpdatedAt.Format(time.RFC3339)
+        note.CreatedAt = result.CreatedAt
+        note.UpdatedAt = result.UpdatedAt
         note.ID = result.ID
         note.UserID = userId  
 
@@ -84,7 +76,7 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
     }
 
     // Update existing note
-    dbNote := &database.Note{
+    dbNote := &models.Note{
         ID:      existing.ID,
         UserID:  userId,  
         Title:   note.Title,
@@ -97,8 +89,8 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
         return
     }
 
-    note.CreatedAt = result.CreatedAt.Format(time.RFC3339)
-    note.UpdatedAt = result.UpdatedAt.Format(time.RFC3339)
+    note.CreatedAt = result.CreatedAt
+    note.UpdatedAt = result.UpdatedAt
     note.ID = result.ID
     note.UserID = userId  
 
