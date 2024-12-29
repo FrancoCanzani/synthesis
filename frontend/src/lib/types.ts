@@ -1,8 +1,10 @@
+import { JSONContent } from "@tiptap/core";
+
 export interface Note {
   id: string;
   user_id: string;
   title: string;
-  content: string;
+  content: JSONContent;
   public: boolean;
   public_url: string | null;
   deleted: boolean;

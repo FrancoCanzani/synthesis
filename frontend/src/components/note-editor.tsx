@@ -2,7 +2,12 @@ import { extensions } from "@/lib/extensions";
 import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useNotesStore } from "@/lib/store/use-note-store";
-import { EditorContent, type Extension, useEditor } from "@tiptap/react";
+import {
+  EditorContent,
+  type Extension,
+  JSONContent,
+  useEditor,
+} from "@tiptap/react";
 import debounce from "lodash/debounce";
 import { LoaderCircle, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -45,7 +50,7 @@ export default function NoteEditor() {
       },
     },
     onUpdate: ({ editor }) => {
-      debouncedSaveContent(editor.getHTML());
+      debouncedSaveContent(editor.getJSON());
     },
     onPaste: (e) => {
       e.preventDefault();
@@ -58,7 +63,7 @@ export default function NoteEditor() {
   });
 
   const debouncedSaveContent = useCallback(
-    debounce(async (content: string) => {
+    debounce(async (content: JSONContent) => {
       if (!user || !noteId) return;
       setIsSaving(true);
       await upsertNote({
@@ -80,7 +85,7 @@ export default function NoteEditor() {
         id: noteId,
         user_id: user.id,
         title: newTitle,
-        content: editor.getHTML(),
+        content: editor.getJSON(),
       });
       setIsSaving(false);
     }, 1000),
@@ -101,7 +106,7 @@ export default function NoteEditor() {
       return;
     }
 
-    const isContentDifferent = editor.getHTML() !== currentNote.content;
+    const isContentDifferent = editor.getJSON() !== currentNote.content;
     if (isContentDifferent) {
       editor.commands.setContent(currentNote.content || "");
     }
