@@ -12,6 +12,7 @@ import NotFoundPage from "./pages/404-page";
 import App from "./pages/landing-page";
 import { LoginPage } from "./pages/login-page";
 import NotesLayout from "./pages/notes-layout";
+import ReadNotePage from "./pages/read-note-page";
 
 const root = document.getElementById("root");
 
@@ -42,6 +43,7 @@ ReactDOM.createRoot(root).render(
             <Route path=":id" element={<NoteEditor />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="read/:id" element={<ReadNotePage />} />
         </Routes>
       </TooltipProvider>
     </BrowserRouter>

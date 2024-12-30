@@ -20,14 +20,14 @@ func AuthRequired() gin.HandlerFunc {
             return
         }
 
-        // Extract user ID from claims
+        // Extract user Id from claims
         userId, ok := claims["sub"].(string)
         if !ok {
-            c.AbortWithStatusJSON(401, gin.H{"error": "Invalid user ID in token"})
+            c.AbortWithStatusJSON(401, gin.H{"error": "Invalid user Id in token"})
             return
         }
 
-        // Store user ID in context using consistent key
+        // Store user Id in context using consistent key
         c.Set("userId", userId)
         c.Next()
     }

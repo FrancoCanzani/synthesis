@@ -12,8 +12,6 @@ export function useAiChat(chatId: string, editorContent: string) {
     [],
   );
 
-  console.log(messages);
-
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInputPrompt(e.target.value);
   }

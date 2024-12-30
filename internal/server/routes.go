@@ -8,9 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
-
 func (s *Server) RegisterRoutes() http.Handler {
 	router := gin.Default()
 
@@ -26,6 +23,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	router.GET("/health", s.HealthHandler)
 
 	notes := router.Group("/notes")
+
+	notes.GET("/public/:id", s.GetPublicNoteHandler)
 
 	notes.Use(auth.AuthRequired())
 	{

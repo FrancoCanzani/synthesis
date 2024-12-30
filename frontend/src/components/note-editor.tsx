@@ -2,12 +2,7 @@ import { extensions } from "@/lib/extensions";
 import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useNotesStore } from "@/lib/store/use-note-store";
-import {
-  EditorContent,
-  type Extension,
-  JSONContent,
-  useEditor,
-} from "@tiptap/react";
+import { EditorContent, type Extension, useEditor } from "@tiptap/react";
 import debounce from "lodash/debounce";
 import { LoaderCircle, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -50,7 +45,8 @@ export default function NoteEditor() {
       },
     },
     onUpdate: ({ editor }) => {
-      debouncedSaveContent(editor.getJSON());
+      console.log("editor updated");
+      debouncedSaveContent(editor.getHTML());
     },
     onPaste: (e) => {
       e.preventDefault();
@@ -63,39 +59,46 @@ export default function NoteEditor() {
   });
 
   const debouncedSaveContent = useCallback(
-    debounce(async (content: JSONContent) => {
+    debounce(async (content: string) => {
       if (!user || !noteId) return;
       setIsSaving(true);
       await upsertNote({
+        ...currentNote,
         id: noteId,
         user_id: user.id,
         title: localTitle,
         content,
+        public: currentNote?.public,
+        public_id: currentNote?.public_id,
       });
       setIsSaving(false);
     }, 1000),
-    [user, noteId, localTitle, upsertNote],
+    [user, noteId, localTitle, upsertNote, currentNote],
   );
 
   const debouncedSaveTitle = useCallback(
     debounce(async (newTitle: string) => {
-      if (!user?.id || !noteId || !editor) return;
+      if (!user?.id || !noteId || !editor || newTitle === currentNote?.title)
+        return;
       setIsSaving(true);
       await upsertNote({
+        ...currentNote,
         id: noteId,
         user_id: user.id,
         title: newTitle,
-        content: editor.getJSON(),
+        content: editor.getHTML(),
+        public: currentNote?.public,
+        public_id: currentNote?.public_id,
       });
       setIsSaving(false);
     }, 1000),
-    [editor, noteId, upsertNote, user?.id],
+    [editor, noteId, upsertNote, user?.id, currentNote],
   );
 
   useEffect(() => {
     if (!noteId || !notes?.length) return;
-    if (!currentNote && !upsertNote) navigate("/notes");
-  }, [noteId, notes, currentNote, navigate, upsertNote]);
+    if (!currentNote) navigate("/notes");
+  }, [noteId, notes, currentNote, navigate]);
 
   useEffect(() => {
     if (!editor) return;
@@ -106,7 +109,7 @@ export default function NoteEditor() {
       return;
     }
 
-    const isContentDifferent = editor.getJSON() !== currentNote.content;
+    const isContentDifferent = editor.getHTML() !== currentNote.content;
     if (isContentDifferent) {
       editor.commands.setContent(currentNote.content || "");
     }

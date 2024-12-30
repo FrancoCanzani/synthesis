@@ -1,7 +1,6 @@
 package models
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -14,7 +13,7 @@ const (
 )
 
 type Message struct {
-    ID      string `json:"id"`
+    Id      string `json:"id"`
     Role    Role   `json:"role"`
     Content string `json:"content"`
 }
@@ -26,12 +25,12 @@ type CompletionRequest struct {
 }
 
 type Note struct {
-    ID        string     `json:"id"`
-    UserID    string     `json:"user_id"`
+    Id        string     `json:"id"`
+    UserId    string     `json:"user_id"`
     Title     string    `json:"title"`
-    Content   json.RawMessage `json:"content"`  
+    Content   string `json:"content"`  
     Public    bool      `json:"public"`
-    PublicURL *string    `json:"public_url"`  // Can be null
+    PublicId  *string    `json:"public_id"`  // Can be null
     Deleted   bool      `json:"deleted"`
     DeletedAt *time.Time `json:"deleted_at"`  // Can be null    
     CreatedAt time.Time `json:"created_at"`

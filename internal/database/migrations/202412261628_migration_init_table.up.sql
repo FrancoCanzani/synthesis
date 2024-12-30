@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS notes (
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         public BOOLEAN NOT NULL DEFAULT FALSE,
-        public_url TEXT,
+        public_id TEXT,
         deleted BOOLEAN NOT NULL DEFAULT FALSE,
         deleted_at DATETIME,
         created_at DATETIME NOT NULL,

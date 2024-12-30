@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { Note } from '@/lib/types';
-import { getToken } from '../helpers';
+import { Note } from "@/lib/types";
+import { create } from "zustand";
+import { getToken } from "../helpers";
 
 interface NotesState {
   notes: Note[];
@@ -31,7 +31,7 @@ export const useNotesStore = create<NotesState>((set) => ({
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch notes');
+      if (!response.ok) throw new Error("Failed to fetch notes");
       const notes = await response.json();
       set({ notes, isLoading: false });
     } catch (error) {
@@ -48,7 +48,7 @@ export const useNotesStore = create<NotesState>((set) => ({
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch note');
+      if (!response.ok) throw new Error("Failed to fetch note");
       const note = await response.json();
       set({ currentNote: note, isLoading: false });
     } catch (error) {
@@ -58,22 +58,26 @@ export const useNotesStore = create<NotesState>((set) => ({
 
   upsertNote: async (note: Partial<Note>) => {
     try {
+      const error = new Error();
+      const stack = error.stack?.split("\n")[2].trim(); // Get the caller's line
+      console.log(`upsertNote called from: ${stack}`);
+
       const token = await getToken();
       const response = await fetch(`${API_URL}/notes`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(note),
       });
-      if (!response.ok) throw new Error('Failed to save note');
+      if (!response.ok) throw new Error("Failed to save note");
       const updatedNote = await response.json();
 
       set((state) => {
         const existingNoteIndex = state.notes.findIndex(
-          (n) => n.id === updatedNote.id
+          (n) => n.id === updatedNote.id,
         );
         const newNotes = [...state.notes];
 
@@ -99,12 +103,12 @@ export const useNotesStore = create<NotesState>((set) => ({
       const token = await getToken();
 
       const response = await fetch(`${API_URL}/notes/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to delete note');
+      if (!response.ok) throw new Error("Failed to delete note");
       set((state) => ({
         notes: state.notes.filter((note) => note.id !== id),
         currentNote: state.currentNote?.id === id ? null : state.currentNote,

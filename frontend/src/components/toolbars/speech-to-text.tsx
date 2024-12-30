@@ -1,13 +1,15 @@
-import { useState, useRef } from 'react';
-import { Mic, Square, Loader2 } from 'lucide-react';
-import { pipeline } from '@xenova/transformers';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { AutomaticSpeechRecognitionPipeline } from '@xenova/transformers';
+} from "@/components/ui/tooltip";
+import {
+  AutomaticSpeechRecognitionPipeline,
+  pipeline,
+} from "@xenova/transformers";
+import { Loader2, Mic, Square } from "lucide-react";
+import { useRef, useState } from "react";
 
 interface SpeechToTextProps {
   onTranscriptionComplete?: (text: string) => void;
@@ -26,11 +28,11 @@ const SpeechToText = ({ onTranscriptionComplete }: SpeechToTextProps) => {
     setModelLoading(true);
     try {
       transcriber.current = await pipeline(
-        'automatic-speech-recognition',
-        'Xenova/whisper-tiny'
+        "automatic-speech-recognition",
+        "Xenova/whisper-tiny",
       );
     } catch (error) {
-      console.error('Error loading model:', error);
+      console.error("Error loading model:", error);
     }
     setModelLoading(false);
   };
@@ -59,7 +61,7 @@ const SpeechToText = ({ onTranscriptionComplete }: SpeechToTextProps) => {
       };
 
       recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
         await processAudio(audioBlob);
       };
 
@@ -67,7 +69,7 @@ const SpeechToText = ({ onTranscriptionComplete }: SpeechToTextProps) => {
       recorder.start();
       setIsRecording(true);
     } catch (err) {
-      console.error('Error accessing microphone:', err);
+      console.error("Error accessing microphone:", err);
     }
   };
 
@@ -90,11 +92,10 @@ const SpeechToText = ({ onTranscriptionComplete }: SpeechToTextProps) => {
       // Transcribe the audio
       const result = await transcriber.current(float32Array);
       if (onTranscriptionComplete) {
-        console.log(result.text);
         onTranscriptionComplete(result.text);
       }
     } catch (error) {
-      console.error('Error transcribing audio:', error);
+      console.error("Error transcribing audio:", error);
     } finally {
       setIsTranscribing(false);
     }
@@ -112,30 +113,30 @@ const SpeechToText = ({ onTranscriptionComplete }: SpeechToTextProps) => {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
-          variant='ghost'
-          size='icon'
-          className='h-8 w-8'
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={handleClick}
           disabled={isTranscribing || modelLoading}
         >
           {isTranscribing ? (
-            <Loader2 className='h-4 w-4 animate-spin' />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : isRecording ? (
-            <Square className='h-4 w-4 text-red-500' />
+            <Square className="h-4 w-4 text-red-500" />
           ) : (
-            <Mic className='h-4 w-4' />
+            <Mic className="h-4 w-4" />
           )}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
         <span>
           {modelLoading
-            ? 'Loading model...'
+            ? "Loading model..."
             : isTranscribing
-            ? 'Transcribing...'
-            : isRecording
-            ? 'Stop Recording'
-            : 'Start Recording'}
+              ? "Transcribing..."
+              : isRecording
+                ? "Stop Recording"
+                : "Start Recording"}
         </span>
       </TooltipContent>
     </Tooltip>
