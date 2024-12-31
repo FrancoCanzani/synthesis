@@ -211,7 +211,7 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*model
     return note, nil
 }
 
-func (s *service) GetPublicNote(ctx context.Context, id string) (*models.Note, error) {
+func (s *service) GetPublicNote(ctx context.Context, public_id string) (*models.Note, error) {
     query := `
         SELECT *
         FROM notes
@@ -219,7 +219,7 @@ func (s *service) GetPublicNote(ctx context.Context, id string) (*models.Note, e
     `
 
     note := &models.Note{}
-    err := s.db.QueryRowContext(ctx, query, id).Scan(
+    err := s.db.QueryRowContext(ctx, query, public_id).Scan(
         &note.Id,
         &note.UserId,
         &note.Title,
@@ -231,8 +231,9 @@ func (s *service) GetPublicNote(ctx context.Context, id string) (*models.Note, e
         &note.CreatedAt,
         &note.UpdatedAt,
     )
+
     if err == sql.ErrNoRows {
-        return nil, fmt.Errorf("note not found: %v", id)
+        return nil, fmt.Errorf("note not found: %v", public_id)
     }
     if err != nil {
         return nil, fmt.Errorf("failed to get note: %w", err)

@@ -1,14 +1,14 @@
 import { extensions } from "@/lib/extensions";
-import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
+import { formatTextBeforeInsertion } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { useNotesStore } from "@/lib/store/use-note-store";
 import { EditorContent, type Extension, useEditor } from "@tiptap/react";
 import debounce from "lodash/debounce";
-import { LoaderCircle, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import AiAssistant from "./ai-assistant";
 import { NoteEditorBubbleMenu } from "./note-editor-bubble-menu";
+import NoteEditorFooter from "./note-editor-footer";
 import NoteEditorHeader from "./note-editor-header";
 import NoteEditorSideMenu from "./note-editor-side-menu";
 import { RightSidebar } from "./right-sidebar";
@@ -150,7 +150,7 @@ export default function NoteEditor() {
                   className="prose prose-lg w-full bg-transparent px-4 font-medium text-black dark:prose-invert sm:prose-xl md:prose-2xl focus:outline-none dark:text-white"
                 />
               ) : (
-                <h1 className="prose prose-lg w-full bg-transparent px-4 font-medium text-black dark:prose-invert sm:prose-xl md:prose-2xl dark:text-white">
+                <h1 className="prose prose-lg w-full px-4 font-medium text-black dark:prose-invert sm:prose-xl md:prose-2xl dark:text-white">
                   {localTitle}
                 </h1>
               )}
@@ -163,30 +163,11 @@ export default function NoteEditor() {
             </div>
           </div>
         </div>
-        <footer className="flex w-full items-center justify-between border-t bg-[--sidebar-background] px-2.5 py-1.5 text-xs">
-          <div className="flex items-center gap-x-2">
-            {mode !== "read" && (
-              <div title={isSaving ? "Saving..." : "Saved"}>
-                {isSaving ? (
-                  <LoaderCircle size={17} className="animate-spin" />
-                ) : (
-                  <Save size={17} />
-                )}
-              </div>
-            )}
-            {currentNote && (
-              <div className="hidden items-center gap-x-2 sm:flex">
-                <span>Created ‧ {formatDate(currentNote.created_at)}</span>/
-                <span>Updated ‧ {formatDate(currentNote.updated_at)}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <p>{editor.storage.characterCount.characters()} characters</p>
-            <span>/</span>
-            <p>{editor.storage.characterCount.words()} words</p>
-          </div>
-        </footer>
+        <NoteEditorFooter
+          isSaving={isSaving}
+          currentNote={currentNote}
+          editor={editor}
+        />
       </div>
       <RightSidebar open={rightSidebarOpen} onOpenChange={setRightSidebarOpen}>
         <AiAssistant editor={editor} />

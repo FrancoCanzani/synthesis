@@ -3,11 +3,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTheme } from "@/lib/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/core";
-import { BookOpen, Glasses, HighlighterIcon } from "lucide-react";
+import { BookOpen, HighlighterIcon } from "lucide-react";
 import { useSearchParams } from "react-router";
+import { ToggleReaderThemeButton } from "./toggle-reader-theme-button";
 import { Button } from "./ui/button";
 
 const NoteEditorSideMenuButton = ({
@@ -42,21 +42,8 @@ const NoteEditorSideMenuButton = ({
 
 export default function NoteEditorSideMenu({ editor }: { editor: Editor }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { theme, setTheme } = useTheme();
 
   const editorMode = searchParams.get("editorMode");
-
-  const toggleTheme = () => {
-    if (theme !== "reader") {
-      setTheme("reader");
-    } else {
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        setTheme("dark");
-      }
-
-      setTheme("light");
-    }
-  };
 
   return (
     <div className="fixed bottom-12 right-9 z-50 flex flex-col items-center space-y-2 rounded-md border bg-transparent p-1 opacity-50 transition-opacity duration-300 ease-in-out hover:bg-background hover:opacity-100 lg:bottom-1/2 lg:translate-y-1/4 lg:bg-background lg:opacity-100">
@@ -74,12 +61,7 @@ export default function NoteEditorSideMenu({ editor }: { editor: Editor }) {
           }
         }}
       />
-      <NoteEditorSideMenuButton
-        icon={Glasses}
-        label="Enter read theme"
-        onClick={toggleTheme}
-        isActive={theme === "reader"}
-      />
+      <ToggleReaderThemeButton />
       <NoteEditorSideMenuButton
         icon={HighlighterIcon}
         label="Highlight"

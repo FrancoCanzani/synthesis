@@ -2,8 +2,11 @@ package server
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"synthesis/internal/models"
 	"synthesis/internal/services/completion"
 	"synthesis/internal/services/scraper"
@@ -152,23 +155,22 @@ func (s *Server) GetNoteHandler(c *gin.Context) {
 }
 
 func (s *Server) GetPublicNoteHandler(c *gin.Context) {
-    id := c.Param("id")
+    public_id := c.Param("public_id")
     
-
-    note, err := s.db.GetPublicNote(c.Request.Context(), id)
+    note, err := s.db.GetPublicNote(c.Request.Context(), public_id)
+    fmt.Println(err)
 
     if err != nil {
-        if err == sql.ErrNoRows {
-            c.JSON(http.StatusNotFound, gin.H{"error": "Note not found or is not public"})
-            return
-        } else {
-            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
+        switch {
+        case errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "not found"):
+            c.JSON(http.StatusNotFound, gin.H{"error": "Note not found or not public"})
+        default:
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch note"})
         }
+        return
     }
 
-    note.UserId = "" // Hide the user Id
-
+    note.UserId = ""
     c.JSON(http.StatusOK, note)
 }
 

@@ -24,7 +24,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	notes := router.Group("/notes")
 
-	notes.GET("/public/:id", s.GetPublicNoteHandler)
+	notes.GET("/public/:public_id", s.GetPublicNoteHandler)
 
 	notes.Use(auth.AuthRequired())
 	{
