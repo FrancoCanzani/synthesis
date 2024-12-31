@@ -5,7 +5,7 @@ import { useNotesStore } from "@/lib/store/use-note-store";
 import { EditorContent, type Extension, useEditor } from "@tiptap/react";
 import debounce from "lodash/debounce";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import AiAssistant from "./ai-assistant";
 import { NoteEditorBubbleMenu } from "./note-editor-bubble-menu";
 import NoteEditorFooter from "./note-editor-footer";
@@ -15,7 +15,6 @@ import { RightSidebar } from "./right-sidebar";
 import { Toolbar } from "./toolbar";
 
 export default function NoteEditor() {
-  const navigate = useNavigate();
   const { id: noteId } = useParams();
   const { user } = useAuth();
   const { notes, upsertNote } = useNotesStore();
@@ -94,11 +93,6 @@ export default function NoteEditor() {
     }, 1000),
     [editor, noteId, upsertNote, user?.id, currentNote],
   );
-
-  useEffect(() => {
-    if (!noteId || !notes?.length) return;
-    if (!currentNote) navigate("/notes");
-  }, [noteId, notes, currentNote, navigate]);
 
   useEffect(() => {
     if (!editor) return;

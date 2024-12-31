@@ -5,18 +5,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatTextBeforeInsertion } from "@/lib/helpers";
+import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
 import { urlSchema } from "@/lib/schemas";
 import { Article } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import {
-  Calendar,
-  FilePlus,
-  LoaderCircle,
-  Newspaper,
-  SendHorizonal,
-  User,
-} from "lucide-react";
+import { FilePlus, LoaderCircle, Newspaper, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useToolbar } from "./toolbars/toolbar-provider";
@@ -31,14 +24,6 @@ export default function GetArticleDialog() {
 
   const { editor } = useToolbar();
 
-  const formattedDate = article?.publish_date
-    ? new Date(article.publish_date).toLocaleDateString("es-AR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : null;
-
   async function getArticle(url: string) {
     const result = urlSchema.safeParse(input.trim());
 
@@ -52,6 +37,8 @@ export default function GetArticleDialog() {
       const response = await fetch(`${API_URL}/article?url=${url}`);
       if (!response.ok) throw new Error("Failed to fetch article");
       const article = await response.json();
+      console.log(article);
+
       setArticle(article);
     } catch (error) {
       console.error(error);
@@ -90,34 +77,42 @@ export default function GetArticleDialog() {
         </TooltipContent>
       </Tooltip>
 
-      <DialogContent className="mx-auto flex w-full max-w-md flex-col p-2 text-sm sm:max-w-[550px]">
+      <DialogContent className="mx-auto flex w-full max-w-md flex-col gap-y-0 px-2 pb-0 pt-2 text-sm sm:max-w-[550px]">
         {article ? (
           <div className="flex-1 overflow-hidden">
             <article className="h-[400px] overflow-y-auto rounded-sm bg-muted/20 p-2">
-              <header className="mb-8">
-                <h1 className="mb-6 font-serif text-2xl font-bold leading-tight">
+              <header>
+                <h1 className="font-serif text-2xl font-bold leading-tight">
                   {article.title}
                 </h1>
-                <div className="mb-6 flex flex-wrap items-center gap-6 text-sm">
-                  {article.author && (
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      <span>{article.author}</span>
-                    </div>
+                <div className="flex flex-wrap items-center gap-6 text-xs">
+                  <div className="flex items-center justify-start space-x-1">
+                    {article.author && <span>By {article.author}</span>}
+                    {article.image && (
+                      <figure className="my-8">
+                        <img
+                          src={article.favicon}
+                          alt={article.site_name}
+                          className="h-4 w-4 rounded-sm"
+                        />
+                      </figure>
+                    )}
+                  </div>
+                  {article.published_time && (
+                    <time dateTime={article.published_time}>
+                      Published {formatDate(article.published_time)}
+                    </time>
                   )}
-                  {formattedDate && (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      <time dateTime={article.publish_date}>
-                        {formattedDate}
-                      </time>
-                    </div>
+                  {article.modified_time && (
+                    <time dateTime={article.published_time}>
+                      Modified {formatDate(article.published_time)}
+                    </time>
                   )}
                 </div>
 
-                {article.description && (
+                {article.excerpt && (
                   <p className="font-serif leading-relaxed">
-                    {article.description}
+                    {article.excerpt}
                   </p>
                 )}
               </header>
@@ -127,15 +122,20 @@ export default function GetArticleDialog() {
                   <img
                     src={article.image}
                     alt={article.title}
-                    className="h-auto w-full rounded-md"
+                    className="h-auto w-full rounded-sm"
                   />
                 </figure>
               )}
 
-              <div className="prose mt-8 max-w-none lg:prose-lg dark:text-white/80">
+              <div className="prose mt-4 max-w-none lg:prose-lg dark:text-white/80">
                 {article.content ? (
+                  <div
+                    className="prose-sm whitespace-pre-wrap prose-p:my-4 prose-p:leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: article.content }}
+                  />
+                ) : article.text_content ? (
                   <div className="prose-sm whitespace-pre-wrap prose-p:my-4 prose-p:leading-relaxed">
-                    {article.content}
+                    {article.text_content}
                   </div>
                 ) : (
                   <p className="italic">No content available</p>
@@ -146,16 +146,16 @@ export default function GetArticleDialog() {
         ) : (
           <div className="flex h-[50px] items-center justify-center">
             <p className="text-muted-foreground">
-              Enter an article URL to insert it in your notes
+              Paste an article URL to get its content in your note.
             </p>
           </div>
         )}
-        <div className="flex items-center space-x-3 border-t pb-2 pt-4">
+        <form className="flex items-center space-x-3 border-t">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Enter article URL"
-            className="flex-1 bg-transparent px-2 outline-none"
+            className="flex-1 bg-transparent px-2 py-4 outline-none"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -167,7 +167,11 @@ export default function GetArticleDialog() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => getArticle(input)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                getArticle(input);
+              }}
               className={cn(
                 "h-7 w-7 hover:bg-accent/50",
 
@@ -184,6 +188,7 @@ export default function GetArticleDialog() {
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 className={cn("h-7 w-7 hover:bg-accent/50")}
                 onClick={() => {
                   const content = formatTextBeforeInsertion(article.content);
@@ -199,7 +204,7 @@ export default function GetArticleDialog() {
               </Button>
             )}
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

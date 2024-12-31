@@ -8,250 +8,243 @@ import (
 	"net/http"
 	"strings"
 	"synthesis/internal/models"
+	articleScraper "synthesis/internal/services/article-scraper"
 	"synthesis/internal/services/completion"
-	"synthesis/internal/services/scraper"
 	"time"
-
-	"net/url"
 
 	"github.com/gin-gonic/gin"
 )
 
-
 func (s *Server) HelloWorldHandler(c *gin.Context) {
-    resp := make(map[string]string)
-    resp["message"] = "Hello World"
+	resp := make(map[string]string)
+	resp["message"] = "Hello World"
 
-    c.JSON(http.StatusOK, resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 func (s *Server) HealthHandler(c *gin.Context) {
-    c.JSON(http.StatusOK, s.db.Health())
+	c.JSON(http.StatusOK, s.db.Health())
 }
 
 func (s *Server) UpsertNoteHandler(c *gin.Context) {
-    var note *models.Note
-    
-    if err := c.BindJSON(&note); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json structure"})
-        return
-    }
-    
-    userIdValue, exists := c.Get("userId")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-        return
-    }
+	var note *models.Note
 
-    userId, ok := userIdValue.(string)
-    if !ok {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-        return
-    }
+	if err := c.BindJSON(&note); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json structure"})
+		return
+	}
 
-    // Check if the note already exists
-    existing, err := s.db.GetNote(c.Request.Context(), note.Id, userId)
-    if err != nil {
-        // Note doesn't exist, create it
-        dbNote := &models.Note{
-            Id:      note.Id,     
-            UserId:  userId,  
-            Title:   note.Title,
-            Content: note.Content,
-            CreatedAt: time.Now(),
-        }
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
 
-        result, err := s.db.CreateNote(c.Request.Context(), dbNote)
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
 
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-            return
-        }
+	// Check if the note already exists
+	existing, err := s.db.GetNote(c.Request.Context(), note.Id, userId)
+	if err != nil {
+		// Note doesn't exist, create it
+		dbNote := &models.Note{
+			Id:        note.Id,
+			UserId:    userId,
+			Title:     note.Title,
+			Content:   note.Content,
+			CreatedAt: time.Now(),
+		}
 
-        note.CreatedAt = result.CreatedAt
-        note.UpdatedAt = result.UpdatedAt
-        note.Id = result.Id
-        note.UserId = userId  
+		result, err := s.db.CreateNote(c.Request.Context(), dbNote)
 
-        c.JSON(http.StatusCreated, note)
-        return
-    }
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
-    // Update existing note
-    dbNote := &models.Note{
-        Id:      existing.Id,
-        UserId:  userId,  
-        Title:   note.Title,
-        Content: note.Content,
-        Public:  note.Public,  
-        PublicId: note.PublicId, 
-        Deleted: note.Deleted,
-    }
+		note.CreatedAt = result.CreatedAt
+		note.UpdatedAt = result.UpdatedAt
+		note.Id = result.Id
+		note.UserId = userId
 
-    result, err := s.db.UpdateNote(c.Request.Context(), dbNote, userId)
+		c.JSON(http.StatusCreated, note)
+		return
+	}
 
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	// Update existing note
+	dbNote := &models.Note{
+		Id:       existing.Id,
+		UserId:   userId,
+		Title:    note.Title,
+		Content:  note.Content,
+		Public:   note.Public,
+		PublicId: note.PublicId,
+		Deleted:  note.Deleted,
+	}
 
-    note.CreatedAt = result.CreatedAt
-    note.UpdatedAt = result.UpdatedAt
-    note.Id = result.Id
-    note.UserId = userId 
-    note.Public = result.Public
-    note.PublicId = result.PublicId 
+	result, err := s.db.UpdateNote(c.Request.Context(), dbNote, userId)
 
-    c.JSON(http.StatusOK, note)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	note.CreatedAt = result.CreatedAt
+	note.UpdatedAt = result.UpdatedAt
+	note.Id = result.Id
+	note.UserId = userId
+	note.Public = result.Public
+	note.PublicId = result.PublicId
+
+	c.JSON(http.StatusOK, note)
 }
 
-func (s * Server) DeleteNoteHandler(c *gin.Context) {
-    id := c.Param("id")
+func (s *Server) DeleteNoteHandler(c *gin.Context) {
+	id := c.Param("id")
 
-    userIdValue, exists := c.Get("userId")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-        return
-    }
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
 
-    userId, ok := userIdValue.(string)
-    if !ok {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-        return
-    }
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
 
-    err := s.db.DeleteNote(c.Request.Context(), id, userId)
+	err := s.db.DeleteNote(c.Request.Context(), id, userId)
 
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "Note deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Note deleted successfully"})
 }
 
 func (s *Server) GetNoteHandler(c *gin.Context) {
-    id := c.Param("id")
-    
-    userIdValue, exists := c.Get("userId")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-        return
-    }
+	id := c.Param("id")
 
-    userId, ok := userIdValue.(string)
-    if !ok {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-        return
-    }
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
 
-    note, err := s.db.GetNote(c.Request.Context(), id, userId)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
 
-    c.JSON(http.StatusOK, note)
+	note, err := s.db.GetNote(c.Request.Context(), id, userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, note)
 }
 
 func (s *Server) GetPublicNoteHandler(c *gin.Context) {
-    public_id := c.Param("public_id")
-    
-    note, err := s.db.GetPublicNote(c.Request.Context(), public_id)
-    fmt.Println(err)
+	public_id := c.Param("public_id")
 
-    if err != nil {
-        switch {
-        case errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "not found"):
-            c.JSON(http.StatusNotFound, gin.H{"error": "Note not found or not public"})
-        default:
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch note"})
-        }
-        return
-    }
+	note, err := s.db.GetPublicNote(c.Request.Context(), public_id)
+	fmt.Println(err)
 
-    note.UserId = ""
-    c.JSON(http.StatusOK, note)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows) || strings.Contains(err.Error(), "not found"):
+			c.JSON(http.StatusNotFound, gin.H{"error": "Note not found or not public"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch note"})
+		}
+		return
+	}
+
+	note.UserId = ""
+	c.JSON(http.StatusOK, note)
 }
 
-func (s * Server) GetNotesHandler(c *gin.Context) {
-    userIdValue, exists := c.Get("userId")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-        return
-    }
+func (s *Server) GetNotesHandler(c *gin.Context) {
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
 
-    userId, ok := userIdValue.(string)
-    if !ok {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-        return
-    }
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
 
-    notes, err := s.db.GetNotes(c.Request.Context(), userId)
+	notes, err := s.db.GetNotes(c.Request.Context(), userId)
 
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, notes)
+	c.JSON(http.StatusOK, notes)
 }
 
-func (s *Server) GetArticleContent(c *gin.Context) {
-    websiteURL := c.Query("url")
-    
-    if websiteURL == "" {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "URL parameter is required"})
-        return
-    }
+func (s *Server) GetArticleHandler(c *gin.Context) {
+	websiteURL := c.Query("url")
 
-    _, err := url.Parse(websiteURL)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid URL format"})
-        return
-    }
+	if websiteURL == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "URL parameter is required"})
+		return
+	}
 
-    metadata, err := scraper.GetArticle(websiteURL)
-    
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	metadata, err := articleScraper.GetArticle(websiteURL)
 
-    c.JSON(http.StatusOK, metadata)
+	fmt.Println(metadata)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, metadata)
 }
 
 func (s *Server) GetAiCompletion(c *gin.Context) {
-    var completionRequest models.CompletionRequest
+	var completionRequest models.CompletionRequest
 
-    if err := c.ShouldBindJSON(&completionRequest); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
-        return
-    }
-    
-    messages, err := completion.GenerateTextCompletion(completionRequest)
-    
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err := c.ShouldBindJSON(&completionRequest); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.Header("Content-Type", "text/event-stream")
-    c.Header("Cache-Control", "no-cache")
-    c.Header("Connection", "keep-alive")
-    c.Status(http.StatusOK)
+	messages, err := completion.GenerateTextCompletion(completionRequest)
 
-    c.Stream(func(w io.Writer) bool {
-        select {
-        case <-c.Request.Context().Done():
-            return false
-        case msg, ok := <-messages:
-            if !ok {
-                return false
-            }
-            io.WriteString(w, msg)
-            c.Writer.Flush()
-            return true
-        }
-    })
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Status(http.StatusOK)
+
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case <-c.Request.Context().Done():
+			return false
+		case msg, ok := <-messages:
+			if !ok {
+				return false
+			}
+			io.WriteString(w, msg)
+			c.Writer.Flush()
+			return true
+		}
+	})
 }

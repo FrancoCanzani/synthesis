@@ -16,13 +16,15 @@ export interface Article {
   site_name: string;
   url: string;
   author: string;
-  description: string;
+  excerpt: string;
   image: string;
+  favicon: string;
   content: string;
-  publish_date: string;
-  category: string;
+  text_content: string;
+  published_time: string;
+  modified_time: string;
   language: string;
-  reading_time: number;
+  length: number;
   scraped_at: string;
 }
 
