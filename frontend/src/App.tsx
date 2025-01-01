@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { Toaster } from "sonner";
 import NoteEditor from "./components/note-editor";
@@ -7,8 +8,10 @@ import "./index.css";
 import { AuthProvider } from "./lib/context/auth-provider";
 import { useAuth } from "./lib/hooks/use-auth";
 import NotFoundPage from "./pages/404-page";
+import ArticlesPage from "./pages/articles-page";
 import HomePage from "./pages/home-page";
 import { LoginPage } from "./pages/login-page";
+import ReadArticlePage from "./pages/read-article-page";
 import ReadNotePage from "./pages/read-note-page";
 import SidebarLayout from "./pages/sidebar-layout";
 
@@ -18,52 +21,65 @@ function RootRoute() {
 }
 
 export default function App() {
+  const queryClient = new QueryClient();
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Routes>
-            <Route path="/" element={<RootRoute />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<RootRoute />} />
 
-            <Route path="/login" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
 
-            <Route path="/home">
-              <Route element={<ProtectedRoute />}>
-                <Route element={<SidebarLayout />}>
-                  <Route index element={<HomePage />} />
+              <Route path="/home">
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<SidebarLayout />}>
+                    <Route index element={<HomePage />} />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
 
-            <Route path="/notes">
-              <Route element={<ProtectedRoute />}>
-                <Route element={<SidebarLayout />}>
-                  <Route
-                    index
-                    element={
-                      <div className="m-auto flex h-screen w-full items-center justify-center text-balance">
-                        <p className="text-center text-foreground">
-                          Select a note to view or edit.
-                        </p>
-                      </div>
-                    }
-                  />
-                  <Route path=":id" element={<NoteEditor />} />
+              <Route path="/articles">
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<SidebarLayout />}>
+                    <Route index element={<ArticlesPage />} />
+                    <Route path=":id" element={<ReadArticlePage />} />
+                  </Route>
                 </Route>
               </Route>
-            </Route>
 
-            <Route path="/read">
-              <Route element={<SidebarLayout />}>
-                <Route path=":id" element={<ReadNotePage />} />
+              <Route path="/notes">
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<SidebarLayout />}>
+                    <Route
+                      index
+                      element={
+                        <div className="m-auto flex h-screen w-full items-center justify-center text-balance">
+                          <p className="text-center text-foreground">
+                            Select a note to view or edit.
+                          </p>
+                        </div>
+                      }
+                    />
+                    <Route path=":id" element={<NoteEditor />} />
+                  </Route>
+                </Route>
               </Route>
-            </Route>
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
-    </AuthProvider>
+              <Route path="/read">
+                <Route element={<SidebarLayout />}>
+                  <Route path=":id" element={<ReadNotePage />} />
+                </Route>
+              </Route>
+
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

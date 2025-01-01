@@ -5,46 +5,81 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatDate, formatTextBeforeInsertion } from "@/lib/helpers";
+import { formatDate, getToken } from "@/lib/helpers";
 import { urlSchema } from "@/lib/schemas";
 import { Article } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { FilePlus, LoaderCircle, Newspaper, SendHorizonal } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { LoaderCircle, Plus, Save, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useToolbar } from "./toolbars/toolbar-provider";
+import { v4 as uuid } from "uuid";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function GetArticleDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [article, setArticle] = useState<Article | null>(null);
 
-  const { editor } = useToolbar();
+  const queryClient = useQueryClient();
+
+  const fetchArticleMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/articles?url=${url}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch article");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setArticle(data);
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Failed to fetch article");
+    },
+  });
+
+  const saveArticleMutation = useMutation({
+    mutationFn: async (article: Article) => {
+      const token = await getToken();
+
+      const response = await fetch(`${API_URL}/articles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...article,
+          id: uuid(),
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to save article");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["articlesData"] });
+      toast.success("Article saved successfully");
+      setIsOpen(false);
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Failed to save article");
+    },
+  });
 
   async function getArticle(url: string) {
     const result = urlSchema.safeParse(input.trim());
-
     if (!result.success) {
       toast.error(result.error.issues[0].message);
       return;
     }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/article?url=${url}`);
-      if (!response.ok) throw new Error("Failed to fetch article");
-      const article = await response.json();
-      console.log(article);
-
-      setArticle(article);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+    fetchArticleMutation.mutate(url);
   }
 
   return (
@@ -67,7 +102,7 @@ export default function GetArticleDialog() {
                 isOpen && "bg-accent/50",
               )}
             >
-              <Newspaper className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               <span className="sr-only">Get article</span>
             </Button>
           </DialogTrigger>
@@ -172,13 +207,12 @@ export default function GetArticleDialog() {
                 e.preventDefault();
                 getArticle(input);
               }}
-              className={cn(
-                "h-7 w-7 hover:bg-accent/50",
-
-                { "opacity-70": input.length === 0 },
-              )}
+              className={cn("h-7 w-7 hover:bg-accent/50", {
+                "opacity-70": input.length === 0,
+              })}
+              disabled={fetchArticleMutation.isPending}
             >
-              {isLoading ? (
+              {fetchArticleMutation.isPending ? (
                 <LoaderCircle className="animate-spin" size={20} />
               ) : (
                 <SendHorizonal size={20} />
@@ -190,17 +224,12 @@ export default function GetArticleDialog() {
                 size="icon"
                 type="button"
                 className={cn("h-7 w-7 hover:bg-accent/50")}
-                onClick={() => {
-                  const content = formatTextBeforeInsertion(article.content);
-                  editor.commands.insertContent(content);
-                  setIsOpen(false);
-                  setArticle(null);
-                  setInput("");
-                }}
+                onClick={() => saveArticleMutation.mutate(article)}
+                disabled={saveArticleMutation.isPending}
                 title="Insert into note"
               >
-                <FilePlus className="h-4 w-4" />
-                <span className="sr-only">Insert into note</span>
+                <Save className="h-4 w-4" />
+                <span className="sr-only">Save article</span>
               </Button>
             )}
           </div>

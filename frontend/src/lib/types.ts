@@ -12,6 +12,8 @@ export interface Note {
 }
 
 export interface Article {
+  id: string;
+  user_id: string;
   title: string;
   site_name: string;
   url: string;

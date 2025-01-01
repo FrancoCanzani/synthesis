@@ -1,3 +1,11 @@
+import { signOut } from "@/lib/helpers";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { Home, Inbox, Settings } from "lucide-react";
+import { Suspense } from "react";
+import { Link } from "react-router";
+import { v4 as uuidv4 } from "uuid";
+import SidebarNotes from "./sidebar-notes";
+import { ThemeToggle } from "./theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -13,15 +21,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
-import { signOut } from "@/lib/helpers";
-import { useAuth } from "@/lib/hooks/use-auth";
-import { Home, Inbox, Settings } from "lucide-react";
-import { Suspense } from "react";
-import { Link } from "react-router";
-import { v4 as uuidv4 } from "uuid";
-import SidebarNotes from "./sidebar-notes";
-import { ThemeToggle } from "./theme-toggle";
+} from "./ui/sidebar";
 
 const items = [
   {
@@ -88,7 +88,9 @@ export function AppSidebar() {
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
-                      <Link to="/articles">Articles</Link>
+                      <Link to="/articles" prefetch="intent">
+                        Articles
+                      </Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>

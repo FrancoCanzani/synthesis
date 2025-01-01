@@ -58,10 +58,6 @@ export const useNotesStore = create<NotesState>((set) => ({
 
   upsertNote: async (note: Partial<Note>) => {
     try {
-      const error = new Error();
-      const stack = error.stack?.split("\n")[2].trim(); // Get the caller's line
-      console.log(`upsertNote called from: ${stack}`);
-
       const token = await getToken();
       const response = await fetch(`${API_URL}/notes`, {
         method: "POST",

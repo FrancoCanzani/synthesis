@@ -38,7 +38,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	articles.Use(auth.AuthRequired())
 	{
-		articles.GET("", s.GetArticleHandler)
+		articles.GET("/:id", s.GetArticleHandler)
+		articles.GET("", s.GetArticleScrapingHandler)
 		articles.GET("/all", s.GetArticlesHandler)
 		articles.POST("", s.CreateArticleHandler)
 		articles.DELETE("", s.DeleteArticleHandler)

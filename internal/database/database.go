@@ -24,7 +24,8 @@ type Service interface {
 	GetNotes(ctx context.Context, userId string) ([]*models.Note, error)
 	UpdateNote(ctx context.Context, note *models.Note, userId string) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string, userId string) error
-	GetArticles(ctx context.Context, user_id string) ([]*models.Article, error) 
+	GetArticle(ctx context.Context, userId string, articleId string) (*models.Article, error)
+	GetArticles(ctx context.Context, user_id string) ([]*models.Article, error)
 	CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error)
 	DeleteArticle(ctx context.Context, id string, user_id string) error
 
@@ -240,7 +241,7 @@ func (s *service) GetNote(ctx context.Context, id string, userId string) (*model
 	return note, nil
 }
 
-func (s *service) GetPublicNote(ctx context.Context, public_id string) (*models.Note, error) {
+func (s *service) GetPublicNote(ctx context.Context, publicId string) (*models.Note, error) {
 	query := `
         SELECT *
         FROM notes
@@ -248,7 +249,7 @@ func (s *service) GetPublicNote(ctx context.Context, public_id string) (*models.
     `
 
 	note := &models.Note{}
-	err := s.db.QueryRowContext(ctx, query, public_id).Scan(
+	err := s.db.QueryRowContext(ctx, query, publicId).Scan(
 		&note.Id,
 		&note.UserId,
 		&note.Title,
@@ -262,7 +263,7 @@ func (s *service) GetPublicNote(ctx context.Context, public_id string) (*models.
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("note not found: %v", public_id)
+		return nil, fmt.Errorf("note not found: %v", publicId)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get note: %w", err)
@@ -271,14 +272,14 @@ func (s *service) GetPublicNote(ctx context.Context, public_id string) (*models.
 	return note, nil
 }
 
-func (s *service) GetNotes(ctx context.Context, user_id string) ([]*models.Note, error) {
+func (s *service) GetNotes(ctx context.Context, userId string) ([]*models.Note, error) {
 	query := `
         SELECT *
         FROM notes
         WHERE user_id = ?
     `
 
-	rows, err := s.db.QueryContext(ctx, query, user_id)
+	rows, err := s.db.QueryContext(ctx, query, userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query notes: %w", err)
 	}
@@ -308,13 +309,13 @@ func (s *service) GetNotes(ctx context.Context, user_id string) ([]*models.Note,
 	return notes, nil
 }
 
-func (s *service) DeleteNote(ctx context.Context, id string, user_id string) error {
+func (s *service) DeleteNote(ctx context.Context, id string, userId string) error {
 	query := `
         DELETE FROM notes
         WHERE id = ? AND user_id = ?
     `
 
-	result, err := s.db.ExecContext(ctx, query, id, user_id)
+	result, err := s.db.ExecContext(ctx, query, id, userId)
 	if err != nil {
 		return fmt.Errorf("failed to delete note: %w", err)
 	}
@@ -374,14 +375,14 @@ func (s *service) UpdateNote(ctx context.Context, note *models.Note, userId stri
 	return note, nil
 }
 
-func (s *service) GetArticles(ctx context.Context, user_id string) ([]*models.Article, error) {
+func (s *service) GetArticles(ctx context.Context, userId string) ([]*models.Article, error) {
 	query := `
         SELECT *
         FROM articles
         WHERE user_id = ?
     `
 
-	rows, err := s.db.QueryContext(ctx, query, user_id)
+	rows, err := s.db.QueryContext(ctx, query, userId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query notes: %w", err)
 	}
@@ -419,6 +420,42 @@ func (s *service) GetArticles(ctx context.Context, user_id string) ([]*models.Ar
 	return articles, nil
 }
 
+func (s *service) GetArticle(ctx context.Context, userId string, articleId string) (*models.Article, error) {
+	query := `
+        SELECT *
+        FROM articles
+        WHERE user_id = ? AND id = ?
+    `
+
+	article := &models.Article{}
+	err := s.db.QueryRowContext(ctx, query, userId, articleId).Scan(
+		&article.Id,
+		&article.UserId,
+		&article.Title,
+		&article.SiteName,
+		&article.URL,
+		&article.Author,
+		&article.Excerpt,
+		&article.Image,
+		&article.Favicon,
+		&article.Content,
+		&article.TextContent,
+		&article.PublishedTime,
+		&article.ModifiedTime,
+		&article.Language,
+		&article.Length,
+		&article.ScrapedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("article not found: %v", articleId)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get article: %w", err)
+	}
+
+	return article, nil
+}
+
 func (s *service) CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error) {
 	query := `INSERT INTO articles (id, user_id, title, site_name, url, author, excerpt, image, favicon, content, text_content, published_time, modified_time, language, length, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -447,13 +484,13 @@ func (s *service) CreateArticle(ctx context.Context, article *models.Article) (*
 	return article, nil
 }
 
-func (s *service) DeleteArticle(ctx context.Context, id string, user_id string) error {
+func (s *service) DeleteArticle(ctx context.Context, id string, userId string) error {
 	query := `
         DELETE FROM articles
         WHERE id = ? AND user_id = ?
     `
 
-	result, err := s.db.ExecContext(ctx, query, id, user_id)
+	result, err := s.db.ExecContext(ctx, query, id, userId)
 	if err != nil {
 		return fmt.Errorf("failed to delete article: %w", err)
 	}

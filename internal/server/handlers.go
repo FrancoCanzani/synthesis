@@ -194,7 +194,7 @@ func (s *Server) GetNotesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, notes)
 }
 
-func (s *Server) GetArticleHandler(c *gin.Context) {
+func (s *Server) GetArticleScrapingHandler(c *gin.Context) {
 	articleURL := c.Query("url")
 
 	if articleURL == "" {
@@ -216,6 +216,37 @@ func (s *Server) GetArticleHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, article)
+}
+
+func (s *Server) GetArticleHandler(c *gin.Context) {
+	articleId := c.Param("id")
+
+	if articleId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid article id"})
+		return
+	}
+
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
+
+	article, err := s.db.GetArticle(c, userId, articleId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, article)
+
 }
 
 func (s *Server) GetArticlesHandler(c *gin.Context) {
@@ -274,7 +305,7 @@ func (s *Server) CreateArticleHandler(c *gin.Context) {
 }
 
 func (s *Server) DeleteArticleHandler(c *gin.Context) {
-	id := c.Query("id")
+	articleId := c.Query("id")
 
 	userIdValue, exists := c.Get("userId")
 	if !exists {
@@ -288,7 +319,7 @@ func (s *Server) DeleteArticleHandler(c *gin.Context) {
 		return
 	}
 
-	err := s.db.DeleteArticle(c.Request.Context(), id, userId)
+	err := s.db.DeleteArticle(c.Request.Context(), articleId, userId)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
