@@ -24,6 +24,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	notes := router.Group("/notes")
 
+	articles := router.Group("/articles")
+
 	notes.GET("/public/:public_id", s.GetPublicNoteHandler)
 
 	notes.Use(auth.AuthRequired())
@@ -31,10 +33,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 		notes.GET("/:id", s.GetNoteHandler)
 		notes.GET("/all", s.GetNotesHandler)
 		notes.POST("", s.UpsertNoteHandler)
-		notes.DELETE("/:id", s.DeleteNoteHandler)
+		notes.DELETE("", s.DeleteNoteHandler)
 	}
 
-	router.GET("/article", s.GetArticleHandler)
+	articles.Use(auth.AuthRequired())
+	{
+		articles.GET("", s.GetArticleHandler)
+		articles.GET("/all", s.GetArticlesHandler)
+		articles.POST("", s.CreateArticleHandler)
+		articles.DELETE("", s.DeleteArticleHandler)
+	}
 
 	ai := router.Group("/ai")
 	ai.POST("/assistant", s.GetAiCompletion)

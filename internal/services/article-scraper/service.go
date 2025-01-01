@@ -10,8 +10,6 @@ import (
 	readability "github.com/go-shiori/go-readability"
 )
 
-
-
 func createHTTPClient() *http.Client {
 	return &http.Client{
 		Timeout: 30 * time.Second,
@@ -35,6 +33,14 @@ func buildRequest(urlStr string) (*http.Request, error) {
 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
 
 	return req, nil
+}
+
+// helper to make readabilityArticle responses variables if they are empty
+func toPointer(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 func GetArticle(urlStr string) (models.Article, error) {
@@ -66,19 +72,19 @@ func GetArticle(urlStr string) (models.Article, error) {
 	}
 
 	article := models.Article{
-		Title:         readabilityArticle.Title,
-		SiteName:      readabilityArticle.SiteName,
+		Title:         toPointer(readabilityArticle.Title),
+		SiteName:      toPointer(readabilityArticle.SiteName),
 		URL:           urlStr,
-		Author:        readabilityArticle.Byline,
-		Excerpt:       readabilityArticle.Excerpt,
-		Image:         readabilityArticle.Image,
-		Favicon:       readabilityArticle.Favicon,
-		Content:       readabilityArticle.Content,
-		TextContent:   readabilityArticle.TextContent,
+		Author:        toPointer(readabilityArticle.Byline),
+		Excerpt:       toPointer(readabilityArticle.Excerpt),
+		Image:         toPointer(readabilityArticle.Image),
+		Favicon:       toPointer(readabilityArticle.Favicon),
+		Content:       toPointer(readabilityArticle.Content),
+		TextContent:   toPointer(readabilityArticle.TextContent),
 		PublishedTime: readabilityArticle.PublishedTime,
 		ModifiedTime:  readabilityArticle.ModifiedTime,
-		Language:      readabilityArticle.Language,
-		Length:        readabilityArticle.Length,
+		Language:      toPointer(readabilityArticle.Language),
+		Length:        &readabilityArticle.Length,
 		ScrapedAt:     time.Now(),
 	}
 

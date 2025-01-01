@@ -24,6 +24,9 @@ type Service interface {
 	GetNotes(ctx context.Context, userId string) ([]*models.Note, error)
 	UpdateNote(ctx context.Context, note *models.Note, userId string) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string, userId string) error
+	GetArticles(ctx context.Context, user_id string) ([]*models.Article, error) 
+	CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error)
+	DeleteArticle(ctx context.Context, id string, user_id string) error
 
 	Close() error
 }
@@ -136,10 +139,10 @@ func (s *service) Health() map[string]string {
 }
 
 func (s *service) initTables() error {
-	query := `
+	queryNotes := `
     CREATE TABLE IF NOT EXISTS notes (
         id TEXT PRIMARY KEY,
-		user_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         public BOOLEAN NOT NULL DEFAULT FALSE,
@@ -147,11 +150,40 @@ func (s *service) initTables() error {
         deleted BOOLEAN NOT NULL DEFAULT FALSE,
         deleted_at DATETIME,
         created_at DATETIME NOT NULL,
-		updated_at DATETIME NOT NULL
+        updated_at DATETIME NOT NULL
     )`
 
-	_, err := s.db.Exec(query)
-	return err
+	_, err := s.db.Exec(queryNotes)
+	if err != nil {
+		return err
+	}
+
+	queryArticles := `
+    CREATE TABLE IF NOT EXISTS articles (
+        id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
+        title TEXT,
+        site_name TEXT,
+        url TEXT NOT NULL,
+        author TEXT,
+		excerpt TEXT,
+		image TEXT,
+		favicon TEXT,
+		content TEXT,
+		text_content TEXT,
+		published_time DATETIME,
+		modified_time DATETIME,
+		language TEXT,
+		length INTEGER,
+		scraped_at DATETIME NOT NULL
+    )`
+
+	_, err = s.db.Exec(queryArticles)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) CreateNote(ctx context.Context, note *models.Note) (*models.Note, error) {
@@ -340,6 +372,101 @@ func (s *service) UpdateNote(ctx context.Context, note *models.Note, userId stri
 
 	note.UpdatedAt = now
 	return note, nil
+}
+
+func (s *service) GetArticles(ctx context.Context, user_id string) ([]*models.Article, error) {
+	query := `
+        SELECT *
+        FROM articles
+        WHERE user_id = ?
+    `
+
+	rows, err := s.db.QueryContext(ctx, query, user_id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query notes: %w", err)
+	}
+	defer rows.Close()
+
+	var articles []*models.Article
+	for rows.Next() {
+		article := &models.Article{}
+
+		err := rows.Scan(
+			&article.Id,
+			&article.UserId,
+			&article.Title,
+			&article.SiteName,
+			&article.URL,
+			&article.Author,
+			&article.Excerpt,
+			&article.Image,
+			&article.Favicon,
+			&article.Content,
+			&article.TextContent,
+			&article.PublishedTime,
+			&article.ModifiedTime,
+			&article.Language,
+			&article.Length,
+			&article.ScrapedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan note: %w", err)
+		}
+		articles = append(articles, article)
+	}
+
+	return articles, nil
+}
+
+func (s *service) CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error) {
+	query := `INSERT INTO articles (id, user_id, title, site_name, url, author, excerpt, image, favicon, content, text_content, published_time, modified_time, language, length, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	_, err := s.db.ExecContext(ctx, query,
+		article.Id,
+		article.UserId,
+		article.Title,
+		article.SiteName,
+		article.URL,
+		article.Author,
+		article.Excerpt,
+		article.Image,
+		article.Favicon,
+		article.Content,
+		article.TextContent,
+		article.PublishedTime,
+		article.ModifiedTime,
+		article.Language,
+		article.Length,
+		article.ScrapedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create article: %w", err)
+	}
+
+	return article, nil
+}
+
+func (s *service) DeleteArticle(ctx context.Context, id string, user_id string) error {
+	query := `
+        DELETE FROM articles
+        WHERE id = ? AND user_id = ?
+    `
+
+	result, err := s.db.ExecContext(ctx, query, id, user_id)
+	if err != nil {
+		return fmt.Errorf("failed to delete article: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("note not found: %v", id)
+	}
+
+	return nil
 }
 
 func (s *service) Close() error {

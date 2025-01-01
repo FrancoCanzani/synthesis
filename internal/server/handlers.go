@@ -103,7 +103,7 @@ func (s *Server) UpsertNoteHandler(c *gin.Context) {
 }
 
 func (s *Server) DeleteNoteHandler(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Query("id")
 
 	userIdValue, exists := c.Get("userId")
 	if !exists {
@@ -195,23 +195,107 @@ func (s *Server) GetNotesHandler(c *gin.Context) {
 }
 
 func (s *Server) GetArticleHandler(c *gin.Context) {
-	websiteURL := c.Query("url")
+	articleURL := c.Query("url")
 
-	if websiteURL == "" {
+	if articleURL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "URL parameter is required"})
 		return
 	}
 
-	metadata, err := articleScraper.GetArticle(websiteURL)
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
 
-	fmt.Println(metadata)
+	article, err := articleScraper.GetArticle(articleURL)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, metadata)
+	c.JSON(http.StatusOK, article)
+}
+
+func (s *Server) GetArticlesHandler(c *gin.Context) {
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
+
+	articles, err := s.db.GetArticles(c.Request.Context(), userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, articles)
+}
+
+func (s *Server) CreateArticleHandler(c *gin.Context) {
+	var article *models.Article
+
+	if err := c.BindJSON(&article); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid article structure"})
+		return
+	}
+
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
+
+	article.UserId = &userId
+
+	_, err := s.db.CreateArticle(c.Request.Context(), article)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, article)
+}
+
+func (s *Server) DeleteArticleHandler(c *gin.Context) {
+	id := c.Query("id")
+
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
+		return
+	}
+
+	err := s.db.DeleteArticle(c.Request.Context(), id, userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Article deleted successfully"})
 }
 
 func (s *Server) GetAiCompletion(c *gin.Context) {

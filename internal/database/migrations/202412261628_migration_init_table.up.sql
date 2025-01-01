@@ -10,3 +10,22 @@ CREATE TABLE IF NOT EXISTS notes (
         created_at DATETIME NOT NULL,
 		updated_at DATETIME NOT NULL
     )
+
+CREATE TABLE IF NOT EXISTS articles (
+        id TEXT PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+        title TEXT,
+        site_name TEXT,
+        url TEXT NOT NULL,
+        author TEXT,
+		excerpt TEXT,
+		image TEXT,
+		favicon TEXT,
+		content TEXT,
+		text_content TEXT,
+		published_time DATETIME,
+		modified_time DATETIME,
+		language TEXT,
+		length INTEGER,
+		scraped_at DATETIME NOT NULL
+)
