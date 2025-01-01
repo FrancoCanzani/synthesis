@@ -3,7 +3,7 @@ import { Editor } from "@tiptap/core";
 import { BotMessageSquare } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import GetArticleDialog from "./get-article-dialog";
-import PublishNoteButton from "./publish-note-button";
+import PublishNoteDialog from "./publish-note-dialog";
 import { SearchAndReplaceToolbar } from "./toolbars/search-and-replace-toolbar";
 import { TextToSpeechToolbar } from "./toolbars/text-to-speech";
 import { ToolbarProvider } from "./toolbars/toolbar-provider";
@@ -51,7 +51,7 @@ export default function NoteEditorHeader({
           <GetArticleDialog />
           <TextToSpeechToolbar />
           <SearchAndReplaceToolbar />
-          <PublishNoteButton />
+          <PublishNoteDialog />
         </ToolbarProvider>
       </div>
     </header>

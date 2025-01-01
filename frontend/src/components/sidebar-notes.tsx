@@ -1,16 +1,16 @@
-import { useNavigate } from 'react-router';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useParams } from 'react-router';
-import { cn } from '@/lib/utils';
-import { useNotesStore } from '@/lib/store/use-note-store';
-import DeleteNoteDialog from './delete-note-dialog';
-import { formatDate } from '@/lib/helpers';
+} from "@/components/ui/tooltip";
+import { formatDate } from "@/lib/helpers";
+import { useNotesStore } from "@/lib/store/use-note-store";
+import { cn } from "@/lib/utils";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { LockIcon, LockOpen } from "lucide-react";
+import { useNavigate, useParams } from "react-router";
+import DeleteNoteDialog from "./delete-note-dialog";
 
 function NoteContentPreview({ content }: { content: string }) {
   const editor = useEditor({
@@ -20,13 +20,13 @@ function NoteContentPreview({ content }: { content: string }) {
     editorProps: {
       attributes: {
         class:
-          '[&_.ProseMirror]:!p-0 [&_.ProseMirror]:!m-0 [&_.ProseMirror_p]:!m-0',
+          "[&_.ProseMirror]:!p-0 [&_.ProseMirror]:!m-0 [&_.ProseMirror_p]:!m-0",
       },
     },
   });
 
   return (
-    <div className='max-h-[150px] bg-background/50 border  rounded-md p-2 overflow-y-auto [&_.ProseMirror]:!p-0 [&_.ProseMirror]:!m-0 [&_.ProseMirror_p]:!m-0'>
+    <div className="max-h-[150px] overflow-y-auto rounded-md border bg-background/50 p-2 [&_.ProseMirror]:!m-0 [&_.ProseMirror]:!p-0 [&_.ProseMirror_p]:!m-0">
       <EditorContent editor={editor} />
     </div>
   );
@@ -38,15 +38,15 @@ export default function SidebarNotes() {
   const navigate = useNavigate();
 
   return (
-    <div className='space-y-1 flex-col flex w-full justify-start'>
+    <div className="flex w-full flex-col justify-start space-y-1">
       {notes?.map((note) => (
         <Tooltip key={note.id}>
           <TooltipTrigger asChild>
-            <div className='group/item flex items-center hover:bg-accent rounded-md px-2 py-1'>
+            <div className="group/item flex items-center rounded-md px-2 py-1 hover:bg-accent">
               <button
                 className={cn(
-                  'block text-sm text-start truncate flex-1 pr-1',
-                  params.id === note.id && 'font-semibold'
+                  "block flex-1 truncate pr-1 text-start text-sm",
+                  params.id === note.id && "font-semibold",
                 )}
                 onClick={(e) => {
                   e.preventDefault();
@@ -59,13 +59,20 @@ export default function SidebarNotes() {
             </div>
           </TooltipTrigger>
           <TooltipContent
-            side='right'
-            className='w-56 p-2 space-y-2 bg-accent'
+            side="right"
+            className="w-56 space-y-2 bg-accent p-2"
             sideOffset={10}
           >
-            <h3 className='font-medium'>{note.title}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="w-[90%] truncate font-medium">{note.title}</h3>
+              {note?.public ? (
+                <LockOpen className="h-3.5 w-3.5" />
+              ) : (
+                <LockIcon className="h-3.5 w-3.5" />
+              )}
+            </div>
             <NoteContentPreview content={note.content} />
-            <div className='text-xs text-muted-foreground flex flex-col space-y-1'>
+            <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
               <span>Created ‧ {formatDate(note.created_at)}</span>
               <span>Updated ‧ {formatDate(note.updated_at)}</span>
             </div>

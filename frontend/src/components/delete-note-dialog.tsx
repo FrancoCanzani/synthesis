@@ -44,7 +44,7 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
         </DialogHeader>
         <DialogFooter className="gap-2 text-sm sm:gap-0">
           <Button
-            variant="ghost"
+            variant="outline"
             size={"sm"}
             className="h-7 px-2 py-1 hover:bg-accent"
             onClick={() => setOpen(false)}
@@ -52,9 +52,9 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
             size={"sm"}
-            className="h-7 px-2 py-1"
+            className="h-7 bg-red-100 px-2 py-1 hover:bg-red-200"
             onClick={handleDelete}
           >
             Delete
