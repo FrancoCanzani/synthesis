@@ -61,12 +61,12 @@ export default function ReadArticlePage() {
               />
             ) : article ? (
               <>
-                <div className="mb-4">
-                  <h1 className="prose prose-2xl w-full font-medium text-black dark:prose-invert dark:text-white">
+                <div className="mb-6">
+                  <h1 className="prose prose-xl mb-4 w-full font-medium text-black dark:prose-invert dark:text-white">
                     {article.title}
                   </h1>
-                  <div className="flex flex-col space-y-1 text-xs text-muted-foreground">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-1.5">
                       {article.favicon && (
                         <img src={article.favicon} alt="" className="h-4 w-4" />
                       )}
@@ -75,21 +75,10 @@ export default function ReadArticlePage() {
                     <span>By {article.author || "Unknown Author"}</span>
                     <span>Published: {formatDate(article.published_time)}</span>
                     {article.modified_time && (
-                      <span>
+                      <span className="hidden md:block">
                         Last modified: {formatDate(article.modified_time)}
                       </span>
                     )}
-                    <span>Language: {article.language}</span>
-                    <span>Length: {article.length} characters</span>
-                    <a
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-primary hover:underline"
-                    >
-                      <span>View original</span>
-                      <ExternalLink size={12} />
-                    </a>
                   </div>
                 </div>
 
@@ -97,7 +86,7 @@ export default function ReadArticlePage() {
                   <img
                     src={article.image}
                     alt={article.title}
-                    className="mb-4 w-full rounded-md object-cover"
+                    className="mb-4 w-full rounded-sm object-cover"
                   />
                 )}
 
@@ -111,6 +100,15 @@ export default function ReadArticlePage() {
                   className="prose prose-sm text-black dark:prose-invert sm:prose-base focus:outline-none dark:text-white sm:max-w-[80ch]"
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 hover:underline"
+                >
+                  <span>View original</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
               </>
             ) : null}
           </article>
@@ -130,6 +128,9 @@ function ArticleSkeleton() {
       <Skeleton className="h-64 w-full" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-4 w-2/3" />
       <Skeleton className="h-4 w-2/3" />
     </div>
   );

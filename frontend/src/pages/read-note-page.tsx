@@ -55,13 +55,13 @@ export default function ReadNotePage() {
               />
             ) : note ? (
               <>
-                <div className="mb-4">
-                  <h1 className="prose prose-2xl w-full font-medium text-black dark:prose-invert dark:text-white">
+                <div className="mb-6">
+                  <h1 className="prose prose-xl mb-4 w-full font-medium text-black dark:prose-invert dark:text-white">
                     {note.title}
                   </h1>
-                  <div className="flex items-center space-x-1 text-xs">
-                    <span>Created ‧ {formatDate(note.created_at)}</span>
-                    <span>Updated ‧ {formatDate(note.updated_at)}</span>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                    <span>Created: {formatDate(note.created_at)}</span>
+                    <span>Updated: {formatDate(note.updated_at)}</span>
                   </div>
                 </div>
 
