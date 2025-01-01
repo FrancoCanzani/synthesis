@@ -4,7 +4,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/helpers";
-import { useNotesStore } from "@/lib/store/use-note-store";
+import { useNotesStore } from "@/lib/store/use-notes-store";
 import { cn } from "@/lib/utils";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";

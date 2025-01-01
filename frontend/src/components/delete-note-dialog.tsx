@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useNotesStore } from "@/lib/store/use-note-store";
+import { useNotesStore } from "@/lib/store/use-notes-store";
 import { Trash } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -22,7 +22,7 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
   const handleDelete = async () => {
     await deleteNote(noteId);
     toast.success("Note deleted successfully");
-    navigate("/notes");
+    navigate("/home");
     setOpen(false);
   };
 

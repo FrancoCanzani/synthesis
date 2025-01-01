@@ -1,5 +1,5 @@
 import { copyToClipboard } from "@/lib/helpers";
-import { useNotesStore } from "@/lib/store/use-note-store";
+import { useNotesStore } from "@/lib/store/use-notes-store";
 import { Note } from "@/lib/types";
 import {
   Copy,

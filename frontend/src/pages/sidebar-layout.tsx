@@ -5,7 +5,7 @@ import { useNotesStore } from "@/lib/store/use-notes-store";
 import { useEffect } from "react";
 import { Outlet } from "react-router";
 
-export default function NotesLayout() {
+export default function SidebarLayout() {
   const { user, loading } = useAuth();
   const { fetchNotes } = useNotesStore();
 
@@ -19,7 +19,7 @@ export default function NotesLayout() {
     <SidebarProvider defaultOpen={true}>
       <div className="flex w-full min-w-0 bg-background">
         <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex h-screen min-w-0 flex-1 flex-col">
           <Outlet />
         </div>
       </div>

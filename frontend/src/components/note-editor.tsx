@@ -1,7 +1,7 @@
 import { extensions } from "@/lib/extensions";
 import { formatTextBeforeInsertion } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
-import { useNotesStore } from "@/lib/store/use-note-store";
+import { useNotesStore } from "@/lib/store/use-notes-store";
 import { EditorContent, type Extension, useEditor } from "@tiptap/react";
 import debounce from "lodash/debounce";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -127,7 +127,7 @@ export default function NoteEditor() {
         />
         {mode !== "read" && (
           <div className="sticky left-0 top-0 z-20 overflow-x-auto">
-            <div className="flex min-w-max items-center justify-center px-2 pt-4">
+            <div className="flex min-w-max items-center justify-center px-2 py-1.5">
               <Toolbar editor={editor} />
             </div>
           </div>
