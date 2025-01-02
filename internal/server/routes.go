@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"synthesis/internal/auth"
+	"synthesis/internal/server/handlers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -19,34 +20,39 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true,
 	}))
 
-	router.GET("/", s.HelloWorldHandler)
-	router.GET("/health", s.HealthHandler)
+	generalHandler := handlers.NewGeneralHandler(s.db)
+	articlesHandler := handlers.NewArticlesHandler(s.db)
+	notesHandler := handlers.NewNotesHandler(s.db)
+	aiHandler := handlers.NewAiHandler(s.db)
+
+	router.GET("/", generalHandler.HelloWorldHandler)
+	router.GET("/health", generalHandler.HealthHandler)
 
 	notes := router.Group("/notes")
 
 	articles := router.Group("/articles")
 
-	notes.GET("/public/:public_id", s.GetPublicNoteHandler)
+	notes.GET("/public/:public_id", notesHandler.GetPublicNoteHandler)
 
 	notes.Use(auth.AuthRequired())
 	{
-		notes.GET("/:id", s.GetNoteHandler)
-		notes.GET("/all", s.GetNotesHandler)
-		notes.POST("", s.UpsertNoteHandler)
-		notes.DELETE("", s.DeleteNoteHandler)
+		notes.GET("/:id", notesHandler.GetNoteHandler)
+		notes.GET("/all", notesHandler.GetNotesHandler)
+		notes.POST("", notesHandler.UpsertNoteHandler)
+		notes.DELETE("", notesHandler.DeleteNoteHandler)
 	}
 
 	articles.Use(auth.AuthRequired())
 	{
-		articles.GET("/:id", s.GetArticleHandler)
-		articles.GET("", s.GetArticleScrapingHandler)
-		articles.GET("/all", s.GetArticlesHandler)
-		articles.POST("", s.CreateArticleHandler)
-		articles.DELETE("", s.DeleteArticleHandler)
+		articles.GET("/:id", articlesHandler.GetArticleHandler)
+		articles.GET("", articlesHandler.GetArticleScrapingHandler)
+		articles.GET("/all", articlesHandler.GetArticlesHandler)
+		articles.POST("", articlesHandler.CreateArticleHandler)
+		articles.DELETE("", articlesHandler.DeleteArticleHandler)
 	}
 
 	ai := router.Group("/ai")
-	ai.POST("/assistant", s.GetAiCompletion)
+	ai.POST("/assistant", aiHandler.GetAiCompletion)
 
 	return router
 }
