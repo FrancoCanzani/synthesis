@@ -10,19 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { copyToClipboard, getToken } from "@/lib/helpers";
+import { copyToClipboard, getToken, normalizeText } from "@/lib/helpers";
 import { Article } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
 import { CheckCircle2, Ellipsis, Globe, XCircle } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function ArticlesPage() {
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ["articlesData"],
@@ -36,11 +35,22 @@ export default function ArticlesPage() {
     },
   });
 
-  const filteredArticles = data?.filter(
-    (article: Article) =>
-      article.title.toLowerCase().includes(search.toLowerCase()) ||
-      article.site_name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const query = searchParams.get("q")?.toLowerCase() || "";
+
+  const filteredArticles = data?.filter((article: Article) => {
+    if (!query) return true;
+
+    const normalizedTitle = normalizeText(article.title);
+    const normalizedSiteName = article.site_name
+      ? normalizeText(article.site_name)
+      : "";
+    const normalizedQuery = normalizeText(query);
+
+    return (
+      normalizedTitle.includes(normalizedQuery) ||
+      normalizedSiteName.includes(normalizedQuery)
+    );
+  });
 
   return (
     <div className="flex h-screen flex-col">
@@ -54,8 +64,8 @@ export default function ArticlesPage() {
           <div className="flex items-center gap-2">
             <Input
               placeholder="Search articles..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={query}
+              onChange={(e) => setSearchParams({ q: e.target.value })}
               className="w-64"
             />
             <GetArticleDialog />
@@ -75,7 +85,7 @@ export default function ArticlesPage() {
             <XCircle className="mr-2 h-5 w-5" />
             Failed to load articles
           </div>
-        ) : filteredArticles?.length === 0 || !filteredArticles ? (
+        ) : filteredArticles?.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground">
             No articles found
           </div>

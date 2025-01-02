@@ -181,7 +181,7 @@ export default function GetArticleDialog() {
         ) : (
           <div className="flex h-[50px] items-center justify-center">
             <p className="text-muted-foreground">
-              Paste an article URL to get its content in your note.
+              Paste an article URL to get its content.
             </p>
           </div>
         )}

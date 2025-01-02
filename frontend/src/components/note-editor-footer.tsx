@@ -16,6 +16,7 @@ export default function NoteEditorFooter({
   const [searchParams] = useSearchParams();
 
   const mode = searchParams.get("editorMode");
+
   return (
     <footer className="flex w-full items-center justify-between border-t bg-[--sidebar-background] px-2.5 py-1.5 text-xs">
       <div className="flex items-center gap-x-2">

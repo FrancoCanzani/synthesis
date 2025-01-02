@@ -51,3 +51,13 @@ export function formatTextBeforeInsertion(text: string) {
 
   return map;
 }
+
+export const normalizeText = (text: string) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
