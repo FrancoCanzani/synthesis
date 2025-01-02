@@ -54,7 +54,7 @@ export default function ArticlesPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background px-4 py-2">
+      <header className="sticky top-0 z-10 border-b bg-background px-2 py-1.5">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
             <SidebarTrigger />

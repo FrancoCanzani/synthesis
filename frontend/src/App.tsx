@@ -1,24 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 import { Toaster } from "sonner";
 import NoteEditor from "./components/note-editor";
 import { ProtectedRoute } from "./components/protected-route";
 import { TooltipProvider } from "./components/ui/tooltip";
 import "./index.css";
 import { AuthProvider } from "./lib/context/auth-provider";
-import { useAuth } from "./lib/hooks/use-auth";
 import NotFoundPage from "./pages/404-page";
 import ArticlesPage from "./pages/articles-page";
 import HomePage from "./pages/home-page";
+import LandingPage from "./pages/landing-page";
 import { LoginPage } from "./pages/login-page";
 import ReadArticlePage from "./pages/read-article-page";
 import ReadNotePage from "./pages/read-note-page";
 import SidebarLayout from "./pages/sidebar-layout";
-
-function RootRoute() {
-  const { user } = useAuth();
-  return user ? <Navigate to="/home" replace /> : <App />;
-}
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -30,7 +25,7 @@ export default function App() {
           <TooltipProvider>
             <Toaster />
             <Routes>
-              <Route path="/" element={<RootRoute />} />
+              <Route path="/" element={<LandingPage />} />
 
               <Route path="/login" element={<LoginPage />} />
 
