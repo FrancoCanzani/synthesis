@@ -8,6 +8,7 @@ import "./index.css";
 import { AuthProvider } from "./lib/context/auth-provider";
 import NotFoundPage from "./pages/404-page";
 import ArticlesPage from "./pages/articles-page";
+import FeedsPage from "./pages/feeds-page";
 import HomePage from "./pages/home-page";
 import LandingPage from "./pages/landing-page";
 import { LoginPage } from "./pages/login-page";
@@ -42,6 +43,14 @@ export default function App() {
                   <Route element={<SidebarLayout />}>
                     <Route index element={<ArticlesPage />} />
                     <Route path=":id" element={<ReadArticlePage />} />
+                  </Route>
+                </Route>
+              </Route>
+
+              <Route path="/feeds">
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<SidebarLayout />}>
+                    <Route index element={<FeedsPage />} />
                   </Route>
                 </Route>
               </Route>

@@ -8,11 +8,11 @@ import (
 )
 
 type GeneralHandler struct {
-db database.Service
+	db database.Service
 }
 
 func NewGeneralHandler(db database.Service) *GeneralHandler {
-return &GeneralHandler{db: db}
+	return &GeneralHandler{db: db}
 }
 
 func (h *GeneralHandler) HelloWorldHandler(c *gin.Context) {
@@ -25,4 +25,3 @@ func (h *GeneralHandler) HelloWorldHandler(c *gin.Context) {
 func (h *GeneralHandler) HealthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, h.db.Health())
 }
-

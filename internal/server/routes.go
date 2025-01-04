@@ -23,6 +23,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	generalHandler := handlers.NewGeneralHandler(s.db)
 	articlesHandler := handlers.NewArticlesHandler(s.db)
 	notesHandler := handlers.NewNotesHandler(s.db)
+	feedsHandler := handlers.NewFeedsHandler(s.db)
 	aiHandler := handlers.NewAiHandler(s.db)
 
 	router.GET("/", generalHandler.HelloWorldHandler)
@@ -31,6 +32,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	notes := router.Group("/notes")
 
 	articles := router.Group("/articles")
+
+	feeds := router.Group("/feeds")
 
 	notes.GET("/public/:public_id", notesHandler.GetPublicNoteHandler)
 
@@ -49,6 +52,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 		articles.GET("/all", articlesHandler.GetArticlesHandler)
 		articles.POST("", articlesHandler.CreateArticleHandler)
 		articles.DELETE("", articlesHandler.DeleteArticleHandler)
+	}
+
+	feeds.Use(auth.AuthRequired())
+	{
+		feeds.GET("", feedsHandler.GetFeedHandler)
 	}
 
 	ai := router.Group("/ai")

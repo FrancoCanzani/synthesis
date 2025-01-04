@@ -184,6 +184,68 @@ func (s *service) initTables() error {
 		return err
 	}
 
+	queryFeedsSources := `
+    CREATE TABLE IF NOT EXISTS feeds_sources (
+        link TEXT PRIMARY KEY,
+        source_link TEXT NOT NULL,
+        update_frequency TEXT NOT NULL,
+        last_fetch DATETIME,
+        active BOOLEAN,
+        failure_count INTEGER,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL
+    )`
+
+	_, err = s.db.Exec(queryFeedsSources)
+	if err != nil {
+		return err
+	}
+
+	queryFeeds := `
+    CREATE TABLE IF NOT EXISTS feeds (
+        link TEXT PRIMARY KEY,
+        source_link TEXT NOT NULL,
+        title TEXT,
+        description TEXT,
+        updated DATETIME,
+        updated_parsed DATETIME,
+        feed_type TEXT,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        FOREIGN KEY (source_link) REFERENCES feeds_sources(source_link) ON DELETE CASCADE
+    )`
+
+	_, err = s.db.Exec(queryFeeds)
+	if err != nil {
+		return err
+	}
+
+	queryFeedsItems := `
+    CREATE TABLE IF NOT EXISTS feeds_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_link TEXT NOT NULL,
+        title TEXT,
+        description TEXT,
+        link TEXT,
+        links TEXT,
+        published DATETIME,
+        published_parsed DATETIME,
+        updated DATETIME,
+        updated_parsed DATETIME,
+        guid TEXT UNIQUE,
+        read BOOLEAN DEFAULT FALSE,
+        starred BOOLEAN DEFAULT FALSE,
+        primary_author_id INTEGER,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        FOREIGN KEY (source_link) REFERENCES feeds(source_link) ON DELETE CASCADE
+    )`
+
+	_, err = s.db.Exec(queryFeedsItems)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
