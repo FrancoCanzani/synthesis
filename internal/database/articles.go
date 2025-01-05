@@ -10,8 +10,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-
-
 func (s *service) GetArticles(ctx context.Context, userId string) ([]*models.Article, error) {
 	query := `
         SELECT *

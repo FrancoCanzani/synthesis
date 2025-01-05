@@ -57,44 +57,44 @@ type Article struct {
 }
 
 type FeedSource struct {
-    Link            string
-    SourceLink      string
-    UserId         string
-    UpdateFrequency string
-    LastFetch       *time.Time
-    Active          bool
-    FailureCount    int
-    CreatedAt       time.Time
-    UpdatedAt       time.Time
+	Link            string     `json:"link"`
+	SourceLink      string     `json:"source_link"`
+	UserId          string     `json:"user_id"`
+	UpdateFrequency string     `json:"update_frequency"`
+	LastFetch       *time.Time `json:"last_fetch"`
+	Active          bool       `json:"active"`
+	FailureCount    int        `json:"failure_count"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 }
 
 type Feed struct {
-    Link           string
-    SourceLink     string
-    UserId        string
-    Title          string
-    Description    string
-    Updated        string
-    UpdatedParsed  *time.Time
-    FeedType       string
-    CreatedAt      time.Time
-    UpdatedAt      time.Time
+	Link          string     `json:"link"`
+	SourceLink    string     `json:"source_link"`
+	UserId        string     `json:"user_id"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	Updated       string     `json:"updated"`
+	UpdatedParsed *time.Time `json:"updated_parsed"`
+	FeedType      string     `json:"feed_type"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
 }
 
 type FeedItem struct {
-    Id              int64
-    SourceLink      string
-    UserId         string
-    Title          string
-    Description    string
-    Link           string
-    Published      string
-    PublishedParsed *time.Time
-    Updated        string
-    UpdatedParsed  *time.Time
-    GUID           string
-    Read           bool
-    Starred        bool
-    CreatedAt      time.Time
-    UpdatedAt      time.Time
+	Id              int64      `json:"id"`
+	SourceLink      string     `json:"source_link"`
+	UserId          string     `json:"user_id"`
+	Title           string     `json:"title"`
+	Description     string     `json:"description"`
+	Link            string     `json:"link"`
+	Published       string     `json:"published"`
+	PublishedParsed *time.Time `json:"published_parsed"`
+	Updated         string     `json:"updated"`
+	UpdatedParsed   *time.Time `json:"updated_parsed"`
+	GUID            string     `json:"guid"`
+	Read            bool       `json:"read"`
+	Starred         bool       `json:"starred"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
 }

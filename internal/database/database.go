@@ -30,7 +30,7 @@ type Service interface {
 	DeleteArticle(ctx context.Context, id string, user_id string) error
 	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
-	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error) 
+	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error)
 
 	Close() error
 }
@@ -254,7 +254,6 @@ func (s *service) initTables() error {
 
 	return nil
 }
-
 
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", dbPath)

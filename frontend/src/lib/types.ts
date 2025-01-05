@@ -35,3 +35,47 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+export interface FeedSource {
+  link: string;
+  source_link: string;
+  user_id: string;
+  update_frequency: string;
+  last_fetch: string | null;
+  active: boolean;
+  failure_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Feed {
+  link: string;
+  source_link: string;
+  user_id: string;
+  title: string;
+  description: string;
+  updated: string;
+  updated_parsed: string | null;
+  feed_type: string;
+  created_at: string;
+  updated_at: string;
+  items: FeedItem[];
+}
+
+export interface FeedItem {
+  id: number;
+  source_link: string;
+  user_id: string;
+  title: string;
+  description: string;
+  link: string;
+  published: string;
+  published_parsed: string;
+  updated: string;
+  updated_parsed: string | null;
+  guid: string;
+  read: boolean;
+  starred: boolean;
+  created_at: string;
+  updated_at: string;
+}

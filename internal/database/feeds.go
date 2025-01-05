@@ -8,103 +8,103 @@ import (
 )
 
 func (s *service) FeedExists(ctx context.Context, link string, userId string) (bool, error) {
-    var exists bool
-    query := "SELECT EXISTS(SELECT 1 FROM feeds_sources WHERE link = ? AND user_id = ?)"
-    err := s.db.QueryRowContext(ctx, query, link, userId).Scan(&exists)
-    return exists, err
+	var exists bool
+	query := "SELECT EXISTS(SELECT 1 FROM feeds_sources WHERE link = ? AND user_id = ?)"
+	err := s.db.QueryRowContext(ctx, query, link, userId).Scan(&exists)
+	return exists, err
 }
 
 func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error {
-    tx, err := s.db.BeginTx(ctx, nil)
-    if err != nil {
-        return err
-    }
-    defer tx.Rollback()
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-    sourceQuery := `
+	sourceQuery := `
         INSERT INTO feeds_sources (
             link, source_link, user_id, update_frequency, active, failure_count, 
             created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-    _, err = tx.ExecContext(ctx, sourceQuery,
-        source.Link,
-        source.SourceLink,
-        source.UserId,
-        source.UpdateFrequency,
-        source.Active,
-        source.FailureCount,
-        source.CreatedAt,
-        source.UpdatedAt,
-    )
-    if err != nil {
-        return err
-    }
+	_, err = tx.ExecContext(ctx, sourceQuery,
+		source.Link,
+		source.SourceLink,
+		source.UserId,
+		source.UpdateFrequency,
+		source.Active,
+		source.FailureCount,
+		source.CreatedAt,
+		source.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
 
-    feedQuery := `
+	feedQuery := `
         INSERT INTO feeds (
             link, source_link, user_id, title, description, updated, 
             updated_parsed, feed_type, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-    _, err = tx.ExecContext(ctx, feedQuery,
-        feed.Link,
-        feed.SourceLink,
-        feed.UserId,
-        feed.Title,
-        feed.Description,
-        feed.Updated,
-        feed.UpdatedParsed,
-        feed.FeedType,
-        feed.CreatedAt,
-        feed.UpdatedAt,
-    )
-    if err != nil {
-        return err
-    }
+	_, err = tx.ExecContext(ctx, feedQuery,
+		feed.Link,
+		feed.SourceLink,
+		feed.UserId,
+		feed.Title,
+		feed.Description,
+		feed.Updated,
+		feed.UpdatedParsed,
+		feed.FeedType,
+		feed.CreatedAt,
+		feed.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
 
-    itemQuery := `
+	itemQuery := `
         INSERT INTO feeds_items (
             source_link, user_id, title, description, link, published,
             published_parsed, updated, updated_parsed, guid, read,
             starred, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-    for _, item := range items {
-        _, err = tx.ExecContext(ctx, itemQuery,
-            item.SourceLink,
-            item.UserId,
-            item.Title,
-            item.Description,
-            item.Link,
-            item.Published,
-            item.PublishedParsed,
-            item.Updated,
-            item.UpdatedParsed,
-            item.GUID,
-            item.Read,
-            item.Starred,
-            item.CreatedAt,
-            item.UpdatedAt,
-        )
-        if err != nil {
-            return err
-        }
-    }
+	for _, item := range items {
+		_, err = tx.ExecContext(ctx, itemQuery,
+			item.SourceLink,
+			item.UserId,
+			item.Title,
+			item.Description,
+			item.Link,
+			item.Published,
+			item.PublishedParsed,
+			item.Updated,
+			item.UpdatedParsed,
+			item.GUID,
+			item.Read,
+			item.Starred,
+			item.CreatedAt,
+			item.UpdatedAt,
+		)
+		if err != nil {
+			return err
+		}
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 type FeedWithItems struct {
-    Link           string     `json:"link"`
-    Title          string     `json:"title"`
-    Description    string     `json:"description"`
-    UpdatedParsed  *time.Time `json:"updated_parsed"`
-    Items          []models.FeedItem `json:"items"`
+	Link          string            `json:"link"`
+	Title         string            `json:"title"`
+	Description   string            `json:"description"`
+	UpdatedParsed *time.Time        `json:"updated_parsed"`
+	Items         []models.FeedItem `json:"items"`
 }
 
 func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error) {
-    query := `
+	query := `
         WITH user_feeds AS (
             SELECT 
                 f.link,
@@ -128,81 +128,81 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
         LEFT JOIN feeds_items fi ON fi.source_link = uf.link AND fi.user_id = ?
         ORDER BY uf.link, fi.published_parsed DESC`
 
-    rows, err := s.db.QueryContext(ctx, query, userId, userId)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := s.db.QueryContext(ctx, query, userId, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    feedsMap := make(map[string]*FeedWithItems)
-    var feeds []FeedWithItems
+	feedsMap := make(map[string]*FeedWithItems)
+	var feeds []FeedWithItems
 
-    for rows.Next() {
-        var feed struct {
-            Link          string
-            Title         string
-            Description   string
-            UpdatedParsed *time.Time
-            ItemID        sql.NullInt64
-            ItemTitle     sql.NullString
-            ItemDesc      sql.NullString
-            ItemLink     sql.NullString
-            ItemPublished *time.Time
-            ItemGUID     sql.NullString
-            ItemRead     sql.NullBool
-            ItemStarred  sql.NullBool
-        }
+	for rows.Next() {
+		var feed struct {
+			Link          string
+			Title         string
+			Description   string
+			UpdatedParsed *time.Time
+			ItemID        sql.NullInt64
+			ItemTitle     sql.NullString
+			ItemDesc      sql.NullString
+			ItemLink      sql.NullString
+			ItemPublished *time.Time
+			ItemGUID      sql.NullString
+			ItemRead      sql.NullBool
+			ItemStarred   sql.NullBool
+		}
 
-        err := rows.Scan(
-            &feed.Link,
-            &feed.Title,
-            &feed.Description,
-            &feed.UpdatedParsed,
-            &feed.ItemID,
-            &feed.ItemTitle,
-            &feed.ItemDesc,
-            &feed.ItemLink,
-            &feed.ItemPublished,
-            &feed.ItemGUID,
-            &feed.ItemRead,
-            &feed.ItemStarred,
-        )
-        if err != nil {
-            return nil, err
-        }
+		err := rows.Scan(
+			&feed.Link,
+			&feed.Title,
+			&feed.Description,
+			&feed.UpdatedParsed,
+			&feed.ItemID,
+			&feed.ItemTitle,
+			&feed.ItemDesc,
+			&feed.ItemLink,
+			&feed.ItemPublished,
+			&feed.ItemGUID,
+			&feed.ItemRead,
+			&feed.ItemStarred,
+		)
+		if err != nil {
+			return nil, err
+		}
 
-        if feedsMap[feed.Link] == nil {
-            feedsMap[feed.Link] = &FeedWithItems{
-                Link:          feed.Link,
-                Title:         feed.Title,
-                Description:   feed.Description,
-                UpdatedParsed: feed.UpdatedParsed,
-                Items:         make([]models.FeedItem, 0),
-            }
-        }
+		if feedsMap[feed.Link] == nil {
+			feedsMap[feed.Link] = &FeedWithItems{
+				Link:          feed.Link,
+				Title:         feed.Title,
+				Description:   feed.Description,
+				UpdatedParsed: feed.UpdatedParsed,
+				Items:         make([]models.FeedItem, 0),
+			}
+		}
 
-        if feed.ItemID.Valid {
-            item := models.FeedItem{
-                Id:             feed.ItemID.Int64,
-                Title:          feed.ItemTitle.String,
-                Description:    feed.ItemDesc.String,
-                Link:           feed.ItemLink.String,
-                PublishedParsed: feed.ItemPublished,
-                GUID:           feed.ItemGUID.String,
-                Read:           feed.ItemRead.Bool,
-                Starred:        feed.ItemStarred.Bool,
-            }
-            feedsMap[feed.Link].Items = append(feedsMap[feed.Link].Items, item)
-        }
-    }
+		if feed.ItemID.Valid {
+			item := models.FeedItem{
+				Id:              feed.ItemID.Int64,
+				Title:           feed.ItemTitle.String,
+				Description:     feed.ItemDesc.String,
+				Link:            feed.ItemLink.String,
+				PublishedParsed: feed.ItemPublished,
+				GUID:            feed.ItemGUID.String,
+				Read:            feed.ItemRead.Bool,
+				Starred:         feed.ItemStarred.Bool,
+			}
+			feedsMap[feed.Link].Items = append(feedsMap[feed.Link].Items, item)
+		}
+	}
 
-    if err = rows.Err(); err != nil {
-        return nil, err
-    }
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
 
-    for _, feed := range feedsMap {
-        feeds = append(feeds, *feed)
-    }
+	for _, feed := range feedsMap {
+		feeds = append(feeds, *feed)
+	}
 
-    return feeds, nil
+	return feeds, nil
 }

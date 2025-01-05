@@ -5,21 +5,64 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getToken } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AddFeedDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [urlInput, setUrlInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddFeed = () => {
-    toast.success("Feed added successfully via URL");
-    setIsOpen(false);
-    setUrlInput("");
+  const handleAddFeed = async () => {
+    setIsLoading(true);
+
+    try {
+      const token = await getToken();
+
+      const response = await fetch(
+        `${API_URL}/feeds?url=${encodeURIComponent(urlInput)}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add feed");
+      }
+
+      const data = await response.json();
+
+      console.log(data);
+
+      toast.success(
+        `Feed "${data.feed.title}" added with ${data.items_count} items`,
+      );
+      setIsOpen(false);
+      setUrlInput("");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error("Please enter a valid URL");
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Failed to add feed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,13 +130,19 @@ export default function AddFeedDialog() {
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder="Enter feed URL"
               className="w-3/4"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isLoading) {
+                  handleAddFeed();
+                }
+              }}
             />
             <Button
-              variant={"outline"}
+              variant="outline"
               onClick={handleAddFeed}
+              disabled={isLoading || !urlInput}
               className="w-1/4 bg-black text-white hover:bg-black/85 hover:text-white"
             >
-              Add Feed
+              {isLoading ? "Adding..." : "Add Feed"}
             </Button>
           </div>
         </div>

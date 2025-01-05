@@ -66,7 +66,7 @@ export default function ArticlesPage() {
               placeholder="Search articles..."
               value={query}
               onChange={(e) => setSearchParams({ q: e.target.value })}
-              className="w-64"
+              className="h-8 w-64"
             />
             <GetArticleDialog />
           </div>

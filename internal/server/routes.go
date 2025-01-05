@@ -57,6 +57,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	feeds.Use(auth.AuthRequired())
 	{
 		feeds.POST("", feedsHandler.CreateFeedHandler)
+		feeds.GET("", feedsHandler.GetFeedsHandler)
+
 	}
 
 	ai := router.Group("/ai")
