@@ -28,6 +28,9 @@ type Service interface {
 	GetArticles(ctx context.Context, user_id string) ([]*models.Article, error)
 	CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error)
 	DeleteArticle(ctx context.Context, id string, user_id string) error
+	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
+	FeedExists(ctx context.Context, link string, userId string) (bool, error)
+	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error) 
 
 	Close() error
 }
@@ -187,6 +190,7 @@ func (s *service) initTables() error {
 	queryFeedsSources := `
     CREATE TABLE IF NOT EXISTS feeds_sources (
         link TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
         source_link TEXT NOT NULL,
         update_frequency TEXT NOT NULL,
         last_fetch DATETIME,
@@ -204,6 +208,7 @@ func (s *service) initTables() error {
 	queryFeeds := `
     CREATE TABLE IF NOT EXISTS feeds (
         link TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
         source_link TEXT NOT NULL,
         title TEXT,
         description TEXT,
@@ -223,6 +228,7 @@ func (s *service) initTables() error {
 	queryFeedsItems := `
     CREATE TABLE IF NOT EXISTS feeds_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+		user_id TEXT NOT NULL,
         source_link TEXT NOT NULL,
         title TEXT,
         description TEXT,

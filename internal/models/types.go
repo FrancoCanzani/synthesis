@@ -55,3 +55,46 @@ type Article struct {
 	Length        *int       `json:"length"`
 	ScrapedAt     time.Time  `json:"scraped_at"`
 }
+
+type FeedSource struct {
+    Link            string
+    SourceLink      string
+    UserId         string
+    UpdateFrequency string
+    LastFetch       *time.Time
+    Active          bool
+    FailureCount    int
+    CreatedAt       time.Time
+    UpdatedAt       time.Time
+}
+
+type Feed struct {
+    Link           string
+    SourceLink     string
+    UserId        string
+    Title          string
+    Description    string
+    Updated        string
+    UpdatedParsed  *time.Time
+    FeedType       string
+    CreatedAt      time.Time
+    UpdatedAt      time.Time
+}
+
+type FeedItem struct {
+    Id              int64
+    SourceLink      string
+    UserId         string
+    Title          string
+    Description    string
+    Link           string
+    Published      string
+    PublishedParsed *time.Time
+    Updated        string
+    UpdatedParsed  *time.Time
+    GUID           string
+    Read           bool
+    Starred        bool
+    CreatedAt      time.Time
+    UpdatedAt      time.Time
+}
