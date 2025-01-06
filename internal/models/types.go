@@ -58,7 +58,6 @@ type Article struct {
 
 type FeedSource struct {
 	Link            string     `json:"link"`
-	SourceLink      string     `json:"source_link"`
 	UserId          string     `json:"user_id"`
 	UpdateFrequency string     `json:"update_frequency"`
 	LastFetch       *time.Time `json:"last_fetch"`
@@ -70,7 +69,6 @@ type FeedSource struct {
 
 type Feed struct {
 	Link          string     `json:"link"`
-	SourceLink    string     `json:"source_link"`
 	UserId        string     `json:"user_id"`
 	Title         string     `json:"title"`
 	Description   string     `json:"description"`

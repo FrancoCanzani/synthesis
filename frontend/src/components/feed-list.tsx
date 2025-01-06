@@ -49,25 +49,25 @@ export function FeedList({ feeds, onDeleteFeed }: FeedListProps) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-x-1">
               <span className="text-xs font-medium">
                 {getUnreadCount(feed.items)} unread
               </span>
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteFeed(feed.link);
                 }}
-                className="opacity-0 transition-opacity group-hover:opacity-100"
+                className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
           {expandedFeeds.includes(feed.link) && (
-            <div className="divide-y bg-muted/50">
+            <div className="divide-y border-t bg-muted/50">
               {feed.items.map((item) => (
                 <FeedItem key={item.id} item={item} />
               ))}

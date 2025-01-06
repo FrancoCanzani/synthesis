@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { getToken } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -20,6 +21,8 @@ export default function AddFeedDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const handleAddFeed = async () => {
     setIsLoading(true);
@@ -45,7 +48,7 @@ export default function AddFeedDialog() {
 
       const data = await response.json();
 
-      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["feeds"] });
 
       toast.success(
         `Feed "${data.feed.title}" added with ${data.items_count} items`,

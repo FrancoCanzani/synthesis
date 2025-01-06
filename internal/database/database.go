@@ -31,6 +31,7 @@ type Service interface {
 	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
 	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error)
+	DeleteFeed(ctx context.Context, link string, userId string) error
 
 	Close() error
 }
@@ -76,6 +77,10 @@ func New() Service {
 
 	// Enable Write-Ahead Logging for better concurrent access
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -191,7 +196,6 @@ func (s *service) initTables() error {
     CREATE TABLE IF NOT EXISTS feeds_sources (
         link TEXT PRIMARY KEY,
 		user_id TEXT NOT NULL,
-        source_link TEXT NOT NULL,
         update_frequency TEXT NOT NULL,
         last_fetch DATETIME,
         active BOOLEAN,
@@ -209,7 +213,6 @@ func (s *service) initTables() error {
     CREATE TABLE IF NOT EXISTS feeds (
         link TEXT PRIMARY KEY,
 		user_id TEXT NOT NULL,
-        source_link TEXT NOT NULL,
         title TEXT,
         description TEXT,
         updated DATETIME,
@@ -217,7 +220,7 @@ func (s *service) initTables() error {
         feed_type TEXT,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (source_link) REFERENCES feeds_sources(source_link) ON DELETE CASCADE
+        FOREIGN KEY (link) REFERENCES feeds_sources(link) ON DELETE CASCADE
     )`
 
 	_, err = s.db.Exec(queryFeeds)
@@ -229,11 +232,10 @@ func (s *service) initTables() error {
     CREATE TABLE IF NOT EXISTS feeds_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id TEXT NOT NULL,
-        source_link TEXT NOT NULL,
         title TEXT,
         description TEXT,
         link TEXT,
-        links TEXT,
+        source_link TEXT NOT NULL,
         published DATETIME,
         published_parsed DATETIME,
         updated DATETIME,
@@ -241,10 +243,9 @@ func (s *service) initTables() error {
         guid TEXT UNIQUE,
         read BOOLEAN DEFAULT FALSE,
         starred BOOLEAN DEFAULT FALSE,
-        primary_author_id INTEGER,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (source_link) REFERENCES feeds(source_link) ON DELETE CASCADE
+        FOREIGN KEY (source_link) REFERENCES feeds(link) ON DELETE CASCADE
     )`
 
 	_, err = s.db.Exec(queryFeedsItems)

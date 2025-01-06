@@ -38,7 +38,6 @@ export interface Message {
 
 export interface FeedSource {
   link: string;
-  source_link: string;
   user_id: string;
   update_frequency: string;
   last_fetch: string | null;
@@ -50,7 +49,6 @@ export interface FeedSource {
 
 export interface Feed {
   link: string;
-  source_link: string;
   user_id: string;
   title: string;
   description: string;
@@ -64,7 +62,6 @@ export interface Feed {
 
 export interface FeedItem {
   id: number;
-  source_link: string;
   user_id: string;
   title: string;
   description: string;

@@ -58,7 +58,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		feeds.POST("", feedsHandler.CreateFeedHandler)
 		feeds.GET("", feedsHandler.GetFeedsHandler)
-
+		feeds.DELETE("", feedsHandler.DeleteFeedHandler)
 	}
 
 	ai := router.Group("/ai")

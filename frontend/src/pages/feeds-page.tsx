@@ -35,7 +35,7 @@ export default function FeedsPage() {
     mutationFn: async (feedUrl: string) => {
       const token = await getToken();
       const response = await fetch(
-        `${API_URL}/feeds?url=${encodeURIComponent(feedUrl)}`,
+        `${API_URL}/feeds?link=${encodeURIComponent(feedUrl)}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -65,7 +65,7 @@ export default function FeedsPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background px-4 py-2">
+      <header className="sticky top-0 z-10 border-b bg-background px-2 py-1.5">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
@@ -87,7 +87,7 @@ export default function FeedsPage() {
       <div className="flex-1 overflow-auto">
         <FeedList
           feeds={filteredFeeds || []}
-          onDeleteFeed={(url) => deleteFeedMutation.mutate(url)}
+          onDeleteFeed={(link) => deleteFeedMutation.mutate(link)}
         />
       </div>
     </div>

@@ -60,7 +60,6 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	feedSource := &models.FeedSource{
 		Link:            feedURL,
-		SourceLink:      feed.Link,
 		UserId:          userId,
 		UpdateFrequency: "1h",
 		Active:          true,
@@ -71,7 +70,6 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	feedModel := &models.Feed{
 		Link:          feedURL,
-		SourceLink:    feed.Link,
 		UserId:        userId,
 		Title:         feed.Title,
 		Description:   feed.Description,
@@ -128,14 +126,40 @@ func (h *FeedsHandler) GetFeedsHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	feeds, err := h.db.GetFeeds(ctx, userId)
+	feeds, err := h.db.GetFeeds(c.Request.Context(), userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch feeds"})
 		return
 	}
 
 	c.JSON(http.StatusOK, feeds)
+}
+
+func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
+	link := c.Query("link")
+
+	if link == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "feed link not provided"})
+		return 
+	}
+
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user Id type"})
+		return
+	}
+
+	err := h.db.DeleteFeed(c.Request.Context(), link, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete feed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "feed deleted successfully"})
 }

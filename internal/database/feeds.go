@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"synthesis/internal/models"
 	"time"
 )
@@ -23,13 +24,12 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 
 	sourceQuery := `
         INSERT INTO feeds_sources (
-            link, source_link, user_id, update_frequency, active, failure_count, 
+            link, user_id, update_frequency, active, failure_count, 
             created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = tx.ExecContext(ctx, sourceQuery,
 		source.Link,
-		source.SourceLink,
 		source.UserId,
 		source.UpdateFrequency,
 		source.Active,
@@ -43,13 +43,12 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 
 	feedQuery := `
         INSERT INTO feeds (
-            link, source_link, user_id, title, description, updated, 
+            link, user_id, title, description, updated, 
             updated_parsed, feed_type, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = tx.ExecContext(ctx, feedQuery,
 		feed.Link,
-		feed.SourceLink,
 		feed.UserId,
 		feed.Title,
 		feed.Description,
@@ -205,4 +204,26 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
 	}
 
 	return feeds, nil
+}
+
+func (s *service) DeleteFeed(ctx context.Context, link string, userId string) error {
+	query := `
+	DELETE FROM feeds_sources
+	WHERE link = ? AND user_id = ?
+`
+
+	result, err := s.db.ExecContext(ctx, query, link, userId)
+	if err != nil {
+		return fmt.Errorf("failed to delete feed: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("feed not found: %v", link)
+	}
+
+	return nil
 }
