@@ -59,6 +59,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		feeds.POST("", feedsHandler.CreateFeedHandler)
 		feeds.GET("", feedsHandler.GetFeedsHandler)
 		feeds.DELETE("", feedsHandler.DeleteFeedHandler)
+		feeds.PUT("", feedsHandler.UpdateFeedItemHandler)
+		feeds.PUT("/mark-all-read", feedsHandler.MarAllFeedItemsAsReadHandler)
 	}
 
 	ai := router.Group("/ai")

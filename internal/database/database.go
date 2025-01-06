@@ -32,7 +32,9 @@ type Service interface {
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
 	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error)
 	DeleteFeed(ctx context.Context, link string, userId string) error
-
+	UpdateFeedItem(ctx context.Context, link string, userId string, attribute string, value any) error
+	MarAllFeedItemsAsRead(ctx context.Context, userId string) error
+	
 	Close() error
 }
 

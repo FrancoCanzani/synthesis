@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"synthesis/internal/database"
 	"synthesis/internal/models"
@@ -162,4 +163,71 @@ func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "feed deleted successfully"})
+}
+
+func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
+	type UpdateRequest struct {
+		Link   string `json:"link" binding:"required"`
+		Attribute string `json:"attribute" binding:"required"`
+		Value     any    `json:"value" binding:"required"`
+	}
+
+	var req UpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		return
+	}
+
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user ID not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid User ID type"})
+		return
+	}
+
+	allowedAttributes := map[string]bool{
+		"read":    true,
+		"starred": true,
+	}
+
+	if !allowedAttributes[req.Attribute] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid attribute"})
+		return
+	}
+
+	err := h.db.UpdateFeedItem(c.Request.Context(), req.Link, userId, req.Attribute, req.Value)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update post"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "post updated successfully"})
+}
+
+func (h *FeedsHandler) MarAllFeedItemsAsReadHandler(c *gin.Context) {
+	userIdValue, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user Id not found"})
+		return
+	}
+
+	userId, ok := userIdValue.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user Id type"})
+		return
+	}
+
+	err := h.db.MarAllFeedItemsAsRead(c.Request.Context(), userId)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update feed items"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "all feeds marked as read successfully"})
 }

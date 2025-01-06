@@ -1,5 +1,6 @@
 import AddFeedDialog from "@/components/add-feed-dialog";
 import { FeedList } from "@/components/feed-list";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -53,6 +54,32 @@ export default function FeedsPage() {
     },
   });
 
+  async function markAllAsRead() {
+    const token = await getToken();
+
+    const response = await fetch(`${API_URL}/feeds/mark-all-read`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to mark all posts as read");
+    }
+
+    return await response.json();
+  }
+
+  const mutation = useMutation({
+    mutationFn: markAllAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      toast.success("All posts marked as read.");
+    },
+    onError: () => {
+      toast.error("Failed to mark all as read. Please try again.");
+    },
+  });
+
   const filteredFeeds = feeds?.filter(
     (feed) =>
       feed.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,6 +106,13 @@ export default function FeedsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <Button
+              onClick={() => mutation.mutate()}
+              disabled={mutation.isPending}
+              variant="default"
+            >
+              {mutation.isPending ? "Marking..." : "Mark All as Read"}
+            </Button>
             <AddFeedDialog />
           </div>
         </div>

@@ -227,3 +227,40 @@ func (s *service) DeleteFeed(ctx context.Context, link string, userId string) er
 
 	return nil
 }
+
+func (s *service) UpdateFeedItem(ctx context.Context, link string, userId string, attribute string, value any) error {
+	query := fmt.Sprintf(`
+		UPDATE feeds_items
+		SET %s = ?
+		WHERE link = ? AND user_id = ?
+	`, attribute)
+
+	_, err := s.db.ExecContext(ctx, query, value, link, userId)
+	if err != nil {
+		return fmt.Errorf("failed to update post: %w", err)
+	}
+
+	return nil
+}
+
+func (s *service) MarAllFeedItemsAsRead(ctx context.Context, userId string) error {
+	query := `
+		UPDATE feeds_items
+		SET read = TRUE
+		WHERE user_id = ?`
+
+	result, err := s.db.ExecContext(ctx, query, userId)
+	if err != nil {
+		return fmt.Errorf("failed to update feeds: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("feeds not found")
+	}
+
+	return nil
+}
