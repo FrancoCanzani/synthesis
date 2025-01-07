@@ -1,16 +1,18 @@
 package server
 
 import (
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"synthesis/internal/auth"
 	"synthesis/internal/server/handlers"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"synthesis/internal/services"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	router := gin.Default()
+
+	router.Use(helmet.Default())
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
