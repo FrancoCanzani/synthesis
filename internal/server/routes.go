@@ -6,13 +6,18 @@ import (
 	"net/http"
 	"synthesis/internal/auth"
 	"synthesis/internal/server/handlers"
-	"synthesis/internal/services"
+	"synthesis/internal/services/helmet"
+	"synthesis/internal/services/rate-limit"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	router := gin.Default()
 
 	router.Use(helmet.Default())
+
+	rl := rateLimit.NewRateLimiter(10, 50) // 10 RPS, burst of 50
+
+	router.Use(rateLimit.RateLimitMiddleware(rl))
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -39,7 +44,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	notes.GET("/public/:public_id", notesHandler.GetPublicNoteHandler)
 
-	notes.Use(auth.AuthRequired())
+	notes.Use(auth.AuthMiddleware())
 	{
 		notes.GET("/:id", notesHandler.GetNoteHandler)
 		notes.GET("/all", notesHandler.GetNotesHandler)
@@ -47,7 +52,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		notes.DELETE("", notesHandler.DeleteNoteHandler)
 	}
 
-	articles.Use(auth.AuthRequired())
+	articles.Use(auth.AuthMiddleware())
 	{
 		articles.GET("/:id", articlesHandler.GetArticleHandler)
 		articles.GET("", articlesHandler.GetArticleScrapingHandler)
@@ -56,7 +61,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		articles.DELETE("", articlesHandler.DeleteArticleHandler)
 	}
 
-	feeds.Use(auth.AuthRequired())
+	feeds.Use(auth.AuthMiddleware())
 	{
 		feeds.POST("", feedsHandler.CreateFeedHandler)
 		feeds.GET("", feedsHandler.GetFeedsHandler)
