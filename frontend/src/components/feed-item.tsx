@@ -35,6 +35,8 @@ async function updatePostState(
 }
 
 export function FeedItem({ item }: FeedItemProps) {
+  console.log(item);
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -68,7 +70,7 @@ export function FeedItem({ item }: FeedItemProps) {
 
   return (
     <div
-      className={`w-full px-4 py-1 pl-8 hover:bg-muted/25 ${item.read ? "opacity-60" : ""}`}
+      className={`group/item w-full px-4 py-1 pl-8 hover:bg-muted/25 ${item.read ? "opacity-60" : ""}`}
     >
       <div className="flex w-full items-center justify-between">
         <a
@@ -79,60 +81,64 @@ export function FeedItem({ item }: FeedItemProps) {
         >
           {item.title}
         </a>
-        <div className="flex w-2/6 items-center justify-end gap-x-1 text-xs">
-          <Button
-            variant={"ghost"}
-            size={"sm"}
-            className="h-8 w-8"
-            onClick={() =>
-              mutation.mutate({
-                link: item.link,
-                attribute: "read",
-                value: !item.read,
-              })
-            }
-          >
-            {item.read ? (
-              <X className="h-4 w-4" />
-            ) : (
-              <Check className="h-4 w-4" />
-            )}
-            <span className="sr-only">
-              {item.read ? "Mark as unread" : "Mark as read"}
-            </span>
-          </Button>
+        <div className="flex w-2/6 items-center justify-end gap-x-1.5 text-xs">
+          <div className="opacity-0 transition-opacity duration-200 group-hover/item:opacity-100">
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              className="h-8 w-8"
+              onClick={() =>
+                mutation.mutate({
+                  link: item.link,
+                  attribute: "read",
+                  value: !item.read,
+                })
+              }
+            >
+              {item.read ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {item.read ? "Mark as unread" : "Mark as read"}
+              </span>
+            </Button>
 
-          <Button
-            variant={"ghost"}
-            size={"sm"}
-            className="h-8 w-8"
-            onClick={() =>
-              mutation.mutate({
-                link: item.link,
-                attribute: "starred",
-                value: !item.starred,
-              })
-            }
-          >
-            {item.starred ? (
-              <Star className="h-4 w-4" fill="#fcdf03" />
-            ) : (
-              <Star className="h-4 w-4" />
-            )}
-            <span className="sr-only">{item.starred ? "Unstar" : "Star"}</span>
-          </Button>
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              className="h-8 w-8"
+              onClick={() =>
+                mutation.mutate({
+                  link: item.link,
+                  attribute: "starred",
+                  value: !item.starred,
+                })
+              }
+            >
+              {item.starred ? (
+                <Star className="h-4 w-4" fill="#fcdf03" />
+              ) : (
+                <Star className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {item.starred ? "Unstar" : "Star"}
+              </span>
+            </Button>
 
-          <Button
-            variant={"ghost"}
-            size={"sm"}
-            className="h-8 w-8"
-            onClick={async () => {
-              await copyToClipboard(item.link);
-              toast.success("URL copied to clipboard");
-            }}
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              className="h-8 w-8"
+              onClick={async () => {
+                await copyToClipboard(item.link);
+                toast.success("URL copied to clipboard");
+              }}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
           <span className="px-3">{formattedDate}</span>
         </div>
       </div>

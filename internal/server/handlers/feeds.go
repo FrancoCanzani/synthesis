@@ -54,6 +54,9 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(feedURL, ctx)
+	
+	fmt.Println(feed)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
 		return

@@ -1,20 +1,20 @@
-import { Type } from 'lucide-react';
-import { Level } from '@tiptap/extension-heading';
+import { Level } from "@tiptap/extension-heading";
+import { Type } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { useToolbar } from "@/components/toolbars/toolbar-provider";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { useToolbar } from '@/components/toolbars/toolbar-provider';
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6];
 
@@ -26,7 +26,7 @@ export function HeadingToolbar() {
   };
 
   const isActive = (level: Level) =>
-    editor?.isActive('heading', { level }) ?? false;
+    editor?.isActive("heading", { level }) ?? false;
 
   const activeHeading = headingLevels.find((level) => isActive(level)) || null;
 
@@ -35,12 +35,12 @@ export function HeadingToolbar() {
       <DropdownMenu>
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
-            <Button variant='ghost' size='icon' className='h-8 w-8 gap-x-1'>
-              <Type className='h-4 w-4' />
+            <Button variant="ghost" size="icon" className="h-8 w-8 gap-x-1.5">
+              <Type className="h-4 w-4" />
               {activeHeading !== null && (
-                <span className='text-[0.5rem] font-bold'>{activeHeading}</span>
+                <span className="text-[0.5rem] font-bold">{activeHeading}</span>
               )}
-              <span className='sr-only'>Heading levels</span>
+              <span className="sr-only">Heading levels</span>
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
@@ -50,23 +50,23 @@ export function HeadingToolbar() {
               key={level}
               onClick={() => setHeading(level)}
               className={cn(
-                'flex items-center',
-                isActive(level) && 'bg-accent text-accent-foreground'
+                "flex items-center",
+                isActive(level) && "bg-accent text-accent-foreground",
               )}
             >
-              <Type className='mr-2 h-4 w-4' />
+              <Type className="mr-2 h-4 w-4" />
               <span>Heading {level}</span>
             </DropdownMenuItem>
           ))}
           <DropdownMenuItem
             onClick={() => editor?.chain().focus().setParagraph().run()}
             className={cn(
-              'flex items-center',
-              editor?.isActive('paragraph') &&
-                'bg-accent text-accent-foreground'
+              "flex items-center",
+              editor?.isActive("paragraph") &&
+                "bg-accent text-accent-foreground",
             )}
           >
-            <Type className='mr-2 h-4 w-4' />
+            <Type className="mr-2 h-4 w-4" />
             <span>Paragraph</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -82,10 +82,7 @@ export default function AddFeedDialog() {
             <Button
               variant="ghost"
               size="icon"
-              className={cn(
-                "h-8 w-8 hover:bg-accent/50",
-                isOpen && "bg-accent/50",
-              )}
+              className={cn("", isOpen && "bg-accent/50")}
             >
               <Plus className="h-4 w-4" />
               <span className="sr-only">Add feed</span>

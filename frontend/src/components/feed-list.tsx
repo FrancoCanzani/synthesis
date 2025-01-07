@@ -49,20 +49,20 @@ export function FeedList({ feeds, onDeleteFeed }: FeedListProps) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1.5">
               <span className="text-xs font-medium">
                 {getUnreadCount(feed.items)} unread
               </span>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteFeed(feed.link);
                 }}
-                className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                className="opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3 w-3" />
               </Button>
             </div>
           </div>

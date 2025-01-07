@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getToken } from "@/lib/helpers";
 import { Feed } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -99,31 +105,38 @@ export default function FeedsPage() {
             <Separator orientation="vertical" className="h-6" />
             <h2 className="font-medium">Feeds</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-x-1.5">
             <Input
               placeholder="Search feeds..."
-              className="h-8 w-64"
+              className="h-8 w-48 lg:w-64"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button
-              onClick={() => mutation.mutate()}
-              disabled={mutation.isPending}
-              variant="default"
-            >
-              {mutation.isPending ? "Marking..." : "Mark All as Read"}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  onClick={() => mutation.mutate()}
+                  disabled={mutation.isPending}
+                  variant="ghost"
+                  size={"icon"}
+                  className="h-8"
+                >
+                  <Check className="h-4 w-4" />
+                  <span className="sr-only">
+                    {mutation.isPending ? "Marking..." : "Mark All as Read"}
+                  </span>{" "}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Mark all as read</TooltipContent>
+            </Tooltip>
             <AddFeedDialog />
           </div>
         </div>
       </header>
-
-      <div className="flex-1 overflow-auto">
-        <FeedList
-          feeds={filteredFeeds || []}
-          onDeleteFeed={(link) => deleteFeedMutation.mutate(link)}
-        />
-      </div>
+      <FeedList
+        feeds={filteredFeeds || []}
+        onDeleteFeed={(link) => deleteFeedMutation.mutate(link)}
+      />
     </div>
   );
 }
