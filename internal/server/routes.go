@@ -8,12 +8,15 @@ import (
 	"synthesis/internal/server/handlers"
 	"synthesis/internal/services/helmet"
 	"synthesis/internal/services/rate-limit"
+	"synthesis/internal/services/logger"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	router := gin.Default()
 
 	router.Use(helmet.Default())
+
+	router.Use(logger.ZeroLogger())
 
 	rl := rateLimit.NewRateLimiter(10, 50) // 10 RPS, burst of 50
 
