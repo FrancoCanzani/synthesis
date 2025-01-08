@@ -37,42 +37,49 @@ export interface Message {
 }
 
 export interface FeedSource {
+  feedLink: string;
   link: string;
-  user_id: string;
-  update_frequency: string;
-  last_fetch: string | null;
+  userId: string;
+  updateFrequency: string;
+  lastFetch: string | null;
   active: boolean;
-  failure_count: number;
-  created_at: string;
-  updated_at: string;
+  failureCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Feed {
+  feedLink: string;
   link: string;
-  user_id: string;
+  userId: string;
   title: string;
   description: string;
+  imageUrl: string;
+  imageTitle: string;
   updated: string;
-  updated_parsed: string | null;
-  feed_type: string;
-  created_at: string;
-  updated_at: string;
+  updatedParsed: string | null;
+  feedType: string;
+  createdAt: string;
+  updatedAt: string;
   items: FeedItem[];
 }
 
 export interface FeedItem {
   id: number;
-  user_id: string;
+  userId: string;
   title: string;
   description: string;
+  feedLink: string;
   link: string;
+  imageUrl: string;
+  imageTitle: string;
   published: string;
-  published_parsed: string;
+  publishedParsed: string | null;
   updated: string;
-  updated_parsed: string | null;
+  updatedParsed: string | null;
   guid: string;
   read: boolean;
   starred: boolean;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }

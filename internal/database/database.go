@@ -86,6 +86,7 @@ func New() Service {
 		log.Fatal(err)
 	}
 
+
 	dbInstance = &service{
 		db: db,
 	}
@@ -196,7 +197,8 @@ func (s *service) initTables() error {
 
 	queryFeedsSources := `
     CREATE TABLE IF NOT EXISTS feeds_sources (
-        link TEXT PRIMARY KEY,
+        feed_link TEXT PRIMARY KEY,
+		link TEXT NOT NULL,
 		user_id TEXT NOT NULL,
         update_frequency TEXT NOT NULL,
         last_fetch DATETIME,
@@ -213,16 +215,19 @@ func (s *service) initTables() error {
 
 	queryFeeds := `
     CREATE TABLE IF NOT EXISTS feeds (
-        link TEXT PRIMARY KEY,
+        feed_link TEXT PRIMARY KEY,
+		link TEXT NOT NULL,
 		user_id TEXT NOT NULL,
         title TEXT,
         description TEXT,
+		image_url TEXT,
+		image_title TEXT,
         updated DATETIME,
         updated_parsed DATETIME,
         feed_type TEXT,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (link) REFERENCES feeds_sources(link) ON DELETE CASCADE
+        FOREIGN KEY (feed_link) REFERENCES feeds_sources(feed_link) ON DELETE CASCADE
     )`
 
 	_, err = s.db.Exec(queryFeeds)
@@ -230,14 +235,17 @@ func (s *service) initTables() error {
 		return err
 	}
 
+	// link refers to the blog post for example, not the blog link like in the other tables - todo, review this
 	queryFeedsItems := `
     CREATE TABLE IF NOT EXISTS feeds_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id TEXT NOT NULL,
         title TEXT,
         description TEXT,
-        link TEXT,
-        source_link TEXT NOT NULL,
+        feed_link TEXT NOT NULL,
+		link TEXT NOT NULL,
+		image_url TEXT,
+		image_title TEXT,
         published DATETIME,
         published_parsed DATETIME,
         updated DATETIME,
@@ -247,7 +255,7 @@ func (s *service) initTables() error {
         starred BOOLEAN DEFAULT FALSE,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (source_link) REFERENCES feeds(link) ON DELETE CASCADE
+        FOREIGN KEY (feed_link) REFERENCES feeds(feed_link) ON DELETE CASCADE
     )`
 
 	_, err = s.db.Exec(queryFeedsItems)

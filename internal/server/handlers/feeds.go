@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"synthesis/internal/database"
 	"synthesis/internal/models"
@@ -22,16 +23,16 @@ func NewFeedsHandler(db database.Service) *FeedsHandler {
 func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	userId := c.GetString("userId")
 
-	feedURL := c.Query("url")
-	if feedURL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "url parameter is required"})
+	feedLink := c.Query("feedLink")
+	if feedLink == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "feedLink parameter is required"})
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	exists, err := h.db.FeedExists(ctx, feedURL, userId)
+	exists, err := h.db.FeedExists(ctx, feedLink, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to check feed existence"})
 		return
@@ -42,14 +43,16 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	}
 
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURLWithContext(feedURL, ctx)
+	feed, err := fp.ParseURLWithContext(feedLink, ctx)
+
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
 		return
 	}
 
 	feedSource := &models.FeedSource{
-		Link:            feedURL,
+		FeedLink:        feedLink,
+		Link:            feed.Link,
 		UserId:          userId,
 		UpdateFrequency: "1h",
 		Active:          true,
@@ -59,7 +62,8 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	}
 
 	feedModel := &models.Feed{
-		Link:          feedURL,
+		FeedLink:      feedLink,
+		Link:          feed.Link,
 		UserId:        userId,
 		Title:         feed.Title,
 		Description:   feed.Description,
@@ -70,13 +74,18 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		UpdatedAt:     time.Now(),
 	}
 
+	if feed.Image != nil {
+		feedModel.ImageUrl = &feed.Image.URL
+		feedModel.ImageTitle = &feed.Image.Title
+	}
+
 	feedItems := make([]*models.FeedItem, 0)
 	for _, item := range feed.Items {
 		feedItem := &models.FeedItem{
-			SourceLink:      feedURL,
 			UserId:          userId,
 			Title:           item.Title,
 			Description:     item.Description,
+			FeedLink:        feedLink,
 			Link:            item.Link,
 			Published:       item.Published,
 			PublishedParsed: item.PublishedParsed,
@@ -88,9 +97,15 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 			CreatedAt:       time.Now(),
 			UpdatedAt:       time.Now(),
 		}
+
+		if item.Image != nil {
+			feedItem.ImageTitle = item.Image.Title
+			feedItem.ImageUrl = item.Image.URL
+		}
+
 		feedItems = append(feedItems, feedItem)
 	}
-
+	
 	err = h.db.CreateFeed(ctx, feedSource, feedModel, feedItems)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create feed"})
@@ -99,9 +114,12 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"feed":        feedModel,
-		"items_count": len(feedItems),
+		"itemsCount": len(feedItems),
 	})
+
+	c.JSON(http.StatusCreated, feed)
 }
+
 
 func (h *FeedsHandler) GetFeedsHandler(c *gin.Context) {
 	userId := c.GetString("userId")
@@ -116,16 +134,18 @@ func (h *FeedsHandler) GetFeedsHandler(c *gin.Context) {
 }
 
 func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
-	link := c.Query("link")
+	feedLink := c.Query("feedLink")
 
-	if link == "" {
+	if feedLink == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "feed link not provided"})
 		return 
 	}
 
 	userId := c.GetString("userId")
 
-	err := h.db.DeleteFeed(c.Request.Context(), link, userId)
+	err := h.db.DeleteFeed(c.Request.Context(), feedLink, userId)
+	fmt.Println(err)
+
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to delete feed"})
 		return

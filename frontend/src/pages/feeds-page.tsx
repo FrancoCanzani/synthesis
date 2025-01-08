@@ -36,7 +36,7 @@ export default function FeedsPage() {
     mutationFn: async (feedUrl: string) => {
       const token = await getToken();
       const response = await fetch(
-        `${API_URL}/feeds?link=${encodeURIComponent(feedUrl)}`,
+        `${API_URL}/feeds?feedLink=${encodeURIComponent(feedUrl)}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -109,7 +109,8 @@ export default function FeedsPage() {
             <Button
               onClick={() => mutation.mutate()}
               disabled={mutation.isPending}
-              variant="default"
+              variant="ghost"
+              size={"sm"}
             >
               {mutation.isPending ? "Marking..." : "Mark All as Read"}
             </Button>

@@ -57,8 +57,8 @@ export function FeedItem({ item }: FeedItemProps) {
 
   const parsedDate = item.published
     ? new Date(item.published)
-    : item.published_parsed
-      ? new Date(item.published_parsed)
+    : item.publishedParsed
+      ? new Date(item.publishedParsed)
       : null;
 
   const formattedDate =

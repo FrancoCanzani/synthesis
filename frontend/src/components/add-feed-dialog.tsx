@@ -31,7 +31,7 @@ export default function AddFeedDialog() {
       const token = await getToken();
 
       const response = await fetch(
-        `${API_URL}/feeds?url=${encodeURIComponent(urlInput)}`,
+        `${API_URL}/feeds?feedLink=${encodeURIComponent(urlInput)}`,
         {
           method: "POST",
           headers: {
@@ -43,16 +43,15 @@ export default function AddFeedDialog() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add feed");
-      }
+        console.log(errorData);
 
-      const data = await response.json();
+        toast.error(errorData.error || "Failed to add feed");
+        return;
+      }
 
       queryClient.invalidateQueries({ queryKey: ["feeds"] });
 
-      toast.success(
-        `Feed "${data.feed.title}" added with ${data.items_count} items`,
-      );
+      toast.success(`Feed added succesfully`);
       setIsOpen(false);
       setUrlInput("");
     } catch (error) {

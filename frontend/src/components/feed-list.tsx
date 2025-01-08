@@ -58,7 +58,7 @@ export function FeedList({ feeds, onDeleteFeed }: FeedListProps) {
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDeleteFeed(feed.link);
+                  onDeleteFeed(feed.feedLink);
                 }}
                 className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
               >
