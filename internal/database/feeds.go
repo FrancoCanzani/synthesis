@@ -243,7 +243,7 @@ func (s *service) UpdateFeedItem(ctx context.Context, link string, userId string
 	return nil
 }
 
-func (s *service) MarAllFeedItemsAsRead(ctx context.Context, userId string) error {
+func (s *service) MarkAllFeedItemsAsRead(ctx context.Context, userId string) error {
 	query := `
 		UPDATE feeds_items
 		SET read = TRUE

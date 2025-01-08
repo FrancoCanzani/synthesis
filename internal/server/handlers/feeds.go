@@ -21,17 +21,7 @@ func NewFeedsHandler(db database.Service) *FeedsHandler {
 }
 
 func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	feedURL := c.Query("url")
 	if feedURL == "" {
@@ -44,18 +34,18 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	exists, err := h.db.FeedExists(ctx, feedURL, userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to check feed existence"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to check feed existence"})
 		return
 	}
 	if exists {
-		c.JSON(http.StatusConflict, gin.H{"error": "feed already exists for this user"})
+		c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "feed already exists for this user"})
 		return
 	}
 
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(feedURL, ctx)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
 		return
 	}
 
@@ -104,7 +94,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	err = h.db.CreateFeed(ctx, feedSource, feedModel, feedItems)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create feed"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create feed"})
 		return
 	}
 
@@ -115,21 +105,11 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 }
 
 func (h *FeedsHandler) GetFeedsHandler(c *gin.Context) {
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	feeds, err := h.db.GetFeeds(c.Request.Context(), userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch feeds"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch feeds"})
 		return
 	}
 
@@ -144,21 +124,11 @@ func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
 		return 
 	}
 
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	err := h.db.DeleteFeed(c.Request.Context(), link, userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete feed"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to delete feed"})
 		return
 	}
 
@@ -178,17 +148,7 @@ func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
 		return
 	}
 
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user ID not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid User ID type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	allowedAttributes := map[string]bool{
 		"read":    true,
@@ -196,36 +156,25 @@ func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
 	}
 
 	if !allowedAttributes[req.Attribute] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid attribute"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid attribute"})
 		return
 	}
 
 	err := h.db.UpdateFeedItem(c.Request.Context(), req.Link, userId, req.Attribute, req.Value)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update post"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to update post"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "post updated successfully"})
 }
 
-func (h *FeedsHandler) MarAllFeedItemsAsReadHandler(c *gin.Context) {
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "user Id not found"})
-		return
-	}
+func (h *FeedsHandler) MarkAllFeedItemsAsReadHandler(c *gin.Context) {
+	userId := c.GetString("userId")
 
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user Id type"})
-		return
-	}
-
-	err := h.db.MarAllFeedItemsAsRead(c.Request.Context(), userId)
+	err := h.db.MarkAllFeedItemsAsRead(c.Request.Context(), userId)
 	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update feed items"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to update feed items"})
 		return
 	}
 

@@ -25,21 +25,11 @@ func (h *NotesHandler) UpsertNoteHandler(c *gin.Context) {
 	var note *models.Note
 
 	if err := c.BindJSON(&note); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json structure"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid json structure"})
 		return
 	}
 
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	// Check if the note already exists
 	existing, err := h.db.GetNote(c.Request.Context(), note.Id, userId)
@@ -56,7 +46,7 @@ func (h *NotesHandler) UpsertNoteHandler(c *gin.Context) {
 		result, err := h.db.CreateNote(c.Request.Context(), dbNote)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -66,7 +56,6 @@ func (h *NotesHandler) UpsertNoteHandler(c *gin.Context) {
 		note.UserId = userId
 
 		c.JSON(http.StatusCreated, note)
-		return
 	}
 
 	// Update existing note
@@ -83,7 +72,7 @@ func (h *NotesHandler) UpsertNoteHandler(c *gin.Context) {
 	result, err := h.db.UpdateNote(c.Request.Context(), dbNote, userId)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -100,22 +89,12 @@ func (h *NotesHandler) UpsertNoteHandler(c *gin.Context) {
 func (h *NotesHandler) DeleteNoteHandler(c *gin.Context) {
 	id := c.Query("id")
 
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	err := h.db.DeleteNote(c.Request.Context(), id, userId)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -125,21 +104,11 @@ func (h *NotesHandler) DeleteNoteHandler(c *gin.Context) {
 func (h *NotesHandler) GetNoteHandler(c *gin.Context) {
 	id := c.Param("id")
 
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	note, err := h.db.GetNote(c.Request.Context(), id, userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -167,22 +136,12 @@ func (h *NotesHandler) GetPublicNoteHandler(c *gin.Context) {
 }
 
 func (h *NotesHandler) GetNotesHandler(c *gin.Context) {
-	userIdValue, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User Id not found"})
-		return
-	}
-
-	userId, ok := userIdValue.(string)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user Id type"})
-		return
-	}
+	userId := c.GetString("userId")
 
 	notes, err := h.db.GetNotes(c.Request.Context(), userId)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
