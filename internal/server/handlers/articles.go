@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"synthesis/internal/database"
 	"synthesis/internal/models"
-	"synthesis/internal/auth"
-	"synthesis/internal/services/article-scraper"
+	scraper "synthesis/internal/services/article-scraper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,9 +25,7 @@ func (h *ArticlesHandler) GetArticleScrapingHandler(c *gin.Context) {
 		return
 	}
 
-	userId := c.GetString("userId")
-
-	article, err := articleScraper.GetArticle(articleURL)
+	article, err := scraper.GetArticle(articleURL)
 
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

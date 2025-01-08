@@ -1,10 +1,10 @@
 package logger
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/rs/zerolog"
-    "github.com/rs/zerolog/log"
-    "time"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func ZeroLogger() gin.HandlerFunc {

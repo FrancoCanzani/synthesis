@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"synthesis/internal/database"
 	"synthesis/internal/models"
