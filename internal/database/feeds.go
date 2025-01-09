@@ -113,26 +113,14 @@ type FeedWithItems struct {
 
 func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error) {
 	query := `
-        WITH user_feeds AS (
-            SELECT 
-                f.feed_link,
-                f.title,
-                f.link,
-                f.description,
-                f.image_url,
-                f.image_title,
-                f.updated_parsed
-            FROM feeds f
-            WHERE f.user_id = ?
-        )
         SELECT 
-            uf.feed_link,
-            uf.title,
-            uf.link,
-            uf.description,
-            uf.image_url,
-            uf.image_title,
-            uf.updated_parsed,
+            f.feed_link,
+            f.title,
+            f.link,
+            f.description,
+            f.image_url,
+            f.image_title,
+            f.updated_parsed,
             fi.id,
             fi.title AS item_title,
             fi.description AS item_description,
@@ -143,10 +131,13 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
             fi.guid,
             fi.read,
             fi.starred
-        FROM user_feeds uf
-        LEFT JOIN feeds_items fi 
-        ON fi.feed_link = uf.feed_link AND fi.user_id = ?
-        ORDER BY uf.feed_link, fi.published_parsed DESC`
+        FROM feeds f
+        LEFT JOIN feeds_items fi ON (
+            fi.feed_link = f.feed_link 
+            AND fi.user_id = ?
+        )
+        WHERE f.user_id = ?
+        ORDER BY f.feed_link, fi.published_parsed DESC`
 
 	rows, err := s.db.QueryContext(ctx, query, userId, userId)
 	if err != nil {
@@ -250,16 +241,13 @@ func (s *service) DeleteFeed(ctx context.Context, feedLink string, userId string
 `
 
 	result, err := s.db.ExecContext(ctx, query, feedLink, userId)
-	fmt.Println(result)
 	
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("failed to delete feed: %w", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 	if rows == 0 {
