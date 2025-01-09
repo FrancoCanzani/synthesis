@@ -55,6 +55,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		Link:            feed.Link,
 		UserId:          userId,
 		UpdateFrequency: "1h",
+		LastFetch:       time.Now(), 
 		Active:          true,
 		FailureCount:    0,
 		CreatedAt:       time.Now(),
@@ -116,8 +117,6 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		"feed":        feedModel,
 		"itemsCount": len(feedItems),
 	})
-
-	c.JSON(http.StatusCreated, feed)
 }
 
 

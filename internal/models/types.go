@@ -58,10 +58,10 @@ type Article struct {
 
 type FeedSource struct {
 	FeedLink        string     `json:"feedLink"`
-	Link            string     `json:"link"`
+	Link            *string     `json:"link,omitempty"`
 	UserId          string     `json:"userId"`
 	UpdateFrequency string     `json:"updateFrequency"`
-	LastFetch       *time.Time `json:"lastFetch"`
+	LastFetch       *time.Time `json:"lastFetch,omitempty"`
 	Active          bool       `json:"active"`
 	FailureCount    int        `json:"failureCount"`
 	CreatedAt       time.Time  `json:"createdAt"`
@@ -69,34 +69,35 @@ type FeedSource struct {
 }
 
 type Feed struct {
-	FeedLink      string     `json:"feedLink"`
-	Link          string     `json:"link"`
-	UserId        string     `json:"userId"`
-	Title         string     `json:"title"`
-	Description   string     `json:"description"`
-	ImageUrl      *string    `json:"imageUrl"`
-	ImageTitle    *string    `json:"imageTitle"`
-	Updated       string     `json:"updated"`
-	UpdatedParsed *time.Time `json:"updatedParsed"`
-	FeedType      string     `json:"feedType"`
-	CreatedAt     time.Time  `json:"createdAt"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
+	FeedLink      string     `json:"feedLink"`               
+	Link          *string     `json:"link,omitempty"`                 
+	UserId        string     `json:"userId"`                
+	Title         *string    `json:"title,omitempty"`       
+	Description   *string    `json:"description,omitempty"` 
+	ImageUrl      *string    `json:"imageUrl,omitempty"`    
+	ImageTitle    *string    `json:"imageTitle,omitempty"` 
+	Updated       *string     `json:"updated,omitempty"`     
+	UpdatedParsed *time.Time `json:"updatedParsed,omitempty"` 
+	FeedType      *string     `json:"feedType,omitempty"`             
+	CreatedAt     time.Time  `json:"createdAt"`            
+	UpdatedAt     time.Time  `json:"updatedAt"`            
 }
+
 
 type FeedItem struct {
 	Id              int64      `json:"id"`
 	UserId          string     `json:"userId"`
-	Title           string     `json:"title"`
-	Description     string     `json:"description"`
+	Title           *string     `json:"title,omitempty"`
+	Description     *string     `json:"description,omitempty"`
 	FeedLink        string     `json:"feedLink"`
 	Link            string     `json:"link"`
-	ImageUrl        string     `json:"imageUrl"`
-	ImageTitle      string     `json:"imageTitle"`
-	Published       string     `json:"published"`
-	PublishedParsed *time.Time `json:"publishedParsed"`
-	Updated         string     `json:"updated"`
-	UpdatedParsed   *time.Time `json:"updatedParsed"`
-	GUID            string     `json:"guid"`
+	ImageUrl        *string     `json:"imageUrl,omitempty"`
+	ImageTitle      *string     `json:"imageTitle,omitempty"`
+	Published       *string     `json:"published,omitempty"`
+	PublishedParsed *time.Time `json:"publishedParsed,omitempty"`
+	Updated         *string     `json:"updated,omitempty"`
+	UpdatedParsed   *time.Time `json:"updatedParsed,omitempty"`
+	GUID            *string     `json:"guid,omitempty"`
 	Read            bool       `json:"read"`
 	Starred         bool       `json:"starred"`
 	CreatedAt       time.Time  `json:"createdAt"`

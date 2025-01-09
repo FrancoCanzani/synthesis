@@ -15,7 +15,7 @@ func (s *service) FeedExists(ctx context.Context, feedLink string, userId string
 	return exists, err
 }
 
-func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error {
+func (s *service) CreateFeed(ctx context.Context, source models.FeedSource, feed models.Feed, items []models.FeedItem) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -102,15 +102,14 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 
 type FeedWithItems struct {
 	FeedLink      string            `json:"feedLink"`
-	Link          string            `json:"link"`
-	Title         string            `json:"title"`
-	Description   string            `json:"description"`
-	ImageUrl      string            `json:"imageUrl"`
-	ImageTitle    string            `json:"imageTitle"`
-	UpdatedParsed *time.Time        `json:"updatedParsed"`
+	Link          *string            `json:"link,omitempty"`
+	Title         *string            `json:"title,omitempty"`
+	Description   *string            `json:"description,omitempty"`
+	ImageUrl      *string            `json:"imageUrl,omitempty"`
+	ImageTitle    *string            `json:"imageTitle,omitempty"`
+	UpdatedParsed *time.Time        `json:"updatedParsed,omitempty"`
 	Items         []models.FeedItem `json:"items"`
 }
-
 
 func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error) {
 	query := `
@@ -161,9 +160,9 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
 	for rows.Next() {
 		var feed struct {
 			FeedLink      string
-			Title         string
-			Link          string
-			Description   string
+			Title         sql.NullString
+			Link          sql.NullString
+			Description   sql.NullString
 			ImageUrl      sql.NullString
 			ImageTitle    sql.NullString
 			UpdatedParsed *time.Time
