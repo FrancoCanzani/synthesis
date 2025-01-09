@@ -52,7 +52,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	feedSource := &models.FeedSource{
 		FeedLink:        feedLink,
-		Link:            feed.Link,
+		Link:            &feed.Link,
 		UserId:          userId,
 		UpdateFrequency: "1h",
 		LastFetch:       time.Now(), 
@@ -64,13 +64,13 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 
 	feedModel := &models.Feed{
 		FeedLink:      feedLink,
-		Link:          feed.Link,
+		Link:          &feed.Link,
 		UserId:        userId,
-		Title:         feed.Title,
-		Description:   feed.Description,
-		Updated:       feed.Updated,
+		Title:         &feed.Title,
+		Description:   &feed.Description,
+		Updated:       &feed.Updated,
 		UpdatedParsed: feed.UpdatedParsed,
-		FeedType:      feed.FeedType,
+		FeedType:      &feed.FeedType,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 	}
@@ -84,15 +84,15 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	for _, item := range feed.Items {
 		feedItem := &models.FeedItem{
 			UserId:          userId,
-			Title:           item.Title,
-			Description:     item.Description,
+			Title:           &item.Title,
+			Description:     &item.Description,
 			FeedLink:        feedLink,
-			Link:            item.Link,
-			Published:       item.Published,
+			Link:            &item.Link,
+			Published:       &item.Published,
 			PublishedParsed: item.PublishedParsed,
-			Updated:         item.Updated,
+			Updated:         &item.Updated,
 			UpdatedParsed:   item.UpdatedParsed,
-			GUID:            item.GUID,
+			GUID:            &item.GUID,
 			Read:            false,
 			Starred:         false,
 			CreatedAt:       time.Now(),
@@ -100,8 +100,8 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		}
 
 		if item.Image != nil {
-			feedItem.ImageTitle = item.Image.Title
-			feedItem.ImageUrl = item.Image.URL
+			feedItem.ImageTitle = &item.Image.Title
+			feedItem.ImageUrl = &item.Image.URL
 		}
 
 		feedItems = append(feedItems, feedItem)

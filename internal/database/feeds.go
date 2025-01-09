@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"synthesis/internal/models"
 	"time"
@@ -15,7 +14,7 @@ func (s *service) FeedExists(ctx context.Context, feedLink string, userId string
 	return exists, err
 }
 
-func (s *service) CreateFeed(ctx context.Context, source models.FeedSource, feed models.Feed, items []models.FeedItem) error {
+func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -24,9 +23,9 @@ func (s *service) CreateFeed(ctx context.Context, source models.FeedSource, feed
 
 	sourceQuery := `
         INSERT INTO feeds_sources (
-            feed_link, link, user_id, update_frequency, active, failure_count, 
+            feed_link, link, user_id, update_frequency, active, last_fetch, failure_count, 
             created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = tx.ExecContext(ctx, sourceQuery,
 		source.FeedLink,
@@ -34,6 +33,7 @@ func (s *service) CreateFeed(ctx context.Context, source models.FeedSource, feed
 		source.UserId,
 		source.UpdateFrequency,
 		source.Active,
+		source.LastFetch,
 		source.FailureCount,
 		source.CreatedAt,
 		source.UpdatedAt,
@@ -151,22 +151,22 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
 	for rows.Next() {
 		var feed struct {
 			FeedLink      string
-			Title         sql.NullString
-			Link          sql.NullString
-			Description   sql.NullString
-			ImageUrl      sql.NullString
-			ImageTitle    sql.NullString
+			Title         *string
+			Link          *string
+			Description   *string
+			ImageUrl      *string
+			ImageTitle    *string
 			UpdatedParsed *time.Time
-			ItemID        sql.NullInt64
-			ItemTitle     sql.NullString
-			ItemDesc      sql.NullString
-			ItemLink      sql.NullString
-			ItemImageUrl  sql.NullString
-			ItemImageTitle sql.NullString
+			ItemId        int64
+			ItemTitle     *string
+			ItemDesc      *string
+			ItemLink      *string
+			ItemImageUrl  *string
+			ItemImageTitle *string
 			ItemPublished *time.Time
-			ItemGUID      sql.NullString
-			ItemRead      sql.NullBool
-			ItemStarred   sql.NullBool
+			ItemGUID      *string
+			ItemRead      bool
+			ItemStarred   bool
 		}
 
 		err := rows.Scan(
@@ -177,7 +177,7 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
 			&feed.ImageUrl,
 			&feed.ImageTitle,
 			&feed.UpdatedParsed,
-			&feed.ItemID,
+			&feed.ItemId,
 			&feed.ItemTitle,
 			&feed.ItemDesc,
 			&feed.ItemLink,
@@ -198,29 +198,28 @@ func (s *service) GetFeeds(ctx context.Context, userId string) ([]FeedWithItems,
 				Title:         feed.Title,
 				Link:          feed.Link,
 				Description:   feed.Description,
-				ImageUrl:      feed.ImageUrl.String,
-				ImageTitle:    feed.ImageTitle.String,
+				ImageUrl:      feed.ImageUrl,
+				ImageTitle:    feed.ImageTitle,
 				UpdatedParsed: feed.UpdatedParsed,
 				Items:         make([]models.FeedItem, 0),
 			}
 		}
 
-		if feed.ItemID.Valid {
-			item := models.FeedItem{
-				Id:              feed.ItemID.Int64,
-				Title:           feed.ItemTitle.String,
-				Description:     feed.ItemDesc.String,
-				Link:            feed.ItemLink.String,
-				ImageUrl:        feed.ItemImageUrl.String,
-				ImageTitle:      feed.ItemImageTitle.String,
-				PublishedParsed: feed.ItemPublished,
-				GUID:            feed.ItemGUID.String,
-				Read:            feed.ItemRead.Bool,
-				Starred:         feed.ItemStarred.Bool,
-			}
+		item := models.FeedItem{
+			Id:              feed.ItemId,
+			Title:           feed.ItemTitle,
+			Description:     feed.ItemDesc,
+			Link:            feed.ItemLink,
+			ImageUrl:        feed.ItemImageUrl,
+			ImageTitle:      feed.ItemImageTitle,
+			PublishedParsed: feed.ItemPublished,
+			GUID:            feed.ItemGUID,
+			Read:            feed.ItemRead,
+			Starred:         feed.ItemStarred,
+		}
 			feedsMap[feed.FeedLink].Items = append(feedsMap[feed.FeedLink].Items, item)
 		}
-	}
+	
 
 	if err = rows.Err(); err != nil {
 		return nil, err

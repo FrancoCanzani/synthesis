@@ -61,7 +61,7 @@ type FeedSource struct {
 	Link            *string     `json:"link,omitempty"`
 	UserId          string     `json:"userId"`
 	UpdateFrequency string     `json:"updateFrequency"`
-	LastFetch       *time.Time `json:"lastFetch,omitempty"`
+	LastFetch       time.Time `json:"lastFetch,omitempty"`
 	Active          bool       `json:"active"`
 	FailureCount    int        `json:"failureCount"`
 	CreatedAt       time.Time  `json:"createdAt"`
@@ -89,8 +89,8 @@ type FeedItem struct {
 	UserId          string     `json:"userId"`
 	Title           *string     `json:"title,omitempty"`
 	Description     *string     `json:"description,omitempty"`
-	FeedLink        string     `json:"feedLink"`
-	Link            string     `json:"link"`
+	FeedLink        string     `json:"feedLink,omitempty"`
+	Link            *string     `json:"link,omitempty"`
 	ImageUrl        *string     `json:"imageUrl,omitempty"`
 	ImageTitle      *string     `json:"imageTitle,omitempty"`
 	Published       *string     `json:"published,omitempty"`
