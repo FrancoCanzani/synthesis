@@ -30,11 +30,11 @@ type Service interface {
 	DeleteArticle(ctx context.Context, id string, user_id string) error
 	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
-	GetFeeds(ctx context.Context, userId string) ([]FeedWithItems, error)
+	GetFeedItems(ctx context.Context, userId string, limit int, offset int) ([]*models.FeedItemWithFeed, error) 
 	DeleteFeed(ctx context.Context, link string, userId string) error
-	UpdateFeedItem(ctx context.Context, link string, userId string, attribute string, value any) error
+	UpdateFeedItem(ctx context.Context, id int64, userId string, attribute string, value any) error
 	MarkAllFeedItemsAsRead(ctx context.Context, userId string) error
-	
+
 	Close() error
 }
 
@@ -85,7 +85,6 @@ func New() Service {
 	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		log.Fatal(err)
 	}
-
 
 	dbInstance = &service{
 		db: db,
@@ -242,6 +241,7 @@ func (s *service) initTables() error {
 		user_id TEXT NOT NULL,
         title TEXT,
         description TEXT,
+		content TEXT,
         feed_link TEXT NOT NULL,
 		link TEXT NOT NULL,
 		image_url TEXT,

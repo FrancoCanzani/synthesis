@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"synthesis/internal/database"
 	"synthesis/internal/models"
 	"time"
@@ -45,6 +46,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(feedLink, ctx)
 
+	fmt.Println(feed)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
 		return
@@ -55,7 +57,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		Link:            &feed.Link,
 		UserId:          userId,
 		UpdateFrequency: "1h",
-		LastFetch:       time.Now(), 
+		LastFetch:       time.Now(),
 		Active:          true,
 		FailureCount:    0,
 		CreatedAt:       time.Now(),
@@ -75,9 +77,11 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		UpdatedAt:     time.Now(),
 	}
 
-	if feed.Image != nil {
+	if feed.Image != nil && feed.Image.URL != "" {
 		feedModel.ImageUrl = &feed.Image.URL
-		feedModel.ImageTitle = &feed.Image.Title
+		if feed.Image.Title != "" {
+			feedModel.ImageTitle = &feed.Image.Title
+		}
 	}
 
 	feedItems := make([]*models.FeedItem, 0)
@@ -86,6 +90,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 			UserId:          userId,
 			Title:           &item.Title,
 			Description:     &item.Description,
+			Content: 		&item.Content,
 			FeedLink:        feedLink,
 			Link:            &item.Link,
 			Published:       &item.Published,
@@ -99,14 +104,16 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 			UpdatedAt:       time.Now(),
 		}
 
-		if item.Image != nil {
-			feedItem.ImageTitle = &item.Image.Title
+		if item.Image != nil && item.Image.URL != "" {
 			feedItem.ImageUrl = &item.Image.URL
+			if item.Image.Title != "" {
+				feedItem.ImageTitle = &item.Image.Title
+			}
 		}
 
 		feedItems = append(feedItems, feedItem)
 	}
-	
+
 	err = h.db.CreateFeed(ctx, feedSource, feedModel, feedItems)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to create feed"})
@@ -114,22 +121,37 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"feed":        feedModel,
+		"feed":       feedModel,
 		"itemsCount": len(feedItems),
 	})
 }
 
+func (h *FeedsHandler) GetFeedItemsHandler(c *gin.Context) {
+    userId := c.GetString("userId")
+    
+    limit := 50 // default limit
+    offset := 0
+    
+    if limitStr := c.Query("limit"); limitStr != "" {
+        if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+            limit = l
+        }
+    }
+    
+    if offsetStr := c.Query("offset"); offsetStr != "" {
+        if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+            offset = o
+        }
+    }
 
-func (h *FeedsHandler) GetFeedsHandler(c *gin.Context) {
-	userId := c.GetString("userId")
+    items, err := h.db.GetFeedItems(c, userId, limit, offset)
+    if err != nil {
+		fmt.Println(err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})
+        return
+    }
 
-	feeds, err := h.db.GetFeeds(c.Request.Context(), userId)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch feeds"})
-		return
-	}
-
-	c.JSON(http.StatusOK, feeds)
+    c.JSON(http.StatusOK, items)
 }
 
 func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
@@ -137,7 +159,7 @@ func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
 
 	if feedLink == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "feed link not provided"})
-		return 
+		return
 	}
 
 	userId := c.GetString("userId")
@@ -155,7 +177,7 @@ func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
 
 func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
 	type UpdateRequest struct {
-		Link   string `json:"link" binding:"required"`
+		Id      int64 `json:"id" binding:"required"`
 		Attribute string `json:"attribute" binding:"required"`
 		Value     any    `json:"value" binding:"required"`
 	}
@@ -178,7 +200,7 @@ func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
 		return
 	}
 
-	err := h.db.UpdateFeedItem(c.Request.Context(), req.Link, userId, req.Attribute, req.Value)
+	err := h.db.UpdateFeedItem(c.Request.Context(), req.Id, userId, req.Attribute, req.Value)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to update post"})
 		return

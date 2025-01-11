@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -43,7 +48,6 @@ export default function AddFeedDialog() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData);
 
         toast.error(errorData.error || "Failed to add feed");
         return;
@@ -87,7 +91,7 @@ export default function AddFeedDialog() {
               )}
             >
               <Plus className="h-4 w-4" />
-              <span className="sr-only">Add feed</span>
+              <DialogTitle className="sr-only">Add feed</DialogTitle>
             </Button>
           </DialogTrigger>
         </TooltipTrigger>
@@ -96,9 +100,12 @@ export default function AddFeedDialog() {
         </TooltipContent>
       </Tooltip>
 
-      <DialogContent className="mx-auto flex w-full max-w-md flex-col gap-y-4 px-4 pb-4 pt-4 text-sm sm:max-w-[550px]">
+      <DialogContent
+        aria-describedby={undefined}
+        className="mx-auto flex w-full max-w-md flex-col gap-y-4 px-4 pb-4 pt-4 text-sm sm:max-w-[550px]"
+      >
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Add a New Feed</h2>
+          <h2 className="text-lg font-medium">Add a New Feed</h2>
           <p className="text-sm text-muted-foreground">
             Supports Atom, RSS, and JSON feeds.
           </p>

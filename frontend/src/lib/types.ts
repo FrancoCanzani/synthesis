@@ -36,50 +36,29 @@ export interface Message {
   content: string;
 }
 
-export interface FeedSource {
-  feedLink: string;
-  link: string;
-  userId: string;
-  updateFrequency: string;
-  lastFetch: string | null;
-  active: boolean;
-  failureCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Feed {
-  feedLink: string;
-  link: string;
-  userId: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  imageTitle: string;
-  updated: string;
-  updatedParsed: string | null;
-  feedType: string;
-  createdAt: string;
-  updatedAt: string;
-  items: FeedItem[];
-}
-
 export interface FeedItem {
   id: number;
-  userId: string;
-  title: string;
-  description: string;
-  feedLink: string;
-  link: string;
-  imageUrl: string;
-  imageTitle: string;
-  published: string;
-  publishedParsed: string | null;
-  updated: string;
-  updatedParsed: string | null;
-  guid: string;
+  userId?: string;
+  title?: string;
+  description?: string;
+  content?: string;
+  feedLink?: string;
+  link?: string;
+  imageUrl?: string;
+  imageTitle?: string;
+  published?: string;
+  publishedParsed?: string; // ISO date string
+  updated?: string;
+  updatedParsed?: string; // ISO date string
+  guid?: string;
   read: boolean;
   starred: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+  feed: {
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+    feedType?: string;
+  };
 }

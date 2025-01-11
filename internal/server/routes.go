@@ -1,14 +1,15 @@
 package server
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"synthesis/internal/auth"
 	"synthesis/internal/server/handlers"
 	"synthesis/internal/services/helmet"
-	"synthesis/internal/services/rate-limit"
 	"synthesis/internal/services/logger"
+	rateLimit "synthesis/internal/services/rate-limit"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -67,7 +68,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	feeds.Use(auth.AuthMiddleware())
 	{
 		feeds.POST("", feedsHandler.CreateFeedHandler)
-		feeds.GET("", feedsHandler.GetFeedsHandler)
+		feeds.GET("", feedsHandler.GetFeedItemsHandler)
 		feeds.DELETE("", feedsHandler.DeleteFeedHandler)
 		feeds.PUT("", feedsHandler.UpdateFeedItemHandler)
 		feeds.PUT("/mark-all-read", feedsHandler.MarkAllFeedItemsAsReadHandler)
