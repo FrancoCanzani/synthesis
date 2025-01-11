@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface ActionButtonProps extends ButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   className?: string;
   children: ReactNode;
   tooltipContent: string;
@@ -28,7 +28,7 @@ export default function ActionButton({
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-8 w-8 hover:bg-accent", className)}
+          className={cn("h-8 w-8 hover:bg-accent/50", className)}
           onClick={onClick}
           {...props}
         >

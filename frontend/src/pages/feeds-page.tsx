@@ -68,7 +68,7 @@ export default function FeedsPage() {
       <header className="bg-background p-2 md:p-4">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold sm:text-2xl md:text-3xl">
+            <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">
               Feeds
             </h2>
           </div>

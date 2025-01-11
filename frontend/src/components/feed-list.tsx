@@ -119,7 +119,7 @@ function FeedItemCard({ item }: { item: FeedItem }) {
       </SheetTrigger>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="w-full overflow-y-scroll md:max-w-2xl"
+        className="max-h-[85%] w-full overflow-y-scroll md:max-h-full md:max-w-2xl"
       >
         <SheetHeader className="space-y-2">
           <SheetTitle className="text-xl font-bold">{item.title}</SheetTitle>
