@@ -4,7 +4,11 @@ import ActionButton from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { getToken } from "@/lib/helpers";
 import { FeedItem } from "@/lib/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { CheckCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,20 +19,33 @@ export default function FeedsPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const {
-    isPending,
-    error,
-    data: feedItems,
-  } = useQuery({
-    queryKey: ["feeds"],
-    queryFn: async () => {
-      const token = await getToken();
-      const response = await fetch(`${API_URL}/feeds`, {
+  const fetchFeedItems = async ({ pageParam }: { pageParam: number }) => {
+    const limit = 50;
+    const order = "DESC";
+    const token = await getToken();
+    const res = await fetch(
+      `${API_URL}/feeds?order=${order}&limit=${limit}&offset=${pageParam}`,
+      {
         headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Failed to fetch feeds");
-      return response.json() as Promise<FeedItem[]>;
+      },
+    );
+    return res.json();
+  };
+
+  const {
+    data,
+    error,
+    isPending,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["feeds"],
+    queryFn: fetchFeedItems,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.length === 50 ? pages.length * 50 : undefined;
     },
+    initialPageParam: 0,
   });
 
   async function markAllAsRead() {
@@ -49,7 +66,7 @@ export default function FeedsPage() {
   const mutation = useMutation({
     mutationFn: markAllAsRead,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      queryClient.invalidateQueries({ queryKey: ["feedItems"] });
       toast.success("All posts marked as read.");
     },
     onError: () => {
@@ -57,7 +74,13 @@ export default function FeedsPage() {
     },
   });
 
-  const unread = feedItems?.filter((item) => item.read == false);
+  let feedItems: FeedItem[] = [];
+
+  data?.pages.forEach((page) => (feedItems = feedItems.concat(page)));
+
+  const unread = feedItems.filter((item) => item.read == false);
+
+  console.log(unread);
 
   if (isPending) return <div className="p-4">Loading feeds...</div>;
   if (error)
@@ -97,7 +120,12 @@ export default function FeedsPage() {
       </header>
 
       <div className="mx-auto flex w-full max-w-4xl flex-1">
-        <FeedList feedItems={feedItems || []} />
+        <FeedList
+          feedItems={feedItems || []}
+          fetchNextPage={fetchNextPage}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+        />
       </div>
     </div>
   );

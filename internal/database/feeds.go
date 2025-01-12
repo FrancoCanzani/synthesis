@@ -101,8 +101,8 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 }
 
 
-func (s *service) GetFeedItems(ctx context.Context, userId string, limit int, offset int) ([]*models.FeedItemWithFeed, error) {
-    query := `
+func (s *service) GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error) {
+    query := fmt.Sprintf(`
         SELECT 
             fi.id, fi.user_id, fi.title, fi.description, fi.content, fi.feed_link, fi.link, 
             fi.image_url, fi.image_title, fi.published, fi.published_parsed, 
@@ -113,8 +113,8 @@ func (s *service) GetFeedItems(ctx context.Context, userId string, limit int, of
         FROM feeds_items fi
         JOIN feeds f ON fi.feed_link = f.feed_link AND fi.user_id = f.user_id
         WHERE fi.user_id = ?
-        ORDER BY fi.published_parsed DESC
-        LIMIT ? OFFSET ?`
+        ORDER BY fi.published_parsed %s
+        LIMIT ? OFFSET ?`, order)
 
     rows, err := s.db.QueryContext(ctx, query, userId, limit, offset)
     if err != nil {

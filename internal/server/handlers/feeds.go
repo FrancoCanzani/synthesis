@@ -129,7 +129,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 func (h *FeedsHandler) GetFeedItemsHandler(c *gin.Context) {
     userId := c.GetString("userId")
     
-    limit := 50 // default limit
+    limit := 50 
     offset := 0
     
     if limitStr := c.Query("limit"); limitStr != "" {
@@ -144,7 +144,15 @@ func (h *FeedsHandler) GetFeedItemsHandler(c *gin.Context) {
         }
     }
 
-    items, err := h.db.GetFeedItems(c, userId, limit, offset)
+    order := c.Query("order"); 
+	
+	if order != "" {
+		if order != "ASC" && order != "DESC" {
+			order = "DESC"
+		}
+    }
+
+    items, err := h.db.GetFeedItems(c, userId, order, limit, offset)
     if err != nil {
 		fmt.Println(err)
         c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})

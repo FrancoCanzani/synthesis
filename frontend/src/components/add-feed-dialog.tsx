@@ -53,7 +53,7 @@ export default function AddFeedDialog() {
         return;
       }
 
-      queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      queryClient.invalidateQueries({ queryKey: ["feedItems"] });
 
       toast.success(`Feed added succesfully`);
       setIsOpen(false);

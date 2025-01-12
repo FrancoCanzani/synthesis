@@ -7,6 +7,7 @@ import { format, formatDistanceToNowStrict } from "date-fns";
 import { Check, Copy, ExternalLink, Share, Star, X } from "lucide-react";
 import { toast } from "sonner";
 import ActionButton from "./ui/action-button";
+import { Button } from "./ui/button";
 import {
   Sheet,
   SheetContent,
@@ -14,7 +15,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-
 const API_URL = import.meta.env.VITE_API_URL;
 
 const GROUP_ORDER = [
@@ -26,7 +26,17 @@ const GROUP_ORDER = [
   "Older",
 ];
 
-export function FeedList({ feedItems }: { feedItems: FeedItem[] }) {
+export function FeedList({
+  feedItems,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+}: {
+  feedItems: FeedItem[];
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+}) {
   const groupedItems = groupFeedItems(feedItems);
 
   return (
@@ -37,6 +47,16 @@ export function FeedList({ feedItems }: { feedItems: FeedItem[] }) {
           .map(([group, items]) => (
             <FeedGroup key={group} group={group} items={items as FeedItem[]} />
           ))}
+      </div>
+      <div className="flex items-center justify-center py-6">
+        <Button
+          variant={"ghost"}
+          size={"sm"}
+          onClick={() => fetchNextPage()}
+          disabled={!hasNextPage || isFetchingNextPage}
+        >
+          {isFetchingNextPage ? "Getting more feeds..." : "Get more feeds"}
+        </Button>
       </div>
     </div>
   );
@@ -50,15 +70,15 @@ function FeedGroup({ group, items }: { group: string; items: FeedItem[] }) {
         <div className="flex-1 border-t border-border"></div>
       </div>
       <div className="space-y-2">
-        {items.map((item) => (
-          <FeedItemCard key={item.id} item={item} />
+        {items.map((item: FeedItem) => (
+          <FeedItemSheet key={item.id} item={item} />
         ))}
       </div>
     </div>
   );
 }
 
-function FeedItemCard({ item }: { item: FeedItem }) {
+function FeedItemSheet({ item }: { item: FeedItem }) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
@@ -80,7 +100,7 @@ function FeedItemCard({ item }: { item: FeedItem }) {
       },
       body: JSON.stringify({ attribute, value, id }),
     });
-    queryClient.invalidateQueries({ queryKey: ["feeds"] });
+    queryClient.invalidateQueries({ queryKey: ["feedItems"] });
 
     if (!response.ok) {
       toast.error("Failed to update post state");
@@ -102,7 +122,9 @@ function FeedItemCard({ item }: { item: FeedItem }) {
             <div className="flex w-full items-center justify-start gap-4">
               <div className="flex w-full flex-col items-start justify-start gap-0.5">
                 <div className="flex w-full items-center justify-between">
-                  <p className="min-w-max truncate font-medium">{item.title}</p>
+                  <p className="min-w-max truncate font-medium">
+                    {item?.title}
+                  </p>
                 </div>
                 <div className="flex w-full items-center justify-between">
                   <p className="truncate text-sm text-muted-foreground">
@@ -122,7 +144,7 @@ function FeedItemCard({ item }: { item: FeedItem }) {
         className="max-h-[85%] w-full overflow-y-scroll md:max-h-full md:max-w-2xl"
       >
         <SheetHeader className="space-y-2">
-          <SheetTitle className="text-xl font-bold">{item.title}</SheetTitle>
+          <SheetTitle className="text-xl font-bold">{item?.title}</SheetTitle>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{item.feed.title}</span>
