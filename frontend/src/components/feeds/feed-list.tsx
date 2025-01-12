@@ -3,7 +3,7 @@ import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { FeedItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, formatDistanceToNowStrict } from "date-fns";
+import { format } from "date-fns";
 import { Check, Copy, ExternalLink, Star, X } from "lucide-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
@@ -145,7 +145,7 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
                   </p>
                 </div>
                 <div className="flex w-full items-center justify-between">
-                  <p className="truncate text-sm text-muted-foreground">
+                  <p className="w-3/4 truncate text-sm text-muted-foreground">
                     {item.feed.title}
                   </p>
                   <span className="text-xs text-muted-foreground">
@@ -163,27 +163,16 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
       >
         <SheetHeader className="space-y-2">
           <SheetTitle className="text-xl font-bold">{item?.title}</SheetTitle>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-x-1.5 text-sm text-muted-foreground">
-              <span>{item.feed.title}</span>
-              <span className="hidden sm:block">‧</span>
-              <time className="hidden sm:block">
-                {formatDistanceToNowStrict(
-                  new Date(
-                    item.publishedParsed ||
-                      item.updatedParsed ||
-                      item.createdAt,
-                  ),
-                  { addSuffix: true },
-                )}
-              </time>
+          <div className="flex flex-col items-start justify-between space-y-2 md:flex-row md:items-center md:space-y-0">
+            <div className="flex w-full items-center gap-x-1.5 text-sm text-muted-foreground md:w-1/2">
+              <span className="truncate">{item.feed.title}</span>
               <span>‧</span>
               <UnsubscribeFeedDialog
                 feedLink={item.feedLink}
                 feedTitle={item.feed.title}
               />
             </div>
-            <div className="flex items-center gap-x-1.5">
+            <div className="flex w-full items-center justify-end gap-x-1.5 md:w-fit">
               <ActionButton
                 tooltipContent={item.starred ? "Unstar" : "Star"}
                 onClick={async () =>
