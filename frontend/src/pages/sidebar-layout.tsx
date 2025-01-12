@@ -1,3 +1,4 @@
+import MobileFooterMenu from "@/components/mobile-footer-menu";
 import { AppSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/hooks/use-auth";
@@ -21,6 +22,7 @@ export default function SidebarLayout() {
         <AppSidebar />
         <main className="flex h-screen min-w-0 flex-1 flex-col">
           <Outlet />
+          <MobileFooterMenu />
         </main>
       </div>
     </SidebarProvider>

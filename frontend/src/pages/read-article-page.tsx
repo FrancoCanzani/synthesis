@@ -33,7 +33,7 @@ export default function ReadArticlePage() {
   });
 
   return (
-    <main className="mx-auto flex h-screen w-full max-w-5xl flex-col p-2 md:p-4">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
       <Link to={"/articles"} className="p-2 text-xs hover:underline">
         ← Go back to articles
       </Link>

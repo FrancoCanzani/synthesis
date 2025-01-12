@@ -95,7 +95,7 @@ export default function FeedsPage() {
     return <div className="p-4">Error loading feeds: {error.message}</div>;
 
   return (
-    <div className="mx-auto flex h-screen w-full max-w-5xl flex-col p-2 md:p-4">
+    <div className="mx-auto flex h-screen w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
       <header className="bg-background p-2 md:p-4">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
