@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { Check, Copy, ExternalLink, Share, Star, X } from "lucide-react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import ActionButton from "./ui/action-button";
@@ -39,26 +40,29 @@ export function FeedList({
   isFetchingNextPage: boolean;
 }) {
   const groupedItems = groupFeedItems(feedItems);
+  const [searchParams] = useSearchParams();
+  const order = searchParams.get("order");
 
-  const [searchParams] = useSearchParams({ order: "" });
+  const sortedGroupOrder = useMemo(() => {
+    return order === "asc" ? GROUP_ORDER : [...GROUP_ORDER].reverse();
+  }, [order]);
 
-  const sortedGroupOrder =
-    searchParams.get("order") === "asc"
-      ? //@ts-expect-error to reversed not supported
-        GROUP_ORDER.toReversed()
-      : GROUP_ORDER;
+  const sortedEntries = useMemo(() => {
+    const entries = Object.entries(groupedItems).sort((a, b) => {
+      const indexA = sortedGroupOrder.indexOf(a[0]);
+      const indexB = sortedGroupOrder.indexOf(b[0]);
+      return indexA - indexB;
+    });
+
+    return order === "desc" ? entries.reverse() : entries;
+  }, [groupedItems, sortedGroupOrder, order]);
 
   return (
     <div className="w-full">
       <div className="space-y-6 p-4">
-        {Object.entries(groupedItems)
-          .sort(
-            (a, b) =>
-              sortedGroupOrder.indexOf(a[0]) - sortedGroupOrder.indexOf(b[0]),
-          )
-          .map(([group, items]) => (
-            <FeedGroup key={group} group={group} items={items as FeedItem[]} />
-          ))}
+        {sortedEntries.map(([group, items]) => (
+          <FeedGroup key={group} group={group} items={items as FeedItem[]} />
+        ))}
       </div>
       <div className="flex items-center justify-center py-6">
         <Button

@@ -147,8 +147,8 @@ func (h *FeedsHandler) GetFeedItemsHandler(c *gin.Context) {
     order := c.Query("order"); 
 	
 	if order != "" {
-		if order != "ASC" && order != "" {
-			order = ""
+		if order != "ASC" && order != "DESC" {
+			order = "DESC"
 		}
     }
 

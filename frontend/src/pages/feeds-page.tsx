@@ -43,7 +43,7 @@ export default function FeedsPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["feeds"],
+    queryKey: ["feedItems", searchParams.get("order")], // Add order to queryKey
     queryFn: fetchFeedItems,
     getNextPageParam: (lastPage, pages) => {
       return lastPage.length === 50 ? pages.length * 50 : undefined;
@@ -77,8 +77,15 @@ export default function FeedsPage() {
     },
   });
 
-  let feedItems: FeedItem[] = [];
+  const handleOrderChange = () => {
+    const order = searchParams.get("order");
+    const newOrder = order === "asc" ? "desc" : "asc";
+    setSearchParams({ order: newOrder });
 
+    queryClient.invalidateQueries({ queryKey: ["feedItems", order] });
+  };
+
+  let feedItems: FeedItem[] = [];
   data?.pages.forEach((page) => (feedItems = feedItems.concat(page)));
 
   const unread = feedItems.filter((item) => item.read == false);
@@ -100,34 +107,26 @@ export default function FeedsPage() {
             <Label className="sr-only">Search feeds</Label>
             <Input
               placeholder="Search feeds..."
-              className="h-8 w-64"
+              className="hidden h-8 w-64 sm:block"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <ActionButton
-              onClick={() => {
-                const order = searchParams.get("order");
-                if (order === "") {
-                  setSearchParams({ order: "asc" });
-                } else {
-                  setSearchParams({ order: "desc" });
-                }
-                queryClient.invalidateQueries({ queryKey: ["feedItems"] });
-              }}
+              onClick={handleOrderChange}
               disabled={isPending || isFetchingNextPage}
               tooltipContent={
-                searchParams.get("order") == "asc"
+                searchParams.get("order") === "asc"
                   ? "Sort descending"
                   : "Sort ascending"
               }
             >
-              {searchParams.get("order") == "asc" ? (
+              {searchParams.get("order") === "asc" ? (
                 <CalendarArrowDown className="h-4 w-4" />
               ) : (
                 <CalendarArrowUp className="h-4 w-4" />
               )}
               <span className="sr-only">
-                {searchParams.get("order") == "asc"
+                {searchParams.get("order") === "asc"
                   ? "Sort descending"
                   : "Sort ascending"}
               </span>
