@@ -2,6 +2,7 @@ import AddFeedDialog from "@/components/add-feed-dialog";
 import { FeedList } from "@/components/feed-list";
 import ActionButton from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { getToken } from "@/lib/helpers";
 import { FeedItem } from "@/lib/types";
 import {
@@ -9,8 +10,9 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { CheckCheck } from "lucide-react";
+import { CalendarArrowDown, CalendarArrowUp, CheckCheck } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -18,10 +20,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function FeedsPage() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams({ order: "" });
 
   const fetchFeedItems = async ({ pageParam }: { pageParam: number }) => {
     const limit = 50;
-    const order = "DESC";
+    const order = searchParams.get("order") === "asc" ? "ASC" : "DESC";
     const token = await getToken();
     const res = await fetch(
       `${API_URL}/feeds?order=${order}&limit=${limit}&offset=${pageParam}`,
@@ -80,8 +83,6 @@ export default function FeedsPage() {
 
   const unread = feedItems.filter((item) => item.read == false);
 
-  console.log(unread);
-
   if (isPending) return <div className="p-4">Loading feeds...</div>;
   if (error)
     return <div className="p-4">Error loading feeds: {error.message}</div>;
@@ -96,12 +97,41 @@ export default function FeedsPage() {
             </h2>
           </div>
           <div className="flex items-center gap-2">
+            <Label className="sr-only">Search feeds</Label>
             <Input
               placeholder="Search feeds..."
               className="h-8 w-64"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <ActionButton
+              onClick={() => {
+                const order = searchParams.get("order");
+                if (order === "") {
+                  setSearchParams({ order: "asc" });
+                } else {
+                  setSearchParams({ order: "desc" });
+                }
+                queryClient.invalidateQueries({ queryKey: ["feedItems"] });
+              }}
+              disabled={isPending || isFetchingNextPage}
+              tooltipContent={
+                searchParams.get("order") == "asc"
+                  ? "Sort descending"
+                  : "Sort ascending"
+              }
+            >
+              {searchParams.get("order") == "asc" ? (
+                <CalendarArrowDown className="h-4 w-4" />
+              ) : (
+                <CalendarArrowUp className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {searchParams.get("order") == "asc"
+                  ? "Sort descending"
+                  : "Sort ascending"}
+              </span>
+            </ActionButton>
             <ActionButton
               onClick={() => mutation.mutate()}
               disabled={mutation.isPending || !unread || unread.length === 0}

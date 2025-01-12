@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNowStrict } from "date-fns";
 import { Check, Copy, ExternalLink, Share, Star, X } from "lucide-react";
+import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import ActionButton from "./ui/action-button";
 import { Button } from "./ui/button";
@@ -39,11 +40,22 @@ export function FeedList({
 }) {
   const groupedItems = groupFeedItems(feedItems);
 
+  const [searchParams] = useSearchParams({ order: "" });
+
+  const sortedGroupOrder =
+    searchParams.get("order") === "asc"
+      ? //@ts-expect-error to reversed not supported
+        GROUP_ORDER.toReversed()
+      : GROUP_ORDER;
+
   return (
     <div className="w-full">
       <div className="space-y-6 p-4">
         {Object.entries(groupedItems)
-          .sort((a, b) => GROUP_ORDER.indexOf(a[0]) - GROUP_ORDER.indexOf(b[0]))
+          .sort(
+            (a, b) =>
+              sortedGroupOrder.indexOf(a[0]) - sortedGroupOrder.indexOf(b[0]),
+          )
           .map(([group, items]) => (
             <FeedGroup key={group} group={group} items={items as FeedItem[]} />
           ))}
