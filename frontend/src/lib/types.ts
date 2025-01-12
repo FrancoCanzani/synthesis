@@ -13,21 +13,21 @@ export interface Note {
 
 export interface Article {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
-  site_name: string;
+  siteName: string;
   url: string;
   author: string;
   excerpt: string;
   image: string;
   favicon: string;
   content: string;
-  text_content: string;
-  published_time: string;
-  modified_time: string;
+  textContent: string;
+  publishedTime: string;
+  modifiedTime: string;
   language: string;
   length: number;
-  scraped_at: string;
+  scrapedAt: string;
 }
 
 export interface Message {

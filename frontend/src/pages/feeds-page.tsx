@@ -43,7 +43,7 @@ export default function FeedsPage() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["feedItems", searchParams.get("order")], // Add order to queryKey
+    queryKey: ["feedItems", searchParams.get("order")],
     queryFn: fetchFeedItems,
     getNextPageParam: (lastPage, pages) => {
       return lastPage.length === 50 ? pages.length * 50 : undefined;

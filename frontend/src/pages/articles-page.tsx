@@ -7,8 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { copyToClipboard, getToken, normalizeText } from "@/lib/helpers";
 import { Article } from "@/lib/types";
@@ -30,10 +28,11 @@ export default function ArticlesPage() {
       const response = await fetch(`${API_URL}/articles/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error("Failed to fetch articles");
       return response.json();
     },
   });
+
+  console.log(data);
 
   const query = searchParams.get("q")?.toLowerCase() || "";
 
@@ -41,8 +40,8 @@ export default function ArticlesPage() {
     if (!query) return true;
 
     const normalizedTitle = normalizeText(article.title);
-    const normalizedSiteName = article.site_name
-      ? normalizeText(article.site_name)
+    const normalizedSiteName = article.siteName
+      ? normalizeText(article.siteName)
       : "";
     const normalizedQuery = normalizeText(query);
 
@@ -53,13 +52,13 @@ export default function ArticlesPage() {
   });
 
   return (
-    <div className="flex h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background px-2 py-1.5">
+    <div className="mx-auto flex h-screen w-full max-w-5xl flex-col p-2 md:p-4">
+      <header className="bg-background p-2 md:p-4">
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="h-6" />
-            <h2 className="font-medium">Articles</h2>
+            <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">
+              Articles
+            </h2>
           </div>
           <div className="flex items-center gap-2">
             <Input
@@ -73,7 +72,7 @@ export default function ArticlesPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto">
+      <main className="mx-auto flex w-full max-w-4xl flex-1">
         {isPending ? (
           <div className="space-y-4 py-4">
             {[...Array(5)].map((_, i) => (
@@ -85,12 +84,10 @@ export default function ArticlesPage() {
             <XCircle className="mr-2 h-5 w-5" />
             Failed to load articles
           </div>
-        ) : filteredArticles?.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
-            No articles found
-          </div>
+        ) : filteredArticles?.length === 0 || !filteredArticles ? (
+          <NoArticlesFound query={query} />
         ) : (
-          <div className="divide-y">
+          <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col space-y-2 p-4">
             {filteredArticles?.map((article: Article) => (
               <ArticleRow key={article.id} article={article} />
             ))}
@@ -103,6 +100,25 @@ export default function ArticlesPage() {
           <CheckCircle2 className="h-4 w-4 animate-pulse" />
           Updating...
         </div>
+      )}
+    </div>
+  );
+}
+
+function NoArticlesFound({ query }: { query: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <h3 className="mb-2 text-xl font-semibold">No articles found</h3>
+      {query ? (
+        <p className="mb-4 text-muted-foreground">
+          No articles match your search for "{query}". Try a different search
+          term or add a new article.
+        </p>
+      ) : (
+        <p className="mb-4 text-muted-foreground">
+          You haven't added any articles yet. Start by adding your first
+          article!
+        </p>
       )}
     </div>
   );
@@ -133,66 +149,83 @@ function ArticleRow({ article }: { article: Article }) {
   return (
     <Link
       to={`/articles/${article.id}`}
-      className="flex items-center gap-3 bg-accent/50 p-3 transition-colors duration-300 hover:bg-accent"
+      className="group relative flex min-h-[4rem] items-center gap-3 overflow-hidden rounded-sm bg-accent/20 p-3 transition-colors hover:bg-accent"
     >
-      {article.favicon ? (
-        <img
-          src={article.favicon}
-          alt={article.title}
-          className="h-8 w-8 rounded-sm object-cover"
-        />
-      ) : (
-        <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-muted">
-          <Globe className="h-8 w-8 text-muted-foreground" />
-        </div>
-      )}
-      <div className="flex-1 space-y-1">
-        <h3 className="font-medium">{article.title}</h3>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>{article.site_name}</span>‧
-          <time>
-            {formatDistanceToNowStrict(new Date(article.published_time))} ago
+      <div className="flex-shrink-0">
+        {article.favicon ? (
+          <img
+            src={article.favicon}
+            alt=""
+            className="h-8 w-8 rounded-sm object-cover"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg?height=32&width=32";
+            }}
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-muted">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate font-medium leading-tight">{article.title}</h3>
+        <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          {article.siteName && (
+            <>
+              <span className="max-w-[200px] truncate">{article.siteName}</span>
+              <span className="flex-shrink-0">‧</span>
+            </>
+          )}
+          <time className="flex-shrink-0">
+            {formatDistanceToNowStrict(new Date(article.publishedTime), {
+              addSuffix: true,
+            })}
           </time>
         </div>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button
-            onClick={(e) => e.stopPropagation()}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-white dark:hover:bg-background"
-          >
-            <Ellipsis className="h-4 w-4" />
-            <span className="sr-only">Open options</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-          <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-            <Link to={`/articles/${article.id}`}>Read article</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-            <a href={article.url}>Visit original</a>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={async (e) => {
-              e.stopPropagation();
-              await copyToClipboard(article.url);
-            }}
-          >
-            Copy url
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation();
-              deleteArticleMutation.mutate(article.id);
-            }}
-            disabled={deleteArticleMutation.isPending}
-          >
-            {deleteArticleMutation.isPending ? "Deleting..." : "Delete"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
+      <div className="flex-shrink-0">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-100 transition-opacity hover:bg-white group-hover:opacity-100 dark:hover:bg-background sm:opacity-0"
+            >
+              <Ellipsis className="h-4 w-4" />
+              <span className="sr-only">Open options</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem asChild>
+              <Link to={`/articles/${article.id}`}>Read article</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a href={article.url} target="_blank" rel="noopener noreferrer">
+                Visit original
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async (e) => {
+                e.stopPropagation();
+                await copyToClipboard(article.url);
+              }}
+            >
+              Copy url
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async (e) => {
+                e.stopPropagation();
+                deleteArticleMutation.mutate(article.id);
+              }}
+              className="text-destructive focus:text-destructive"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </Link>
   );
 }
