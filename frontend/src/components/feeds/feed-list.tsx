@@ -1,22 +1,24 @@
-import { getToken } from "@/lib/helpers";
+import { copyToClipboard, getToken } from "@/lib/helpers";
 import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { FeedItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNowStrict } from "date-fns";
-import { Check, Copy, ExternalLink, Share, Star, X } from "lucide-react";
+import { Check, Copy, ExternalLink, Star, X } from "lucide-react";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
-import ActionButton from "./ui/action-button";
-import { Button } from "./ui/button";
+import ActionButton from "../ui/action-button";
+import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "./ui/sheet";
+} from "../ui/sheet";
+import UnsubscribeFeedDialog from "./unsubscribe-feed-dialog";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const GROUP_ORDER = [
@@ -28,7 +30,7 @@ const GROUP_ORDER = [
   "Older",
 ];
 
-export function FeedList({
+export default function FeedList({
   feedItems,
   fetchNextPage,
   hasNextPage,
@@ -162,10 +164,10 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
         <SheetHeader className="space-y-2">
           <SheetTitle className="text-xl font-bold">{item?.title}</SheetTitle>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-x-1.5 text-sm text-muted-foreground">
               <span>{item.feed.title}</span>
-              <span>‧</span>
-              <time>
+              <span className="hidden sm:block">‧</span>
+              <time className="hidden sm:block">
                 {formatDistanceToNowStrict(
                   new Date(
                     item.publishedParsed ||
@@ -175,8 +177,13 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
                   { addSuffix: true },
                 )}
               </time>
+              <span>‧</span>
+              <UnsubscribeFeedDialog
+                feedLink={item.feedLink}
+                feedTitle={item.feed.title}
+              />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-x-1.5">
               <ActionButton
                 tooltipContent={item.starred ? "Unstar" : "Star"}
                 onClick={async () =>
@@ -200,12 +207,23 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
                   <Check className="h-4 w-4" />
                 )}
               </ActionButton>
-              <ActionButton tooltipContent="Copy link" onClick={() => {}}>
-                <Copy className="h-4 w-4" />
-              </ActionButton>
-              <ActionButton tooltipContent="Share" onClick={() => {}}>
-                <Share className="h-4 w-4" />
-              </ActionButton>
+              {item.link && (
+                <ActionButton
+                  tooltipContent="Copy link"
+                  onClick={async () => {
+                    if (item.link) {
+                      try {
+                        await copyToClipboard(item.link);
+                        toast.success("Link copied to clipboard");
+                      } catch {
+                        toast.error("Error copying link");
+                      }
+                    }
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </ActionButton>
+              )}
               <a
                 href={item.link || "#"}
                 target="_blank"

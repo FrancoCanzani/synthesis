@@ -1,5 +1,5 @@
-import AddFeedDialog from "@/components/add-feed-dialog";
-import { FeedList } from "@/components/feed-list";
+import AddFeedDialog from "@/components/feeds/add-feed-dialog";
+import FeedList from "@/components/feeds/feed-list";
 import ActionButton from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

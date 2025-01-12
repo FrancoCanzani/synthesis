@@ -43,20 +43,10 @@ export default function DeleteNoteDialog({ noteId }: { noteId: string }) {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 text-sm sm:gap-0">
-          <Button
-            variant="outline"
-            size={"sm"}
-            className="h-7 px-2 py-1 hover:bg-accent"
-            onClick={() => setOpen(false)}
-          >
+          <Button variant="outline" size={"sm"} onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            variant="outline"
-            size={"sm"}
-            className="h-7 bg-red-100 px-2 py-1 hover:bg-red-200"
-            onClick={handleDelete}
-          >
+          <Button variant="destructive" size={"sm"} onClick={handleDelete}>
             Delete
           </Button>
         </DialogFooter>
