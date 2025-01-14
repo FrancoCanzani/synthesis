@@ -23,7 +23,7 @@ export default function FeedbackState({
   return (
     <div
       className={cn(
-        "flex min-h-[200px] w-full flex-col items-center justify-center gap-4 p-4 text-muted-foreground",
+        "mx-auto flex min-h-[200px] max-w-4xl flex-col items-center justify-center gap-4 p-4 text-center text-muted-foreground",
         className,
       )}
     >

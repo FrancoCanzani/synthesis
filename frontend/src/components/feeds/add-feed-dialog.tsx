@@ -119,10 +119,10 @@ export default function AddFeedDialog() {
               }}
             />
             <Button
-              variant="outline"
+              variant="default"
               onClick={handleAddFeed}
               disabled={isLoading || !urlInput}
-              className="w-1/4 bg-black text-white hover:bg-black/85 hover:text-white"
+              className="w-1/4"
             >
               {isLoading ? "Adding..." : "Add Feed"}
             </Button>

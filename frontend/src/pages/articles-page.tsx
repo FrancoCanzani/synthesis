@@ -1,4 +1,5 @@
 import AddArticleDialog from "@/components/add-article-dialog";
+import FeedbackState from "@/components/feedback-state";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -107,20 +108,21 @@ export default function ArticlesPage() {
 
 function NoArticlesFound({ query }: { query: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-8 text-center">
-      <h3 className="mb-2 text-xl font-semibold">No articles found</h3>
+    <>
       {query ? (
-        <p className="mb-4 text-muted-foreground">
-          No articles match your search for "{query}". Try a different search
-          term or add a new article.
-        </p>
+        <FeedbackState
+          type="empty"
+          message={`No articles match your search for "${query}". Try a different search
+                  term or add a new article.`}
+        />
       ) : (
-        <p className="mb-4 text-muted-foreground">
-          You haven't added any articles yet. Start by adding your first
-          article!
-        </p>
+        <FeedbackState
+          type="empty"
+          message="You haven't added any articles yet. Start by adding your first
+          article!"
+        />
       )}
-    </div>
+    </>
   );
 }
 
