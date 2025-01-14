@@ -1,4 +1,4 @@
-import GetArticleDialog from "@/components/get-article-dialog";
+import AddArticleDialog from "@/components/add-article-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { copyToClipboard, getToken, normalizeText } from "@/lib/helpers";
 import { Article } from "@/lib/types";
@@ -31,8 +32,6 @@ export default function ArticlesPage() {
       return response.json();
     },
   });
-
-  console.log(data);
 
   const query = searchParams.get("q")?.toLowerCase() || "";
 
@@ -61,13 +60,14 @@ export default function ArticlesPage() {
             </h2>
           </div>
           <div className="flex items-center gap-2">
+            <Label className="sr-only">Search feeds</Label>
             <Input
               placeholder="Search articles..."
               value={query}
               onChange={(e) => setSearchParams({ q: e.target.value })}
-              className="h-8 w-64"
+              className="hidden h-8 w-64 sm:block"
             />
-            <GetArticleDialog />
+            <AddArticleDialog />
           </div>
         </div>
       </header>
@@ -152,7 +152,7 @@ function ArticleRow({ article }: { article: Article }) {
       className="group relative flex min-h-[4rem] items-center gap-3 overflow-hidden rounded-sm bg-accent/20 p-3 transition-colors hover:bg-accent"
       title={article.title}
     >
-      <div className="flex-shrink-0">
+      <div className="hidden flex-shrink-0 md:block">
         {article.favicon ? (
           <img
             src={article.favicon}

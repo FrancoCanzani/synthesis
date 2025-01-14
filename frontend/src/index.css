@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html {
-  font-family: "Geist Mono", serif;
+  font-family: "Inter", serif;
 }
 
 @layer base {

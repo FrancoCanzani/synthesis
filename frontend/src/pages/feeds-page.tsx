@@ -1,3 +1,4 @@
+import FeedbackState from "@/components/feedback-state";
 import AddFeedDialog from "@/components/feeds/add-feed-dialog";
 import FeedList from "@/components/feeds/feed-list";
 import ActionButton from "@/components/ui/action-button";
@@ -32,6 +33,11 @@ export default function FeedsPage() {
         headers: { Authorization: `Bearer ${token}` },
       },
     );
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch feeds");
+    }
+
     return res.json();
   };
 
@@ -46,25 +52,11 @@ export default function FeedsPage() {
     queryKey: ["feedItems", searchParams.get("order")],
     queryFn: fetchFeedItems,
     getNextPageParam: (lastPage, pages) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
       return lastPage.length === 50 ? pages.length * 50 : undefined;
     },
     initialPageParam: 0,
   });
-
-  async function markAllAsRead() {
-    const token = await getToken();
-
-    const response = await fetch(`${API_URL}/feeds/mark-all-read`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to mark all posts as read");
-    }
-
-    return await response.json();
-  }
 
   const mutation = useMutation({
     mutationFn: markAllAsRead,
@@ -81,18 +73,40 @@ export default function FeedsPage() {
     const order = searchParams.get("order");
     const newOrder = order === "asc" ? "desc" : "asc";
     setSearchParams({ order: newOrder });
-
     queryClient.invalidateQueries({ queryKey: ["feedItems", order] });
   };
 
-  let feedItems: FeedItem[] = [];
-  data?.pages.forEach((page) => (feedItems = feedItems.concat(page)));
+  const feedItems: FeedItem[] =
+    data?.pages
+      .filter((page): page is FeedItem[] => page !== null)
+      .flat()
+      .filter((item): item is FeedItem => item !== null) ?? [];
 
-  const unread = feedItems.filter((item) => item.read == false);
+  const unread = feedItems.filter((item) => item.read === false);
 
-  if (isPending) return <div className="p-4">Loading feeds...</div>;
+  if (isPending)
+    return <FeedbackState type="loading" message="Loading feeds" />;
   if (error)
-    return <div className="p-4">Error loading feeds: {error.message}</div>;
+    return (
+      <FeedbackState
+        type="error"
+        message={`Error loading feeds: ${error.message}`}
+      />
+    );
+
+  async function markAllAsRead() {
+    const token = await getToken();
+    const response = await fetch(`${API_URL}/feeds/mark-all-read`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to mark posts as read");
+    }
+
+    return await response.json();
+  }
 
   return (
     <div className="mx-auto flex h-screen w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
@@ -133,7 +147,7 @@ export default function FeedsPage() {
             </ActionButton>
             <ActionButton
               onClick={() => mutation.mutate()}
-              disabled={mutation.isPending || !unread || unread.length === 0}
+              disabled={mutation.isPending || unread.length === 0}
               tooltipContent={
                 mutation.isPending ? "Marking..." : "Mark All as Read"
               }
@@ -149,12 +163,19 @@ export default function FeedsPage() {
       </header>
 
       <div className="mx-auto flex w-full max-w-4xl flex-1">
-        <FeedList
-          feedItems={feedItems || []}
-          fetchNextPage={fetchNextPage}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-        />
+        {feedItems.length > 0 ? (
+          <FeedList
+            feedItems={feedItems}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+          />
+        ) : (
+          <FeedbackState
+            type="empty"
+            message="You have no feeds available. Add one to see posts."
+          />
+        )}
       </div>
     </div>
   );

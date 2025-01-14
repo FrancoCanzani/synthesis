@@ -1,19 +1,7 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { getToken } from "@/lib/helpers";
-import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -79,26 +67,11 @@ export default function AddFeedDialog() {
         setUrlInput("");
       }}
     >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8 hover:bg-accent/50",
-                isOpen && "bg-accent/50",
-              )}
-            >
-              <Plus className="h-4 w-4" />
-              <DialogTitle className="sr-only">Add feed</DialogTitle>
-            </Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span>Add feed</span>
-        </TooltipContent>
-      </Tooltip>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <span className="">Add Feed</span>
+        </Button>
+      </DialogTrigger>
 
       <DialogContent
         aria-describedby={undefined}

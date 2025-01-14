@@ -1,23 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { formatDate, getToken } from "@/lib/helpers";
 import { urlSchema } from "@/lib/schemas";
 import { Article } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle, Plus, Save, SendHorizonal } from "lucide-react";
+import { LoaderCircle, Save, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function GetArticleDialog() {
+export default function AddArticleDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [article, setArticle] = useState<Article | null>(null);
@@ -91,26 +86,11 @@ export default function GetArticleDialog() {
         setInput("");
       }}
     >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8 hover:bg-accent/50",
-                isOpen && "bg-accent/50",
-              )}
-            >
-              <Plus className="h-4 w-4" />
-              <span className="sr-only">Get article</span>
-            </Button>
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span>Get article</span>
-        </TooltipContent>
-      </Tooltip>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <span className="">Add article</span>
+        </Button>
+      </DialogTrigger>
 
       <DialogContent className="mx-auto flex w-full max-w-md flex-col gap-y-0 px-2 pb-0 pt-2 text-sm sm:max-w-[550px]">
         {article ? (
@@ -127,20 +107,20 @@ export default function GetArticleDialog() {
                       <figure className="my-8">
                         <img
                           src={article.favicon}
-                          alt={article.site_name}
+                          alt={article.siteName}
                           className="h-4 w-4 rounded-sm"
                         />
                       </figure>
                     )}
                   </div>
-                  {article.published_time && (
-                    <time dateTime={article.published_time}>
-                      Published {formatDate(article.published_time)}
+                  {article.publishedTime && (
+                    <time dateTime={article.publishedTime}>
+                      Published {formatDate(article.publishedTime)}
                     </time>
                   )}
-                  {article.modified_time && (
-                    <time dateTime={article.published_time}>
-                      Modified {formatDate(article.published_time)}
+                  {article.modifiedTime && (
+                    <time dateTime={article.modifiedTime}>
+                      Modified {formatDate(article.modifiedTime)}
                     </time>
                   )}
                 </div>
@@ -168,9 +148,9 @@ export default function GetArticleDialog() {
                     className="prose-sm whitespace-pre-wrap prose-p:my-4 prose-p:leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: article.content }}
                   />
-                ) : article.text_content ? (
+                ) : article.textContent ? (
                   <div className="prose-sm whitespace-pre-wrap prose-p:my-4 prose-p:leading-relaxed">
-                    {article.text_content}
+                    {article.textContent}
                   </div>
                 ) : (
                   <p className="italic">No content available</p>

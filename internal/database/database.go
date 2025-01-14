@@ -82,8 +82,15 @@ func New() Service {
 		log.Fatal(err)
 	}
 
-	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+	if _, err := db.Exec("PRAGMA foreign_keys=ON"); err != nil {
 		log.Fatal(err)
+	}
+
+	var fkEnabled int
+	if err := db.QueryRow("PRAGMA foreign_keys").Scan(&fkEnabled); err != nil {
+		log.Fatal(err)
+	} else {
+		log.Printf("Foreign keys enabled: %v", fkEnabled == 1)
 	}
 
 	dbInstance = &service{

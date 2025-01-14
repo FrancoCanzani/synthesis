@@ -9,7 +9,7 @@ export default function NotFoundPage() {
           Page Not Found
         </p>
         <p className="mb-8">Oops! The page you're looking for doesn't exist.</p>
-        <Link to="/" className="font-medium underline">
+        <Link to="/home" className="font-medium underline">
           Back to Home
         </Link>
       </div>

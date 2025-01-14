@@ -34,7 +34,7 @@ export default function ReadArticlePage() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
-      <Link to={"/articles"} className="p-2 text-xs hover:underline">
+      <Link to={"/articles"} className="p-2 text-xs hover:underline md:p-4">
         ← Go back to articles
       </Link>
       <article className="mx-auto p-2 sm:max-w-[80ch]">
@@ -54,22 +54,22 @@ export default function ReadArticlePage() {
               <h2 className="prose prose-xl mb-4 text-xl font-medium text-black dark:prose-invert dark:text-white sm:text-2xl md:text-3xl">
                 {article.title}
               </h2>
-              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                <div className="flex items-center space-x-1.5">
+              <div className="flex flex-col items-start gap-x-1.5 space-y-2 text-xs text-muted-foreground md:flex-row md:items-center md:space-y-0">
+                <div className="flex items-center md:space-x-1.5">
                   {article.favicon && (
                     <img
                       src={article.favicon}
                       alt={article.title}
-                      className="h-4 w-4 rounded-sm"
+                      className="hidden h-4 w-4 rounded-sm md:block"
                     />
                   )}
                   <span>{article.siteName}</span>
                 </div>
-                <span>‧</span>
+                <span className="hidden md:block">‧</span>
                 <span>By {article.author || "Unknown Author"}</span>
-                <span>‧</span>
+                <span className="hidden md:block">‧</span>
                 <span>Published: {formatDate(article.publishedTime)}</span>
-                <span>‧</span>
+                <span className="hidden md:block">‧</span>
                 {article.modifiedTime && (
                   <span className="hidden md:block">
                     Last modified: {formatDate(article.modifiedTime)}

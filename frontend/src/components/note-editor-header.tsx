@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { Editor } from "@tiptap/core";
 import { BotMessageSquare } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
-import GetArticleDialog from "./get-article-dialog";
+import AddArticleDialog from "./add-article-dialog";
 import PublishNoteDialog from "./publish-note-dialog";
 import { SearchAndReplaceToolbar } from "./toolbars/search-and-replace-toolbar";
 import { TextToSpeechToolbar } from "./toolbars/text-to-speech";
@@ -48,7 +48,7 @@ export default function NoteEditorHeader({
               <span>AI Assistant</span>
             </TooltipContent>
           </Tooltip>
-          <GetArticleDialog />
+          <AddArticleDialog />
           <TextToSpeechToolbar />
           <SearchAndReplaceToolbar />
           <PublishNoteDialog />

@@ -52,11 +52,10 @@ export default function UnsubscribeFeedDialog({
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to unsubscribe from feed");
+        toast.error("Failed to unsubscribe from feed");
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["feedItems"] });
+      queryClient.invalidateQueries({ queryKey: ["feedItems"] });
 
       toast.success(`Successfully unsubscribed from feed`);
       setIsOpen(false);

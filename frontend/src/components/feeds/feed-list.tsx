@@ -73,7 +73,7 @@ export default function FeedList({
           onClick={() => fetchNextPage()}
           disabled={!hasNextPage || isFetchingNextPage}
         >
-          {isFetchingNextPage ? "Getting more feeds..." : "Get more feeds"}
+          {isFetchingNextPage ? "Loading more feeds..." : "Load more feeds"}
         </Button>
       </div>
     </div>
