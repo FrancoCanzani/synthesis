@@ -3,54 +3,42 @@ import { Link } from "react-router";
 
 export default function MobileFooterMenu() {
   return (
-    <nav className="z-10 grid grid-cols-6 items-center gap-1.5 border-t bg-background p-1.5 md:hidden">
+    <nav className="z-10 grid grid-cols-6 items-center gap-1.5 border-t bg-background md:hidden">
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/home"
       >
-        <div className="relative">
-          <Home />
-        </div>
+        <Home />
       </Link>
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/inbox"
       >
-        <div className="relative">
-          <Inbox />
-        </div>
+        <Inbox />
       </Link>
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/articles"
       >
-        <div className="relative">
-          <Newspaper />
-        </div>
+        <Newspaper />
       </Link>
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/feeds"
       >
-        <div className="relative">
-          <Rss />
-        </div>
+        <Rss />
       </Link>
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/notes"
       >
-        <div className="relative">
-          <Notebook />
-        </div>
+        <Notebook />
       </Link>
       <Link
-        className="callout-none group flex flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
+        className="group flex h-11 flex-1 items-center justify-center rounded-sm px-3 py-1.5 hover:bg-muted"
         to="/settings"
       >
-        <div className="relative">
-          <Settings />
-        </div>
+        <Settings />
       </Link>
     </nav>
   );

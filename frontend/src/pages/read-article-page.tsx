@@ -4,7 +4,7 @@ import { formatDate, getToken } from "@/lib/helpers";
 import { Article } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { useParams } from "react-router";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -34,9 +34,6 @@ export default function ReadArticlePage() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
-      <Link to={"/articles"} className="p-2 text-xs hover:underline md:p-4">
-        ← Go back to articles
-      </Link>
       <article className="mx-auto p-2 sm:max-w-[80ch]">
         {isPending ? (
           <ArticleSkeleton />

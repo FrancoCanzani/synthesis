@@ -62,8 +62,7 @@ export default function AddArticleDialog() {
       toast.success("Article saved successfully");
       setIsOpen(false);
     },
-    onError: (error) => {
-      console.error(error);
+    onError: () => {
       toast.error("Failed to save article");
     },
   });
