@@ -33,7 +33,7 @@ export default function ReadArticlePage() {
   });
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-2 md:p-4">
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-3 md:p-4">
       <article className="mx-auto p-2 sm:max-w-[80ch]">
         {isPending ? (
           <ArticleSkeleton />

@@ -77,7 +77,7 @@ export default function UnsubscribeFeedDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="text-sm font-normal text-black hover:underline">
+        <button className="text-sm font-normal hover:underline">
           Unsubscribe
         </button>
       </DialogTrigger>

@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { Check, Copy, ExternalLink, Star, X } from "lucide-react";
 import { toast } from "sonner";
 import ActionButton from "../ui/action-button";
-import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,
@@ -19,39 +18,7 @@ import UnsubscribeFeedDialog from "./unsubscribe-feed-dialog";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function FeedList({
-  feedItems,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-}: {
-  feedItems: FeedItem[];
-  fetchNextPage: () => void;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-}) {
-  return (
-    <div className="w-full">
-      <div className="divide-y">
-        {feedItems.map((item: FeedItem) => (
-          <FeedItemSheet key={item.id} item={item} />
-        ))}
-      </div>
-      <div className="flex items-center justify-center py-4">
-        <Button
-          variant={"ghost"}
-          size={"sm"}
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          {isFetchingNextPage ? "Loading more feeds..." : "Load more feeds"}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function FeedItemSheet({ item }: { item: FeedItem }) {
+export default function FeedRowItem({ item }: { item: FeedItem }) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
@@ -95,16 +62,20 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
             <a href={item.feedLink} target="_blank" className="truncate">
               {item.feed.title}
             </a>
-            <p className="min-w-0 flex-1 truncate font-medium">{item?.title}</p>
+            <span>‧</span>
+            <h4 className="min-w-0 flex-1 truncate font-medium">
+              {item?.title}
+            </h4>
           </div>
           <div className="flex flex-shrink-0 items-center justify-between gap-x-1.5">
             {item.starred && (
               <Star
                 className="h-4 w-4"
                 fill={item.starred ? "#fff400" : "white"}
+                stroke={item.starred ? "#fbbf24" : "currentColor"}
               />
             )}
-            <span className="text-muted-foreground">{format(date, "PP")}</span>
+            <span>{format(date, "PP")}</span>
           </div>
         </div>
       </SheetTrigger>
@@ -133,6 +104,7 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
                 <Star
                   className="h-4 w-4"
                   fill={item.starred ? "#fff400" : "white"}
+                  stroke={item.starred ? "#fbbf24" : "currentColor"}
                 />
               </ActionButton>
               <ActionButton
