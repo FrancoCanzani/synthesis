@@ -39,7 +39,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		return
 	}
 	if exists {
-		c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "feed already exists for this user"})
+		c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "feed already exists"})
 		return
 	}
 

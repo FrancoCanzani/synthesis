@@ -54,28 +54,16 @@ export default function FeedRowItem({ item }: { item: FeedItem }) {
       <SheetTrigger asChild>
         <div
           className={cn(
-            "group flex w-full cursor-pointer items-center justify-between gap-x-1.5 overflow-hidden bg-accent/20 px-1 py-2 text-sm transition-colors hover:bg-accent",
+            "group flex w-full cursor-pointer flex-col items-start justify-between space-y-2 overflow-hidden rounded-sm bg-accent/20 p-2 text-sm transition-all hover:bg-accent",
             item.read && "opacity-60",
           )}
         >
-          <div className="flex min-w-0 flex-1 items-center justify-start gap-x-1.5">
-            <a href={item.feedLink} target="_blank" className="truncate">
-              {item.feed.title}
-            </a>
-            <span>‧</span>
-            <h4 className="min-w-0 flex-1 truncate font-medium">
-              {item?.title}
-            </h4>
+          <div className="flex w-full min-w-0 items-center justify-between space-x-3">
+            <h4 className="truncate font-medium">{item?.title}</h4>
           </div>
-          <div className="flex flex-shrink-0 items-center justify-between gap-x-1.5">
-            {item.starred && (
-              <Star
-                className="h-4 w-4"
-                fill={item.starred ? "#fff400" : "white"}
-                stroke={item.starred ? "#fbbf24" : "currentColor"}
-              />
-            )}
-            <span>{format(date, "PP")}</span>
+          <div className="flex w-full items-center justify-between text-muted-foreground">
+            <p className="mt-1 truncate text-xs">{item.feed.title}</p>
+            <span className="text-xs">{format(date, "PP")}</span>
           </div>
         </div>
       </SheetTrigger>

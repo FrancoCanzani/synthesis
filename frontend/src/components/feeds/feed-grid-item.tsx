@@ -54,59 +54,52 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
       <SheetTrigger asChild>
         <div
           className={cn(
-            "group flex w-full cursor-pointer flex-col justify-between overflow-hidden rounded-sm border bg-accent/20 transition-all hover:bg-accent",
+            "group flex w-full cursor-pointer flex-col justify-between overflow-hidden rounded-sm border bg-accent/20 p-2 transition-all hover:bg-accent",
             item.read && "opacity-60",
           )}
         >
-          {item.imageUrl && (
-            <div className="relative h-48 w-full overflow-hidden">
-              <img
-                src={item.imageUrl || "/placeholder.svg"}
-                alt={item.imageTitle || item.title || "Feed item image"}
-                className="transition-transform duration-300 ease-in-out group-hover:scale-105"
-              />
-            </div>
-          )}
-          <div className="flex h-full flex-col justify-between p-2.5">
-            <div className="mb-2 flex flex-col items-center justify-between">
-              <div className="mb-2 flex w-full items-center justify-between">
-                <a
-                  href={item.feedLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium hover:underline"
-                >
-                  {item.feed.title}
-                </a>
-                <span className="text-xs">{format(date, "PP")}</span>
-              </div>
-              <div className="flex w-full flex-col items-start">
-                <h3 className="mb-2 line-clamp-2 text-lg font-semibold">
-                  {item.title}
-                </h3>
-                <p className="mb-4 line-clamp-3 text-sm text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
+          <div className="mb-2 flex flex-col items-center justify-between space-y-3">
+            <div className="flex w-full items-center justify-between">
               <a
-                href={item.link}
+                href={item.feedLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium hover:underline"
+                className="text-xs hover:underline"
               >
-                Read
+                {item.feed.title}
               </a>
-              {item.starred && (
-                <Star
-                  className="h-4 w-4"
-                  fill={item.starred ? "#fbbf24" : "none"}
-                  stroke={item.starred ? "#fbbf24" : "currentColor"}
+              <span className="text-xs">{format(date, "PP")}</span>
+            </div>
+            <div className="flex w-full flex-col items-start">
+              <h3 className="mb-2 line-clamp-2 text-sm font-medium">
+                {item.title}
+              </h3>
+              {item.description && (
+                // some feeds provide the description in html
+                <p
+                  className="mb-2 line-clamp-3 text-xs text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: item.description }}
                 />
               )}
             </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <a
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs hover:underline"
+            >
+              Read
+            </a>
+            {item.starred && (
+              <Star
+                className="h-4 w-4"
+                fill={item.starred ? "#fbbf24" : "none"}
+                stroke={item.starred ? "#fbbf24" : "currentColor"}
+              />
+            )}
           </div>
         </div>
       </SheetTrigger>
