@@ -162,7 +162,7 @@ export default function FeedsPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-4xl flex-1">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 p-2">
         {feedItems.length > 0 ? (
           <FeedList
             feedItems={feedItems}

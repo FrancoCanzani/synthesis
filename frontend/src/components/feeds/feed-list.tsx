@@ -5,8 +5,6 @@ import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Check, Copy, ExternalLink, Star, X } from "lucide-react";
-import { useMemo } from "react";
-import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import ActionButton from "../ui/action-button";
 import { Button } from "../ui/button";
@@ -21,15 +19,6 @@ import UnsubscribeFeedDialog from "./unsubscribe-feed-dialog";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const GROUP_ORDER = [
-  "Today",
-  "Yesterday",
-  "This Week",
-  "This Month",
-  "Last Month",
-  "Older",
-];
-
 export default function FeedList({
   feedItems,
   fetchNextPage,
@@ -41,32 +30,14 @@ export default function FeedList({
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
 }) {
-  const groupedItems = groupFeedItems(feedItems);
-  const [searchParams] = useSearchParams();
-  const order = searchParams.get("order");
-
-  const sortedGroupOrder = useMemo(() => {
-    return order === "asc" ? GROUP_ORDER : [...GROUP_ORDER].reverse();
-  }, [order]);
-
-  const sortedEntries = useMemo(() => {
-    const entries = Object.entries(groupedItems).sort((a, b) => {
-      const indexA = sortedGroupOrder.indexOf(a[0]);
-      const indexB = sortedGroupOrder.indexOf(b[0]);
-      return indexA - indexB;
-    });
-
-    return order === "desc" ? entries.reverse() : entries;
-  }, [groupedItems, sortedGroupOrder, order]);
-
   return (
     <div className="w-full">
-      <div className="space-y-6 p-4">
-        {sortedEntries.map(([group, items]) => (
-          <FeedGroup key={group} group={group} items={items as FeedItem[]} />
+      <div className="divide-y">
+        {feedItems.map((item: FeedItem) => (
+          <FeedItemSheet key={item.id} item={item} />
         ))}
       </div>
-      <div className="flex items-center justify-center py-6">
+      <div className="flex items-center justify-center py-4">
         <Button
           variant={"ghost"}
           size={"sm"}
@@ -75,22 +46,6 @@ export default function FeedList({
         >
           {isFetchingNextPage ? "Loading more feeds..." : "Load more feeds"}
         </Button>
-      </div>
-    </div>
-  );
-}
-
-function FeedGroup({ group, items }: { group: string; items: FeedItem[] }) {
-  return (
-    <div>
-      <div className="flex items-center justify-start gap-4 py-2">
-        <h2 className="text-sm font-medium text-muted-foreground">{group}</h2>
-        <div className="flex-1 border-t border-border"></div>
-      </div>
-      <div className="space-y-2">
-        {items.map((item: FeedItem) => (
-          <FeedItemSheet key={item.id} item={item} />
-        ))}
       </div>
     </div>
   );
@@ -132,28 +87,24 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
       <SheetTrigger asChild>
         <div
           className={cn(
-            "group cursor-pointer overflow-hidden rounded-sm bg-accent/20 transition-colors hover:bg-accent",
-            item.read && "opacity-50",
+            "group flex w-full cursor-pointer items-center justify-between gap-x-1.5 overflow-hidden bg-accent/20 px-1 py-2 text-sm transition-colors hover:bg-accent",
+            item.read && "opacity-60",
           )}
         >
-          <div className="flex w-full items-center justify-between gap-x-2 p-2">
-            <div className="flex w-full items-center justify-start gap-4">
-              <div className="flex w-full flex-col items-start justify-start gap-0.5">
-                <div className="flex w-full items-center justify-between">
-                  <p className="min-w-max truncate font-medium">
-                    {item?.title}
-                  </p>
-                </div>
-                <div className="flex w-full items-center justify-between">
-                  <p className="w-3/4 truncate text-sm text-muted-foreground">
-                    {item.feed.title}
-                  </p>
-                  <span className="text-xs text-muted-foreground">
-                    {format(date, "PP")}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="flex min-w-0 flex-1 items-center justify-start gap-x-1.5">
+            <a href={item.feedLink} target="_blank" className="truncate">
+              {item.feed.title}
+            </a>
+            <p className="min-w-0 flex-1 truncate font-medium">{item?.title}</p>
+          </div>
+          <div className="flex flex-shrink-0 items-center justify-between gap-x-1.5">
+            {item.starred && (
+              <Star
+                className="h-4 w-4"
+                fill={item.starred ? "#fff400" : "white"}
+              />
+            )}
+            <span className="text-muted-foreground">{format(date, "PP")}</span>
           </div>
         </div>
       </SheetTrigger>
@@ -241,32 +192,4 @@ function FeedItemSheet({ item }: { item: FeedItem }) {
       </SheetContent>
     </Sheet>
   );
-}
-
-function groupFeedItems(feedItems: FeedItem[]) {
-  return feedItems.reduce(
-    (groups, item) => {
-      const date = new Date(
-        item.publishedParsed || item.updatedParsed || item.createdAt,
-      );
-      const group = getGroupLabel(date);
-      if (!groups[group]) groups[group] = [];
-      groups[group].push(item);
-      return groups;
-    },
-    {} as Record<string, FeedItem[]>,
-  );
-}
-
-function getGroupLabel(date: Date) {
-  const days = Math.floor(
-    (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days <= 7) return "This Week";
-  if (days <= 30) return "This Month";
-  if (days <= 60) return "Last Month";
-  return "Older";
 }
