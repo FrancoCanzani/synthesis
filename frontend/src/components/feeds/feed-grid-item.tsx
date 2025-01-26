@@ -58,7 +58,7 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
             item.read && "opacity-60",
           )}
         >
-          <div className="mb-2 flex flex-col items-center justify-between space-y-3">
+          <div className="mb-4 flex flex-col items-center justify-between space-y-4">
             <div className="flex w-full items-center justify-between">
               <a
                 href={item.feedLink}
@@ -95,7 +95,7 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
             </a>
             {item.starred && (
               <Star
-                className="h-4 w-4"
+                className="h-3 w-3"
                 fill={item.starred ? "#fbbf24" : "none"}
                 stroke={item.starred ? "#fbbf24" : "currentColor"}
               />
@@ -127,7 +127,7 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
               >
                 <Star
                   className="h-4 w-4"
-                  fill={item.starred ? "#fff400" : ""}
+                  fill={item.starred ? "#fbbf24" : "none"}
                   stroke={item.starred ? "#fbbf24" : "currentColor"}
                 />
               </ActionButton>

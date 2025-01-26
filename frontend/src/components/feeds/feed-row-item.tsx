@@ -60,6 +60,13 @@ export default function FeedRowItem({ item }: { item: FeedItem }) {
         >
           <div className="flex w-full min-w-0 items-center justify-between space-x-3">
             <h4 className="truncate font-medium">{item?.title}</h4>
+            {item.starred && (
+              <Star
+                className="h-3 w-3"
+                fill={item.starred ? "#fbbf24" : "none"}
+                stroke={item.starred ? "#fbbf24" : "currentColor"}
+              />
+            )}
           </div>
           <div className="flex w-full items-center justify-between text-muted-foreground">
             <p className="mt-1 truncate text-xs">{item.feed.title}</p>
