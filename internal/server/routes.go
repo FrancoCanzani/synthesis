@@ -77,5 +77,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	ai := router.Group("/ai")
 	ai.POST("/assistant", aiHandler.GetAiCompletion)
 
+	router.POST("/email", generalHandler.EmailHandler)
+
 	return router
 }

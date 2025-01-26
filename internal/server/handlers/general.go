@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"synthesis/internal/database"
 
@@ -24,4 +26,17 @@ func (h *GeneralHandler) HelloWorldHandler(c *gin.Context) {
 
 func (h *GeneralHandler) HealthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, h.db.Health())
+}
+
+func (h *GeneralHandler) EmailHandler(c *gin.Context) {
+	fmt.Println("Email Handler")
+
+	jsonData, err := io.ReadAll(c.Request.Body)
+
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	fmt.Println(string(jsonData))
+	c.JSON(http.StatusOK,jsonData)
 }
