@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"synthesis/internal/database"
+	"synthesis/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,14 +29,25 @@ func (h *GeneralHandler) HealthHandler(c *gin.Context) {
 }
 
 func (h *GeneralHandler) EmailHandler(c *gin.Context) {
-	fmt.Println("Email Handler")
+    fmt.Println("Email Handler")
 
-	jsonData, err := io.ReadAll(c.Request.Body)
+    var parsedEmail models.ReceivedEmail
+    if err := c.ShouldBind(&parsedEmail); err != nil {
+        c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form data: " + err.Error()})
+        return
+    }
 
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
+    // // Handle attachments (if any)
+    // form, _ := c.MultipartForm()
+    // if form != nil {
+    //     files := form.File["attachment"] // Mailgun sends attachments as "attachment-1", "attachment-2", etc.
+    //     for _, file := range files {
+    //         // Save or process the attachment
+    //         fmt.Println("Attachment:", file.Filename)
+    //     }
+    // }
 
-	fmt.Println(string(jsonData))
-	c.JSON(http.StatusOK,jsonData)
+    fmt.Printf("Parsed Email: %+v\n", parsedEmail)
+
+    c.JSON(http.StatusOK, parsedEmail)
 }

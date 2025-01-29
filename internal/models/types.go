@@ -131,3 +131,22 @@ type FeedItemWithFeed struct {
         FeedType    *string `json:"feedType,omitempty"`
     } `json:"feed"`
 }
+
+type ReceivedEmail struct {
+    Recipient         string            `form:"recipient"`
+    Sender            string            `form:"sender"`
+    From              string            `form:"from"`
+    Subject           string            `form:"subject"`
+    BodyPlain         string            `form:"body-plain"`
+    StrippedText      string            `form:"stripped-text"`
+    StrippedSignature string            `form:"stripped-signature"`
+    BodyHTML          string            `form:"body-html"`
+    StrippedHTML      string            `form:"stripped-html"`
+    AttachmentCount   int               `form:"attachment-count"`
+    Attachments       map[string]string `form:"attachments"` 
+    Timestamp         int64             `form:"timestamp"`
+    Token             string            `form:"token"`
+    Signature         string            `form:"signature"`
+    MessageHeaders    string            `form:"message-headers"`
+    ContentIDMap      string            `form:"content-id-map"`
+}
