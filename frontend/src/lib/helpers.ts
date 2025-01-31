@@ -61,3 +61,72 @@ export const normalizeText = (text: string) => {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
 };
+
+export function generateEmailAlias(): string {
+  const adjectives = [
+    "happy",
+    "clever",
+    "swift",
+    "bright",
+    "silent",
+    "golden",
+    "brave",
+    "gentle",
+    "wild",
+    "wise",
+    "noble",
+    "quiet",
+    "proud",
+    "calm",
+    "kind",
+    "fair",
+  ];
+
+  const nouns = [
+    "wolf",
+    "bird",
+    "star",
+    "moon",
+    "sage",
+    "oak",
+    "rose",
+    "wave",
+    "wind",
+    "lake",
+    "hawk",
+    "pine",
+    "peak",
+    "rain",
+    "dawn",
+    "bear",
+  ];
+
+  const verbs = [
+    "runs",
+    "sees",
+    "flows",
+    "grows",
+    "flies",
+    "draws",
+    "reads",
+    "seeks",
+    "sings",
+    "walks",
+    "talks",
+    "finds",
+    "gives",
+    "makes",
+    "leads",
+    "holds",
+  ];
+
+  const randomAdjective =
+    adjectives[Math.floor(Math.random() * adjectives.length)];
+  const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+  const randomVerb = verbs[Math.floor(Math.random() * verbs.length)];
+
+  // Add timestamp to ensure uniqueness
+  const timestamp = Date.now().toString(36);
+
+  return `${randomAdjective}${randomNoun}${randomVerb}${timestamp}`;
+}

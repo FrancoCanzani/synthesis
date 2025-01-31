@@ -1,9 +1,43 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { generateEmailAlias } from "@/lib/helpers";
+import { useAuth } from "@/lib/hooks/use-auth";
+import supabase from "@/lib/supabase";
+import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function EmailPage() {
+  const { user } = useAuth();
+
+  console.log(user);
+
+  const userEmailId = user?.user_metadata.app_email_alias;
+
+  const alias = generateEmailAlias();
+
+  async function handleCreateEmailAlias() {
+    try {
+      if (user) {
+        const { data, error } = await supabase.auth.updateUser({
+          data: { app_email_alias: alias },
+        });
+
+        if (error) {
+          toast.error("Error creating email alias");
+          console.log(error);
+          return;
+        }
+
+        if (data) {
+          window.location.reload();
+        }
+      }
+    } catch {
+      toast.error("Error creating email alias");
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch p-3 md:p-4 lg:p-5">
       <header className="mb-8 flex w-full items-center justify-between">
@@ -20,7 +54,22 @@ export default function EmailPage() {
           />
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-4xl flex-1">emails...</main>
+      <main className="mx-auto flex w-full max-w-4xl flex-1">
+        {userEmailId ? (
+          <div>Something with email</div>
+        ) : (
+          <div className="flex max-w-4xl flex-col items-start justify-center gap-4 p-4">
+            <p className="text-muted-foreground">
+              You need to set up an email address to use this feature. Please
+              generate your unique email alias to start subscribing to your
+              favourite content.
+            </p>
+            <button onClick={() => handleCreateEmailAlias()}>
+              Generate alias
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
