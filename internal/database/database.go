@@ -275,8 +275,8 @@ func (s *service) initTables() error {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			recipient TEXT NOT NULL,
 			recipient_id TEXT NOT NULL,
-			sender TEXT NOT NULL,
-			from TEXT,
+			sender TEXT,
+			from_name TEXT,
 			subject TEXT,
 			body_plain TEXT,
 			stripped_text TEXT,
@@ -285,8 +285,10 @@ func (s *service) initTables() error {
 			timestamp INTEGER,
 			token TEXT,
 			signature TEXT,
+			starred BOOLEAN DEFAULT FALSE,
+			read BOOLEAN DEFAULT FALSE,
 			created_at DATETIME NOT NULL,
-			updated_at DATETIME NOT NULL,
+			updated_at DATETIME NOT NULL
 		)`
 
 	_, err = s.db.Exec(queryEmails)

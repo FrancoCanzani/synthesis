@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Navigate } from "react-router";
 import { toast } from "sonner";
 
-export function LoginPage() {
+export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 

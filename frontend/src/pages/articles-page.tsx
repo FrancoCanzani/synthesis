@@ -53,23 +53,21 @@ export default function ArticlesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch p-3 md:p-4 lg:p-5">
-      <header>
-        <div className="flex w-full items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">
-              Articles
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <Label className="sr-only">Search feeds</Label>
-            <Input
-              placeholder="Search articles..."
-              value={query}
-              onChange={(e) => setSearchParams({ q: e.target.value })}
-              className="hidden h-8 w-64 sm:block"
-            />
-            <AddArticleDialog />
-          </div>
+      <header className="flex w-full items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">
+            Articles
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label className="sr-only">Search feeds</Label>
+          <Input
+            placeholder="Search articles..."
+            value={query}
+            onChange={(e) => setSearchParams({ q: e.target.value })}
+            className="hidden h-8 w-64 sm:block"
+          />
+          <AddArticleDialog />
         </div>
       </header>
 

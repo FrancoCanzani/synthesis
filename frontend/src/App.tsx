@@ -8,10 +8,11 @@ import "./index.css";
 import { AuthProvider } from "./lib/context/auth-provider";
 import NotFoundPage from "./pages/404-page";
 import ArticlesPage from "./pages/articles-page";
+import EmailPage from "./pages/email-page";
 import FeedsPage from "./pages/feeds-page";
 import HomePage from "./pages/home-page";
 import LandingPage from "./pages/landing-page";
-import { LoginPage } from "./pages/login-page";
+import LoginPage from "./pages/login-page";
 import ReadArticlePage from "./pages/read-article-page";
 import ReadNotePage from "./pages/read-note-page";
 import SidebarLayout from "./pages/sidebar-layout";
@@ -51,6 +52,14 @@ export default function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route element={<SidebarLayout />}>
                     <Route index element={<FeedsPage />} />
+                  </Route>
+                </Route>
+              </Route>
+
+              <Route path="/inbox">
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<SidebarLayout />}>
+                    <Route index element={<EmailPage />} />
                   </Route>
                 </Route>
               </Route>
