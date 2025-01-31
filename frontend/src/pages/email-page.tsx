@@ -1,6 +1,12 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { generateEmailAlias } from "@/lib/helpers";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { copyToClipboard, generateEmailAlias } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import supabase from "@/lib/supabase";
 import { toast } from "sonner";
@@ -12,13 +18,13 @@ export default function EmailPage() {
 
   console.log(user);
 
-  const userEmailId = user?.user_metadata.app_email_alias;
-
-  const alias = generateEmailAlias();
+  const userEmailAlias = user?.user_metadata.app_email_alias;
 
   async function handleCreateEmailAlias() {
     try {
       if (user) {
+        const alias = generateEmailAlias();
+
         const { data, error } = await supabase.auth.updateUser({
           data: { app_email_alias: alias },
         });
@@ -45,6 +51,25 @@ export default function EmailPage() {
           <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">Inbox</h2>
         </div>
         <div className="flex items-center gap-2">
+          {userEmailAlias && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await copyToClipboard(userEmailAlias + "@shamva.app");
+                    toast.success("Email alias copied to clipboard");
+                  }}
+                >
+                  Copy email alias
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <span>{`Copy ${userEmailAlias}@shamva.app`}</span>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Label className="sr-only">Search emails</Label>
           <Input
             placeholder="Search articles..."
@@ -55,7 +80,7 @@ export default function EmailPage() {
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-4xl flex-1">
-        {userEmailId ? (
+        {userEmailAlias ? (
           <div>Something with email</div>
         ) : (
           <div className="flex max-w-4xl flex-col items-start justify-center gap-4 p-4">

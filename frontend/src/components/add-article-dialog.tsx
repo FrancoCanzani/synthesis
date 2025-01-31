@@ -87,7 +87,7 @@ export default function AddArticleDialog() {
     >
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <span className="">Add article</span>
+          Add article
         </Button>
       </DialogTrigger>
 
