@@ -270,6 +270,30 @@ func (s *service) initTables() error {
 		return err
 	}
 
+	queryEmails := `
+		CREATE TABLE IF NOT EXISTS emails (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			recipient TEXT NOT NULL,
+			recipient_id TEXT NOT NULL,
+			sender TEXT NOT NULL,
+			from TEXT,
+			subject TEXT,
+			body_plain TEXT,
+			stripped_text TEXT,
+			stripped_html TEXT,
+			attachment_count INTEGER,
+			timestamp INTEGER,
+			token TEXT,
+			signature TEXT,
+			created_at DATETIME NOT NULL,
+			updated_at DATETIME NOT NULL,
+		)`
+
+	_, err = s.db.Exec(queryEmails)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -36,6 +36,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	notesHandler := handlers.NewNotesHandler(s.db)
 	feedsHandler := handlers.NewFeedsHandler(s.db)
 	aiHandler := handlers.NewAiHandler(s.db)
+	emailHandler := handlers.NewEmailHandler(s.db)
 
 	router.GET("/", generalHandler.HelloWorldHandler)
 	router.GET("/health", generalHandler.HealthHandler)
@@ -77,7 +78,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	ai := router.Group("/ai")
 	ai.POST("/assistant", aiHandler.GetAiCompletion)
 
-	router.POST("/email", generalHandler.EmailHandler)
+	router.POST("/email", emailHandler.ReceivedEmailHandler)
 
 	return router
 }
