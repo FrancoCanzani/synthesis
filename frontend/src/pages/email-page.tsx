@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { copyToClipboard, generateEmailAlias } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import supabase from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -11,9 +12,20 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function EmailPage() {
   const { user } = useAuth();
 
-  console.log(user);
-
   const userEmailAlias = user?.user_metadata.app_email_alias;
+
+  const { isPending, error, data, isFetching } = useQuery({
+    queryKey: ["articlesData"],
+    queryFn: async () => {
+      const response = await fetch(
+        `${API_URL}/emails?alias=${userEmailAlias}`,
+        {},
+      );
+      return response.json();
+    },
+  });
+
+  console.log(data);
 
   async function handleCreateEmailAlias() {
     try {

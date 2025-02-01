@@ -151,17 +151,21 @@ type ReceivedEmail struct {
 }
 
 type Email struct {
-    ID             int64     `json:"id"`
-    Recipient      string    `json:"recipient"`
-    RecipientAlias string    `json:"recipientAlias"`
-    Sender         string    `json:"sender"`
-    From           string    `json:"from"`
-    Subject        string    `json:"subject"`
-    BodyPlain      string    `json:"bodyPlain"`
-    StrippedText   string    `json:"strippedText"`
-    StrippedHTML   string    `json:"strippedHTML"`
-    AttachmentCount int      `json:"attachmentCount"`
-    Timestamp      int64     `json:"timestamp"`
-    CreatedAt      time.Time `json:"createdAt"`
-    UpdatedAt      time.Time `json:"updatedAt"`
+    ID              int64     `json:"id"`
+    Recipient       string    `json:"recipient"`
+    RecipientAlias  string    `json:"recipientAlias"`
+    Sender          string    `json:"sender"`
+    FromName        string    `json:"fromName"`      
+    Subject         string    `json:"subject"`
+    BodyPlain       string    `json:"bodyPlain"`
+    StrippedText    string    `json:"strippedText"`
+    StrippedHTML    string    `json:"strippedHTML"`
+    AttachmentCount int       `json:"attachmentCount"`
+    Timestamp       int64     `json:"timestamp"`
+    Token           string    `json:"token"`         
+    Signature       string    `json:"signature"`     
+    Starred         bool      `json:"starred"`       
+    Read            bool      `json:"read"`          
+    CreatedAt       time.Time `json:"createdAt"`
+    UpdatedAt       time.Time `json:"updatedAt"`
 }

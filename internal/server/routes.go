@@ -47,6 +47,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	feeds := router.Group("/feeds")
 
+	emails := router.Group("/emails")
+
 	notes.GET("/public/:public_id", notesHandler.GetPublicNoteHandler)
 
 	notes.Use(auth.AuthMiddleware())
@@ -78,7 +80,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	ai := router.Group("/ai")
 	ai.POST("/assistant", aiHandler.GetAiCompletion)
 
-	router.POST("/email", emailHandler.ReceivedEmailHandler)
+	emails.POST("", emailHandler.ReceivedEmailHandler)
+	emails.GET("", emailHandler.GetEmailsHandler)
 
 	return router
 }
