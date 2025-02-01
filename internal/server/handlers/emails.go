@@ -18,25 +18,38 @@ func NewEmailHandler(db database.Service) *EmailHandler {
 }
 
 func (h *EmailHandler) ReceivedEmailHandler(c *gin.Context) {
-    fmt.Println("Email Handler")
+	fmt.Println("Email Handler")
 
-    var parsedEmail models.ReceivedEmail
-    if err := c.ShouldBind(&parsedEmail); err != nil {
-        c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form data: " + err.Error()})
-        return
-    }
+	var parsedEmail models.ReceivedEmail
+	if err := c.ShouldBind(&parsedEmail); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form data: " + err.Error()})
+		return
+	}
 
-    // // Handle attachments (if any)
-    // form, _ := c.MultipartForm()
-    // if form != nil {
-    //     files := form.File["attachment"] // Mailgun sends attachments as "attachment-1", "attachment-2", etc.
-    //     for _, file := range files {
-    //         // Save or process the attachment
-    //         fmt.Println("Attachment:", file.Filename)
-    //     }
-    // }
+	email, err := h.db.SaveEmail(c, parsedEmail)
+ 
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to save email: " + err.Error()})
+		return
+	}
 
-    fmt.Printf("Parsed Email: %+v\n", parsedEmail)
+	c.JSON(http.StatusOK, email)
+}
 
-    c.JSON(http.StatusOK, parsedEmail)
+func (h *EmailHandler) GetEmailsHandler(c *gin.Context){
+	var parsedEmail models.ReceivedEmail
+	
+	if err := c.ShouldBind(&parsedEmail); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form data: " + err.Error()})
+		return 
+	}
+
+	email, err := h.db.SaveEmail(c, parsedEmail)
+ 
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to save email: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, email)
 }

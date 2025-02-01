@@ -30,10 +30,12 @@ type Service interface {
 	DeleteArticle(ctx context.Context, id string, user_id string) error
 	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
-	GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error) 
+	GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error)
 	DeleteFeed(ctx context.Context, link string, userId string) error
 	UpdateFeedItem(ctx context.Context, id int64, userId string, attribute string, value any) error
 	MarkAllFeedItemsAsRead(ctx context.Context, userId string) error
+	SaveEmail(ctx context.Context, receivedEmail models.ReceivedEmail) (models.ReceivedEmail, error) 
+	GetEmails(ctx context.Context, recipientAlias string) ([]*models.Email, error)
 
 	Close() error
 }
@@ -274,7 +276,7 @@ func (s *service) initTables() error {
 		CREATE TABLE IF NOT EXISTS emails (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			recipient TEXT NOT NULL,
-			recipient_id TEXT NOT NULL,
+			recipient_alias TEXT NOT NULL,
 			sender TEXT,
 			from_name TEXT,
 			subject TEXT,

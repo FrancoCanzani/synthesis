@@ -1,11 +1,6 @@
-import { Button } from "@/components/ui/button";
+import ActionButton from "@/components/ui/action-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { copyToClipboard, generateEmailAlias } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import supabase from "@/lib/supabase";
@@ -52,23 +47,15 @@ export default function EmailPage() {
         </div>
         <div className="flex items-center gap-2">
           {userEmailAlias && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    await copyToClipboard(userEmailAlias + "@shamva.app");
-                    toast.success("Email alias copied to clipboard");
-                  }}
-                >
-                  Copy email alias
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <span>{`Copy ${userEmailAlias}@shamva.app`}</span>
-              </TooltipContent>
-            </Tooltip>
+            <ActionButton
+              tooltipContent={`${userEmailAlias}@shamva.app`}
+              onClick={async () => {
+                await copyToClipboard(userEmailAlias + "@shamva.app");
+                toast.success("Email alias copied to clipboard");
+              }}
+            >
+              @
+            </ActionButton>
           )}
           <Label className="sr-only">Search emails</Label>
           <Input

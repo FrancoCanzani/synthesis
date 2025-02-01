@@ -90,7 +90,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 			UserId:          userId,
 			Title:           &item.Title,
 			Description:     &item.Description,
-			Content: 		&item.Content,
+			Content:         &item.Content,
 			FeedLink:        feedLink,
 			Link:            &item.Link,
 			Published:       &item.Published,
@@ -127,39 +127,39 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 }
 
 func (h *FeedsHandler) GetFeedItemsHandler(c *gin.Context) {
-    userId := c.GetString("userId")
-    
-    limit := 50 
-    offset := 0
-    
-    if limitStr := c.Query("limit"); limitStr != "" {
-        if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
-            limit = l
-        }
-    }
-    
-    if offsetStr := c.Query("offset"); offsetStr != "" {
-        if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
-            offset = o
-        }
-    }
+	userId := c.GetString("userId")
 
-    order := c.Query("order"); 
-	
+	limit := 50
+	offset := 0
+
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	if offsetStr := c.Query("offset"); offsetStr != "" {
+		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+			offset = o
+		}
+	}
+
+	order := c.Query("order")
+
 	if order != "" {
 		if order != "ASC" && order != "DESC" {
 			order = "DESC"
 		}
-    }
+	}
 
-    items, err := h.db.GetFeedItems(c, userId, order, limit, offset)
-    if err != nil {
+	items, err := h.db.GetFeedItems(c, userId, order, limit, offset)
+	if err != nil {
 		fmt.Println(err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})
-        return
-    }
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch items"})
+		return
+	}
 
-    c.JSON(http.StatusOK, items)
+	c.JSON(http.StatusOK, items)
 }
 
 func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
@@ -185,7 +185,7 @@ func (h *FeedsHandler) DeleteFeedHandler(c *gin.Context) {
 
 func (h *FeedsHandler) UpdateFeedItemHandler(c *gin.Context) {
 	type UpdateRequest struct {
-		Id      int64 `json:"id" binding:"required"`
+		Id        int64  `json:"id" binding:"required"`
 		Attribute string `json:"attribute" binding:"required"`
 		Value     any    `json:"value" binding:"required"`
 	}

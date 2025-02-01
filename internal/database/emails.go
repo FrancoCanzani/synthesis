@@ -1,0 +1,87 @@
+package database
+
+import (
+	"context"
+	"fmt"
+	"strings"
+	"synthesis/internal/models"
+	"time"
+)
+
+func (s *service) SaveEmail(ctx context.Context, receivedEmail models.ReceivedEmail) (models.ReceivedEmail, error) {
+    query := `INSERT INTO emails (recipient, recipient_alias, sender, from_name, subject, body_plain, stripped_text, stripped_html, attachment_count, timestamp, token, signature, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+    recipientAlias := ""
+    if strings.Contains(receivedEmail.Recipient, "@") {
+        recipientAlias = strings.Split(receivedEmail.Recipient, "@")[0]
+    }
+
+    now := time.Now()
+
+    _, err := s.db.ExecContext(ctx, query,
+        receivedEmail.Recipient,
+        recipientAlias,
+        receivedEmail.Sender,
+        receivedEmail.From,
+        receivedEmail.Subject,
+        receivedEmail.BodyPlain,
+        receivedEmail.StrippedText,
+        receivedEmail.StrippedHTML,
+        receivedEmail.AttachmentCount,
+        receivedEmail.Timestamp,
+        receivedEmail.Token,
+        receivedEmail.Signature,
+        now, // created_at
+        now, // updated_at
+    )
+
+    if err != nil {
+        return receivedEmail, fmt.Errorf("error saving email: %w", err)
+    }
+
+    return receivedEmail, nil
+}
+
+func (s *service) GetEmails(ctx context.Context, recipientAlias string) ([]*models.Email, error) {
+    query := `SELECT * FROM emails WHERE recipient_alias = ?`
+
+    rows, err := s.db.QueryContext(ctx, query,
+        recipientAlias,
+    )
+
+    if err != nil {
+        return nil, fmt.Errorf("failed to query emails: %w", err)
+    }
+
+	defer rows.Close()
+
+	var emails []*models.Email
+
+	for rows.Next() {
+		email := &models.Email{}
+		err := rows.Scan(
+			&email.ID,
+			&email.Recipient,
+			&email.RecipientAlias,
+			&email.Sender,
+			&email.From,
+			&email.Subject,
+			&email.BodyPlain,
+			&email.StrippedText,
+			&email.StrippedHTML,
+			&email.AttachmentCount,
+			&email.Timestamp,
+			&email.CreatedAt,
+			&email.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan email: %w", err)
+		}
+
+		emails = append(emails, email)
+	}
+
+    return emails, nil
+}

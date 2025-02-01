@@ -104,49 +104,64 @@ type FeedItem struct {
 	UpdatedAt       time.Time  `json:"updatedAt"`
 }
 
-
 type FeedItemWithFeed struct {
-    Id              int64      `json:"id"`
-    UserId          string     `json:"userId,omitempty"`
-    Title           *string    `json:"title,omitempty"`
-    Description     *string    `json:"description,omitempty"`
+	Id              int64      `json:"id"`
+	UserId          string     `json:"userId,omitempty"`
+	Title           *string    `json:"title,omitempty"`
+	Description     *string    `json:"description,omitempty"`
 	Content         *string    `json:"content,omitempty"`
-    FeedLink        string     `json:"feedLink,omitempty"`
-    Link            *string    `json:"link,omitempty"`
-    ImageUrl        *string    `json:"imageUrl,omitempty"`
-    ImageTitle      *string    `json:"imageTitle,omitempty"`
-    Published       *string    `json:"published,omitempty"`
-    PublishedParsed *time.Time `json:"publishedParsed,omitempty"`
-    Updated         *string    `json:"updated,omitempty"`
-    UpdatedParsed   *time.Time `json:"updatedParsed,omitempty"`
-    GUID            *string    `json:"guid,omitempty"`
-    Read            bool       `json:"read"`
-    Starred         bool       `json:"starred"`
-    CreatedAt       time.Time  `json:"createdAt"`
-    UpdatedAt       time.Time  `json:"updatedAt"`
-    Feed            struct {
-        Title       *string `json:"title,omitempty"`
-        Description *string `json:"description,omitempty"`
-        ImageUrl    *string `json:"imageUrl,omitempty"`
-        FeedType    *string `json:"feedType,omitempty"`
-    } `json:"feed"`
+	FeedLink        string     `json:"feedLink,omitempty"`
+	Link            *string    `json:"link,omitempty"`
+	ImageUrl        *string    `json:"imageUrl,omitempty"`
+	ImageTitle      *string    `json:"imageTitle,omitempty"`
+	Published       *string    `json:"published,omitempty"`
+	PublishedParsed *time.Time `json:"publishedParsed,omitempty"`
+	Updated         *string    `json:"updated,omitempty"`
+	UpdatedParsed   *time.Time `json:"updatedParsed,omitempty"`
+	GUID            *string    `json:"guid,omitempty"`
+	Read            bool       `json:"read"`
+	Starred         bool       `json:"starred"`
+	CreatedAt       time.Time  `json:"createdAt"`
+	UpdatedAt       time.Time  `json:"updatedAt"`
+	Feed            struct {
+		Title       *string `json:"title,omitempty"`
+		Description *string `json:"description,omitempty"`
+		ImageUrl    *string `json:"imageUrl,omitempty"`
+		FeedType    *string `json:"feedType,omitempty"`
+	} `json:"feed"`
 }
 
 type ReceivedEmail struct {
-    Recipient         string            `form:"recipient"`
-    Sender            string            `form:"sender"`
-    From              string            `form:"from"`
-    Subject           string            `form:"subject"`
-    BodyPlain         string            `form:"body-plain"`
-    StrippedText      string            `form:"stripped-text"`
-    StrippedSignature string            `form:"stripped-signature"`
-    BodyHTML          string            `form:"body-html"`
-    StrippedHTML      string            `form:"stripped-html"`
-    AttachmentCount   int               `form:"attachment-count"`
-    Attachments       map[string]string `form:"attachments"` 
-    Timestamp         int64             `form:"timestamp"`
-    Token             string            `form:"token"`
-    Signature         string            `form:"signature"`
-    MessageHeaders    string            `form:"message-headers"`
-    ContentIDMap      string            `form:"content-id-map"`
+	Recipient         string            `form:"recipient"`
+	Sender            string            `form:"sender"`
+	From              string            `form:"from"`
+	Subject           string            `form:"subject"`
+	BodyPlain         string            `form:"body-plain"`
+	StrippedText      string            `form:"stripped-text"`
+	StrippedSignature string            `form:"stripped-signature"`
+	BodyHTML          string            `form:"body-html"`
+	StrippedHTML      string            `form:"stripped-html"`
+	AttachmentCount   int               `form:"attachment-count"`
+	Attachments       map[string]string `form:"attachments"`
+	Timestamp         int64             `form:"timestamp"`
+	Token             string            `form:"token"`
+	Signature         string            `form:"signature"`
+	MessageHeaders    string            `form:"message-headers"`
+	ContentIDMap      string            `form:"content-id-map"`
+}
+
+type Email struct {
+    ID             int64     `json:"id"`
+    Recipient      string    `json:"recipient"`
+    RecipientAlias string    `json:"recipientAlias"`
+    Sender         string    `json:"sender"`
+    From           string    `json:"from"`
+    Subject        string    `json:"subject"`
+    BodyPlain      string    `json:"bodyPlain"`
+    StrippedText   string    `json:"strippedText"`
+    StrippedHTML   string    `json:"strippedHTML"`
+    AttachmentCount int      `json:"attachmentCount"`
+    Timestamp      int64     `json:"timestamp"`
+    CreatedAt      time.Time `json:"createdAt"`
+    UpdatedAt      time.Time `json:"updatedAt"`
 }

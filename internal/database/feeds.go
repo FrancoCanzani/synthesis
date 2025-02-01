@@ -100,9 +100,8 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 	return tx.Commit()
 }
 
-
 func (s *service) GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error) {
-    query := fmt.Sprintf(`
+	query := fmt.Sprintf(`
         SELECT 
             fi.id, fi.user_id, fi.title, fi.description, fi.content, fi.feed_link, fi.link, 
             fi.image_url, fi.image_title, fi.published, fi.published_parsed, 
@@ -116,29 +115,29 @@ func (s *service) GetFeedItems(ctx context.Context, userId string, order string,
         ORDER BY fi.published_parsed %s
         LIMIT ? OFFSET ?`, order)
 
-    rows, err := s.db.QueryContext(ctx, query, userId, limit, offset)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	rows, err := s.db.QueryContext(ctx, query, userId, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    var items []*models.FeedItemWithFeed
-    for rows.Next() {
-        item := &models.FeedItemWithFeed{}
-        err := rows.Scan(
-            &item.Id, &item.UserId, &item.Title, &item.Description, &item.Content, &item.FeedLink, &item.Link,
-            &item.ImageUrl, &item.ImageTitle, &item.Published, &item.PublishedParsed,
-            &item.Updated, &item.UpdatedParsed, &item.GUID, &item.Read, &item.Starred,
-            &item.CreatedAt, &item.UpdatedAt,
-            &item.Feed.Title, &item.Feed.Description, &item.Feed.ImageUrl, &item.Feed.FeedType,
-        )
-        if err != nil {
-            return nil, err
-        }
-        items = append(items, item)
-    }
+	var items []*models.FeedItemWithFeed
+	for rows.Next() {
+		item := &models.FeedItemWithFeed{}
+		err := rows.Scan(
+			&item.Id, &item.UserId, &item.Title, &item.Description, &item.Content, &item.FeedLink, &item.Link,
+			&item.ImageUrl, &item.ImageTitle, &item.Published, &item.PublishedParsed,
+			&item.Updated, &item.UpdatedParsed, &item.GUID, &item.Read, &item.Starred,
+			&item.CreatedAt, &item.UpdatedAt,
+			&item.Feed.Title, &item.Feed.Description, &item.Feed.ImageUrl, &item.Feed.FeedType,
+		)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
 
-    return items, rows.Err()
+	return items, rows.Err()
 }
 
 func (s *service) DeleteFeed(ctx context.Context, feedLink string, userId string) error {
