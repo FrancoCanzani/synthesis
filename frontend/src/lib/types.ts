@@ -62,3 +62,23 @@ export interface FeedItem {
     feedType?: string;
   };
 }
+
+export interface Email {
+  id: number;
+  recipient: string;
+  recipientAlias: string;
+  sender: string;
+  fromName: string;
+  subject: string;
+  bodyPlain: string;
+  strippedText: string;
+  strippedHTML: string;
+  attachmentCount: number;
+  timestamp: number;
+  token: string;
+  signature: string;
+  starred: boolean;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

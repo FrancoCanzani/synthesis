@@ -49,7 +49,7 @@ func (s *service) SaveEmail(ctx context.Context, receivedEmail models.ReceivedEm
 }
 
 func (s *service) GetEmails(ctx context.Context, recipientAlias string) ([]*models.Email, error) {
-    query := `SELECT * FROM emails WHERE recipient_alias = ?`
+    query := `SELECT * FROM emails WHERE recipient_alias = ? ORDER BY timestamp DESC`
 
     rows, err := s.db.QueryContext(ctx, query,
         recipientAlias,
