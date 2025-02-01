@@ -47,11 +47,13 @@ export function EmailDetailSheet({
           <div className="border-t py-4">
             {email.strippedHTML ? (
               <div
-                className="prose max-w-none dark:prose-invert"
+                className="prose max-w-none text-sm dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: email.strippedHTML }}
               />
             ) : (
-              <div className="whitespace-pre-wrap">{email.bodyPlain}</div>
+              <div className="whitespace-pre-wrap text-sm">
+                {email.bodyPlain}
+              </div>
             )}
           </div>
         </div>

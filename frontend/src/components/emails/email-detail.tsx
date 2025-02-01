@@ -15,14 +15,13 @@ export default function EmailDetail({ email }: { email: Email | null }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <p className="font-semibold">{email.fromName}</p>
-          <p className="text-sm text-gray-500">{email.sender}</p>
         </div>
         <p className="text-sm text-gray-500">
           {new Date(email.timestamp * 1000).toLocaleString()}
         </p>
       </div>
       <div
-        className="prose max-w-none dark:prose-invert"
+        className="prose max-w-none text-sm dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: email.strippedHTML }}
       />
     </div>

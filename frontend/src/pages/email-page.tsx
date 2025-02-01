@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { copyToClipboard, generateEmailAlias } from "@/lib/helpers";
 import { useAuth } from "@/lib/hooks/use-auth";
 import supabase from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AtSign, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
@@ -31,7 +32,7 @@ export default function EmailPage() {
       }
       return response.json();
     },
-    refetchInterval: 60 * 1000, // Refetch every 5 minutes
+    refetchInterval: 300 * 1000, // Refetch every 5 minutes
   });
 
   async function handleCreateEmailAlias() {
@@ -68,9 +69,9 @@ export default function EmailPage() {
         <div className="flex items-center gap-2">
           {userEmailAlias && (
             <ActionButton
-              tooltipContent={`${userEmailAlias}@shamva.app`}
+              tooltipContent={`${userEmailAlias}@email.shamva.app`}
               onClick={async () => {
-                await copyToClipboard(userEmailAlias + "@shamva.app");
+                await copyToClipboard(userEmailAlias + "@email.shamva.app");
                 toast.success("Email alias copied to clipboard");
               }}
             >
@@ -83,8 +84,14 @@ export default function EmailPage() {
               onClick={() =>
                 queryClient.invalidateQueries({ queryKey: ["emailsData"] })
               }
+              disabled={isFetching || isPending}
             >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw
+                className={cn(
+                  "h-4 w-4",
+                  isFetching || isPending ? "animate-spin" : "",
+                )}
+              />
             </ActionButton>
           )}
           <Label className="sr-only">Search emails</Label>

@@ -37,7 +37,11 @@ export default function EmailList({ emails }: { emails: Email[] }) {
           isMobile ? (
             <EmailDetailSheet key={email.id} email={email}>
               <li
-                className="cursor-pointer space-y-1 p-3 hover:bg-accent md:p-4 lg:p-5"
+                className={cn(
+                  "w-full cursor-pointer space-y-1 p-3 hover:bg-accent",
+                  email.read && "opacity-60",
+                  !email.read && "border-l-4 border-l-blue-500",
+                )}
                 onClick={() => setSearchParams({ emailId: email.id.toFixed() })}
               >
                 <div className="flex items-center justify-between">
@@ -63,13 +67,17 @@ export default function EmailList({ emails }: { emails: Email[] }) {
               className={cn(
                 "w-full cursor-pointer space-y-1 p-3 hover:bg-accent",
                 selectedEmailId === email.id.toFixed() && "bg-accent",
+                email.read && "opacity-60",
+                !email.read && "border-l-2 border-l-blue-500",
               )}
               onClick={() => setSearchParams({ emailId: email.id.toFixed() })}
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {email.fromName.split("<")[0]}
-                </span>
+                <div className="flex items-center justify-start space-x-2">
+                  <span className="font-medium">
+                    {email.fromName.split("<")[0]}
+                  </span>
+                </div>
                 <span className="text-xs text-gray-500">
                   {new Date(email.timestamp * 1000).toLocaleTimeString([], {
                     hour: "2-digit",
