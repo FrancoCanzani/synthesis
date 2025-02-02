@@ -10,14 +10,22 @@ import { Email } from "@/lib/types";
 export function EmailDetailSheet({
   email,
   children,
+  onOpenChange,
 }: {
   email: Email | null;
   children: React.ReactNode;
+  onOpenChange: () => void;
 }) {
   if (!email) return null;
 
   return (
-    <Sheet>
+    <Sheet
+      onOpenChange={(open) => {
+        if (!open) {
+          onOpenChange();
+        }
+      }}
+    >
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="max-h-[85%] overflow-y-auto" side="bottom">
         <SheetHeader>
