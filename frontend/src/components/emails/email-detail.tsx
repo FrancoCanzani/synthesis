@@ -10,7 +10,7 @@ export default function EmailDetail({ email }: { email: Email | null }) {
   }
 
   return (
-    <div className="max-h-[82vh] w-2/3 overflow-y-scroll p-2">
+    <div className="hidden max-h-[82vh] w-2/3 overflow-y-scroll p-2 md:block">
       <h1 className="mb-4 text-2xl font-semibold">{email.subject}</h1>
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -21,7 +21,7 @@ export default function EmailDetail({ email }: { email: Email | null }) {
         </p>
       </div>
       <div
-        className="prose max-w-none text-sm dark:prose-invert"
+        className="prose max-w-none border-t py-4 text-sm dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: email.strippedHTML }}
       />
     </div>

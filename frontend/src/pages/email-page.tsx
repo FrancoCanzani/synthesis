@@ -54,9 +54,8 @@ export default function EmailPage() {
           window.location.reload();
         }
       }
-    } catch (err) {
+    } catch {
       toast.error("Error creating email alias");
-      console.error(err);
     }
   }
 

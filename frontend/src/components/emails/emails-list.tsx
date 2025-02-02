@@ -93,15 +93,12 @@ export default function EmailList({ emails }: { emails: Email[] }) {
           ),
         )}
       </ol>
-      {!isMobile && (
-        <>
-          <Separator orientation="vertical" />
-          {selectedEmail ? (
-            <EmailDetail email={selectedEmail} />
-          ) : (
-            <EmailDetail email={null} />
-          )}
-        </>
+
+      <Separator orientation="vertical" className="hidden md:block" />
+      {selectedEmail ? (
+        <EmailDetail email={selectedEmail} />
+      ) : (
+        <EmailDetail email={null} />
       )}
     </div>
   );
