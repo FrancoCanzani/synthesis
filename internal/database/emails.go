@@ -94,3 +94,19 @@ func (s *service) GetEmails(ctx context.Context, recipientAlias string) ([]*mode
 
     return emails, nil
 }
+
+func (s *service) UpdateEmailItem(ctx context.Context, id int64, recipientAlias string, attribute string, value any) error {
+	query := fmt.Sprintf(`
+		UPDATE emails
+		SET %s = ?
+		WHERE id = ? AND recipient_alias = ?
+	`, attribute)
+
+	_, err := s.db.ExecContext(ctx, query, value, id, recipientAlias)
+
+	if err != nil {
+		return fmt.Errorf("failed to update post: %w", err)
+	}
+
+	return nil
+}

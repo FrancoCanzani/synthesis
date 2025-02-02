@@ -36,7 +36,8 @@ type Service interface {
 	MarkAllFeedItemsAsRead(ctx context.Context, userId string) error
 	SaveEmail(ctx context.Context, receivedEmail models.ReceivedEmail) (models.ReceivedEmail, error) 
 	GetEmails(ctx context.Context, recipientAlias string) ([]*models.Email, error)
-
+	UpdateEmailItem(ctx context.Context, id int64, recipientAlias string, attribute string, value any) error
+	
 	Close() error
 }
 

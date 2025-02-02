@@ -82,6 +82,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	emails.POST("", emailHandler.ReceivedEmailHandler)
 	emails.GET("", emailHandler.GetEmailsHandler)
+	emails.PUT("", emailHandler.UpdateEmailItemHandler)
 
 	return router
 }
