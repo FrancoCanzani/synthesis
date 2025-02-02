@@ -1,9 +1,13 @@
+import { copyToClipboard } from "@/lib/helpers";
 import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { Email } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNowStrict } from "date-fns";
+import { Copy, Mail, Share, Star } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
+import ActionButton from "../ui/action-button";
 import { Separator } from "../ui/separator";
 import EmailDetail from "./email-detail";
 import { EmailDetailSheet } from "./email-detail-sheet";
@@ -25,7 +29,8 @@ export default function EmailList({ emails }: { emails: Email[] }) {
   );
 
   const readMutation = useMutation({
-    mutationFn: handleReadStatus,
+    mutationFn: (email: Email) =>
+      updateEmailAttribute(email.id, email.recipientAlias, "read", !email.read),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emailsData"] });
     },
@@ -34,121 +39,218 @@ export default function EmailList({ emails }: { emails: Email[] }) {
     },
   });
 
-  async function handleReadStatus(email: Email) {
+  const starMutation = useMutation({
+    mutationFn: (email: Email) =>
+      updateEmailAttribute(
+        email.id,
+        email.recipientAlias,
+        "starred",
+        !email.starred,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["emailsData"] });
+    },
+    onError: () => {
+      toast.error("Failed to star email. Please try again.");
+    },
+  });
+
+  async function updateEmailAttribute(
+    id: number,
+    recipientAlias: string,
+    attribute: "read" | "starred",
+    value: boolean,
+  ) {
     const response = await fetch(`${API_URL}/emails`, {
       method: "PUT",
       body: JSON.stringify({
-        id: email.id,
-        recipient_alias: email.recipientAlias,
-        attribute: "read",
-        value: !email.read,
+        id,
+        recipient_alias: recipientAlias,
+        attribute,
+        value,
       }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to mark posts as read");
+      throw new Error(`Failed to update email ${attribute}`);
     }
 
-    return await response.json();
+    return response.json();
   }
 
+  const handleShare = async (email: Email) => {
+    const shareData = {
+      title: email.subject,
+      text: email.strippedText,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(
+          `${email.subject}\n\n${email.strippedText}`,
+        );
+        toast.success("Copied to clipboard!");
+      }
+    } catch {
+      toast.error("Failed to share content");
+    }
+  };
+
   return (
-    <div
-      className={cn(
-        "h-full w-full",
-        !isMobile &&
-          "flex items-start justify-between space-x-2 p-3 md:p-4 lg:p-5",
+    <div>
+      {!isMobile && (
+        <div className="w-full px-3 md:px-4 lg:px-5">
+          {selectedEmail && (
+            <div className="flex items-center justify-end space-x-2 border-y py-1">
+              <ActionButton
+                tooltipContent="Copy email content"
+                onClick={async () => {
+                  await copyToClipboard(selectedEmail.strippedText);
+                  toast.success("Email content copied to clipboard");
+                }}
+              >
+                <Copy className="h-4 w-4" />
+              </ActionButton>
+              <ActionButton
+                tooltipContent="Share"
+                onClick={() => handleShare(selectedEmail)}
+              >
+                <Share className="h-4 w-4" />
+              </ActionButton>
+              <ActionButton
+                tooltipContent={selectedEmail.starred ? "Unstar" : "Star"}
+                onClick={async () => {
+                  await starMutation.mutateAsync(selectedEmail);
+                }}
+              >
+                <Star
+                  className="h-4 w-4"
+                  fill={selectedEmail.starred ? "#fbbf24" : "none"}
+                  stroke={selectedEmail.starred ? "#fbbf24" : "currentColor"}
+                />
+              </ActionButton>
+
+              <ActionButton
+                tooltipContent="Mar as unread"
+                onClick={async () => {
+                  await readMutation.mutateAsync(selectedEmail);
+                }}
+                disabled={selectedEmail.read}
+              >
+                <Mail className="h-4 w-4" />
+              </ActionButton>
+            </div>
+          )}
+        </div>
       )}
-    >
-      <ol
+      <div
         className={cn(
-          "divide-y",
-          !isMobile && "flex w-1/3 flex-col items-start justify-start",
+          "h-full w-full",
+          !isMobile &&
+            "flex items-start justify-between space-x-2 p-3 md:p-4 lg:p-5",
         )}
       >
-        {emails.map((email) =>
-          isMobile ? (
-            <EmailDetailSheet
-              key={email.id}
-              email={email}
-              onOpenChange={async () => {
-                if (!email.read) {
-                  await readMutation.mutateAsync(email);
-                }
-                setSearchParams({ emailId: email.id.toFixed() });
-              }}
-            >
+        <ol
+          className={cn(
+            "divide-y",
+            !isMobile && "flex w-1/3 flex-col items-start justify-start",
+          )}
+        >
+          {emails.map((email) =>
+            isMobile ? (
+              <EmailDetailSheet
+                key={email.id}
+                email={email}
+                onOpenChange={async () => {
+                  if (!email.read) {
+                    await readMutation.mutateAsync(email);
+                  }
+                  setSearchParams({ emailId: email.id.toFixed() });
+                }}
+              >
+                <li
+                  className={cn(
+                    "w-full cursor-pointer space-y-1 p-3 hover:bg-accent",
+                    email.read && "opacity-60",
+                    !email.read && "border-l-4 border-l-blue-500",
+                  )}
+                  onClick={() => {
+                    setSearchParams({ emailId: email.id.toFixed() });
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">
+                      {email.fromName.split("<")[0]}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(email.timestamp * 1000).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="text-sm font-medium">{email.subject}</div>
+                  <div className="truncate text-xs text-gray-500">
+                    {email.strippedText}
+                  </div>
+                </li>
+              </EmailDetailSheet>
+            ) : (
               <li
+                key={email.id}
                 className={cn(
                   "w-full cursor-pointer space-y-1 p-3 hover:bg-accent",
+                  selectedEmailId === email.id.toFixed() && "bg-accent",
                   email.read && "opacity-60",
-                  !email.read && "border-l-4 border-l-blue-500",
+                  !email.read && "border-l-2 border-l-blue-500",
                 )}
                 onClick={() => {
+                  if (!email.read) {
+                    readMutation.mutate(email);
+                  }
                   setSearchParams({ emailId: email.id.toFixed() });
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">
-                    {email.fromName.split("<")[0]}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(email.timestamp * 1000).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                  <div className="flex items-center justify-start space-x-2">
+                    <span className="font-medium">
+                      {email.fromName.split("<")[0]}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end space-x-2">
+                    {email.starred && (
+                      <Star
+                        className="h-3 w-3"
+                        fill="#fbbf24"
+                        stroke="#fbbf24"
+                      />
+                    )}
+                    <span className="text-xs text-gray-500">
+                      {formatDistanceToNowStrict(
+                        new Date(email.timestamp * 1000),
+                        { addSuffix: true },
+                      )}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-sm font-medium">{email.subject}</div>
+                <div className="text-sm">{email.subject}</div>
                 <div className="truncate text-xs text-gray-500">
                   {email.strippedText}
                 </div>
               </li>
-            </EmailDetailSheet>
-          ) : (
-            <li
-              key={email.id}
-              className={cn(
-                "w-full cursor-pointer space-y-1 p-3 hover:bg-accent",
-                selectedEmailId === email.id.toFixed() && "bg-accent",
-                email.read && "opacity-60",
-                !email.read && "border-l-2 border-l-blue-500",
-              )}
-              onClick={() => {
-                if (!email.read) {
-                  readMutation.mutate(email);
-                }
-                setSearchParams({ emailId: email.id.toFixed() });
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center justify-start space-x-2">
-                  <span className="font-medium">
-                    {email.fromName.split("<")[0]}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-500">
-                  {new Date(email.timestamp * 1000).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
-              <div className="text-sm">{email.subject}</div>
-              <div className="truncate text-xs text-gray-500">
-                {email.strippedText}
-              </div>
-            </li>
-          ),
-        )}
-      </ol>
+            ),
+          )}
+        </ol>
 
-      <Separator orientation="vertical" className="hidden md:block" />
-      {selectedEmail ? (
-        <EmailDetail email={selectedEmail} />
-      ) : (
-        <EmailDetail email={null} />
-      )}
+        <Separator orientation="vertical" className="hidden md:block" />
+        {selectedEmail ? (
+          <EmailDetail email={selectedEmail} />
+        ) : (
+          <EmailDetail email={null} />
+        )}
+      </div>
     </div>
   );
 }
