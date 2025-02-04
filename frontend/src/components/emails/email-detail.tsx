@@ -1,4 +1,5 @@
 import { Email } from "@/lib/types";
+import EmailDetailOptions from "./email-detail-options";
 
 export default function EmailDetail({ email }: { email: Email | null }) {
   if (!email) {
@@ -10,8 +11,11 @@ export default function EmailDetail({ email }: { email: Email | null }) {
   }
 
   return (
-    <div className="hidden max-h-[82vh] w-2/3 overflow-y-scroll p-2 md:block">
-      <h1 className="mb-4 text-2xl font-semibold">{email.subject}</h1>
+    <div className="hidden max-h-[82vh] w-2/3 overflow-y-scroll md:block">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{email.subject}</h1>
+        <EmailDetailOptions email={email} />
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <div>
           <p className="font-semibold">{email.fromName}</p>

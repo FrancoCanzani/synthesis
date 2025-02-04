@@ -6,6 +6,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Email } from "@/lib/types";
+import EmailDetailOptions from "./email-detail-options";
 
 export function EmailDetailSheet({
   email,
@@ -32,23 +33,22 @@ export function EmailDetailSheet({
           <SheetTitle className="text-left">{email.subject}</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-4">
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
+            <div className="flex items-center justify-start space-x-1">
               <span className="text-muted-foreground">From:</span>
-              <span className="font-medium">
+              <span className="truncate font-medium">
                 {email.fromName || email.sender}
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">To:</span>
-              <span className="font-medium">{email.recipient}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Date:</span>
-              <span className="font-medium">
-                {new Date(email.timestamp * 1000).toLocaleString()}
-              </span>
+            <div className="flex items-center justify-between space-x-1">
+              <div className="flex items-center justify-start space-x-1">
+                <span className="text-muted-foreground">Date:</span>
+                <span className="font-medium">
+                  {new Date(email.timestamp * 1000).toLocaleString()}
+                </span>
+              </div>
+              <EmailDetailOptions email={email} />
             </div>
           </div>
 

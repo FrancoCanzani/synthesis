@@ -1,13 +1,11 @@
-import { copyToClipboard } from "@/lib/helpers";
 import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { Email } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Copy, Mail, Share, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
-import ActionButton from "../ui/action-button";
 import { Separator } from "../ui/separator";
 import EmailDetail from "./email-detail";
 import { EmailDetailSheet } from "./email-detail-sheet";
@@ -39,22 +37,6 @@ export default function EmailList({ emails }: { emails: Email[] }) {
     },
   });
 
-  const starMutation = useMutation({
-    mutationFn: (email: Email) =>
-      updateEmailAttribute(
-        email.id,
-        email.recipientAlias,
-        "starred",
-        !email.starred,
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["emailsData"] });
-    },
-    onError: () => {
-      toast.error("Failed to star email. Please try again.");
-    },
-  });
-
   async function updateEmailAttribute(
     id: number,
     recipientAlias: string,
@@ -78,73 +60,8 @@ export default function EmailList({ emails }: { emails: Email[] }) {
     return response.json();
   }
 
-  const handleShare = async (email: Email) => {
-    const shareData = {
-      title: email.subject,
-      text: email.strippedText,
-    };
-
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(
-          `${email.subject}\n\n${email.strippedText}`,
-        );
-        toast.success("Copied to clipboard!");
-      }
-    } catch {
-      toast.error("Failed to share content");
-    }
-  };
-
   return (
     <div>
-      {!isMobile && (
-        <div className="w-full px-3 md:px-4 lg:px-5">
-          {selectedEmail && (
-            <div className="flex items-center justify-end space-x-2 border-y py-1">
-              <ActionButton
-                tooltipContent="Copy email content"
-                onClick={async () => {
-                  await copyToClipboard(selectedEmail.strippedText);
-                  toast.success("Email content copied to clipboard");
-                }}
-              >
-                <Copy className="h-4 w-4" />
-              </ActionButton>
-              <ActionButton
-                tooltipContent="Share"
-                onClick={() => handleShare(selectedEmail)}
-              >
-                <Share className="h-4 w-4" />
-              </ActionButton>
-              <ActionButton
-                tooltipContent={selectedEmail.starred ? "Unstar" : "Star"}
-                onClick={async () => {
-                  await starMutation.mutateAsync(selectedEmail);
-                }}
-              >
-                <Star
-                  className="h-4 w-4"
-                  fill={selectedEmail.starred ? "#fbbf24" : "none"}
-                  stroke={selectedEmail.starred ? "#fbbf24" : "currentColor"}
-                />
-              </ActionButton>
-
-              <ActionButton
-                tooltipContent="Mar as unread"
-                onClick={async () => {
-                  await readMutation.mutateAsync(selectedEmail);
-                }}
-                disabled={selectedEmail.read}
-              >
-                <Mail className="h-4 w-4" />
-              </ActionButton>
-            </div>
-          )}
-        </div>
-      )}
       <div
         className={cn(
           "h-full w-full",
