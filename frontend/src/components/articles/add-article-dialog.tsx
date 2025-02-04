@@ -1,11 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { formatDate, getToken } from "@/lib/helpers";
 import { urlSchema } from "@/lib/schemas";
 import { Article } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle, Save, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
@@ -13,8 +18,8 @@ import { v4 as uuid } from "uuid";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function AddArticleDialog() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [urlInput, setUrlInput] = useState("");
+  const [labelInput, setLabelInput] = useState("");
   const [article, setArticle] = useState<Article | null>(null);
 
   const queryClient = useQueryClient();
@@ -33,8 +38,7 @@ export default function AddArticleDialog() {
     onSuccess: (data) => {
       setArticle(data);
     },
-    onError: (error) => {
-      console.error(error);
+    onError: () => {
       toast.error("Failed to fetch article");
     },
   });
@@ -52,6 +56,7 @@ export default function AddArticleDialog() {
         body: JSON.stringify({
           ...article,
           id: uuid(),
+          label: labelInput.trim() || undefined,
         }),
       });
       if (!response.ok) throw new Error("Failed to save article");
@@ -60,7 +65,6 @@ export default function AddArticleDialog() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["articlesData"] });
       toast.success("Article saved successfully");
-      setIsOpen(false);
     },
     onError: () => {
       toast.error("Failed to save article");
@@ -68,7 +72,7 @@ export default function AddArticleDialog() {
   });
 
   async function getArticle(url: string) {
-    const result = urlSchema.safeParse(input.trim());
+    const result = urlSchema.safeParse(url.trim());
     if (!result.success) {
       toast.error(result.error.issues[0].message);
       return;
@@ -76,13 +80,18 @@ export default function AddArticleDialog() {
     fetchArticleMutation.mutate(url);
   }
 
+  function handleReset() {
+    setUrlInput("");
+    setLabelInput("");
+    setArticle(null);
+  }
+
   return (
     <Dialog
-      open={isOpen}
-      onOpenChange={() => {
-        setIsOpen(!isOpen);
-        setArticle(null);
-        setInput("");
+      onOpenChange={(open) => {
+        if (!open) {
+          handleReset();
+        }
       }}
     >
       <DialogTrigger asChild>
@@ -91,43 +100,78 @@ export default function AddArticleDialog() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="mx-auto flex w-full max-w-md flex-col gap-y-0 px-2 pb-0 pt-2 text-sm sm:max-w-[550px]">
-        {article ? (
-          <div className="flex-1 overflow-hidden">
+      <DialogContent className="mx-auto flex w-full max-w-md flex-col gap-y-4 px-4 pb-4 pt-4 text-sm sm:max-w-[550px]">
+        <DialogHeader>
+          <DialogTitle>Add new article</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Input
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="Enter article URL"
+                className="h-9 w-full"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    getArticle(urlInput);
+                  }
+                }}
+              />
+            </div>
+            <Button
+              variant="outline"
+              size={"sm"}
+              type="button"
+              className="h-9"
+              onClick={() => getArticle(urlInput)}
+              disabled={fetchArticleMutation.isPending || !urlInput}
+            >
+              Fetch
+            </Button>
+          </div>
+
+          {article && (
+            <div className="flex items-center gap-2">
+              <Input
+                value={labelInput}
+                onChange={(e) => setLabelInput(e.target.value)}
+                placeholder="Add a label (optional)"
+                className="h-9 flex-1"
+              />
+              <Button
+                variant="outline"
+                size={"sm"}
+                className="h-9"
+                onClick={() => saveArticleMutation.mutate(article)}
+                disabled={saveArticleMutation.isPending}
+              >
+                Save
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {article && (
+          <div className="flex-1 overflow-hidden rounded-md border">
             <article className="h-[400px] overflow-y-auto rounded-sm bg-muted/20 p-2">
               <header>
                 <h1 className="font-serif text-2xl font-bold leading-tight">
                   {article.title}
                 </h1>
-                <div className="flex flex-wrap items-center gap-6 text-xs">
-                  <div className="flex items-center justify-start space-x-1">
-                    {article.author && <span>By {article.author}</span>}
-                    {article.image && (
-                      <figure className="my-8">
-                        <img
-                          src={article.favicon}
-                          alt={article.siteName}
-                          className="h-4 w-4 rounded-sm"
-                        />
-                      </figure>
-                    )}
-                  </div>
+                <div className="flex flex-wrap items-center justify-start space-x-2 py-4 text-xs">
+                  {article.author && <span>By {article.author}</span>}
                   {article.publishedTime && (
                     <time dateTime={article.publishedTime}>
-                      Published {formatDate(article.publishedTime)}
-                    </time>
-                  )}
-                  {article.modifiedTime && (
-                    <time dateTime={article.modifiedTime}>
-                      Modified {formatDate(article.modifiedTime)}
+                      {formatDate(article.publishedTime)}
                     </time>
                   )}
                 </div>
 
                 {article.excerpt && (
-                  <p className="font-serif leading-relaxed">
-                    {article.excerpt}
-                  </p>
+                  <p className="leading-relaxed">{article.excerpt}</p>
                 )}
               </header>
 
@@ -157,62 +201,7 @@ export default function AddArticleDialog() {
               </div>
             </article>
           </div>
-        ) : (
-          <div className="flex h-[50px] items-center justify-center">
-            <p className="text-muted-foreground">
-              Paste an article URL to get its content.
-            </p>
-          </div>
         )}
-        <form className="flex items-center space-x-3 border-t">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter article URL"
-            className="flex-1 bg-transparent px-2 py-4 outline-none"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                getArticle(input);
-              }
-            }}
-          />
-          <div className="flex items-center justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                getArticle(input);
-              }}
-              className={cn("h-7 w-7 hover:bg-accent/50", {
-                "opacity-70": input.length === 0,
-              })}
-              disabled={fetchArticleMutation.isPending}
-            >
-              {fetchArticleMutation.isPending ? (
-                <LoaderCircle className="animate-spin" size={20} />
-              ) : (
-                <SendHorizonal size={20} />
-              )}
-            </Button>
-            {article && (
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                className={cn("h-7 w-7 hover:bg-accent/50")}
-                onClick={() => saveArticleMutation.mutate(article)}
-                disabled={saveArticleMutation.isPending}
-                title="Insert into note"
-              >
-                <Save className="h-4 w-4" />
-                <span className="sr-only">Save article</span>
-              </Button>
-            )}
-          </div>
-        </form>
       </DialogContent>
     </Dialog>
   );

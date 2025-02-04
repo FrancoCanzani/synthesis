@@ -31,6 +31,7 @@ func (s *service) GetArticles(ctx context.Context, userId string) ([]*models.Art
 			&article.Id,
 			&article.UserId,
 			&article.Title,
+			&article.Label,
 			&article.SiteName,
 			&article.URL,
 			&article.Author,
@@ -67,6 +68,7 @@ func (s *service) GetArticle(ctx context.Context, userId string, articleId strin
 		&article.Id,
 		&article.UserId,
 		&article.Title,
+		&article.Label,
 		&article.SiteName,
 		&article.URL,
 		&article.Author,
@@ -92,12 +94,13 @@ func (s *service) GetArticle(ctx context.Context, userId string, articleId strin
 }
 
 func (s *service) CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error) {
-	query := `INSERT INTO articles (id, user_id, title, site_name, url, author, excerpt, image, favicon, content, text_content, published_time, modified_time, language, length, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO articles (id, user_id, title, label, site_name, url, author, excerpt, image, favicon, content, text_content, published_time, modified_time, language, length, scraped_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err := s.db.ExecContext(ctx, query,
 		article.Id,
 		article.UserId,
 		article.Title,
+		article.Label,
 		article.SiteName,
 		article.URL,
 		article.Author,

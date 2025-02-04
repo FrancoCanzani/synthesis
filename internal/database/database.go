@@ -184,6 +184,7 @@ func (s *service) initTables() error {
         id TEXT PRIMARY KEY,
 		user_id TEXT NOT NULL,
         title TEXT,
+		label TEXT,
         site_name TEXT,
         url TEXT NOT NULL,
         author TEXT,

@@ -15,6 +15,7 @@ export interface Article {
   id: string;
   userId: string;
   title: string;
+  label: string;
   siteName: string;
   url: string;
   author: string;

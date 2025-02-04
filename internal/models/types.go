@@ -41,6 +41,7 @@ type Article struct {
 	Id            *string    `json:"id"`
 	UserId        *string    `json:"userId"`
 	Title         *string    `json:"title"`
+	Label		  *string    `json:"label"`
 	SiteName      *string    `json:"siteName"`
 	URL           string     `json:"url"`
 	Author        *string    `json:"author"`
