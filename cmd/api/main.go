@@ -42,36 +42,37 @@ func gracefulShutdown(apiServer *http.Server, db database.Service, c *cron.Cron,
 }
 
 func main() {
-        db := database.New()
-        defer db.Close() // Close the database connection when the application exits
+	db := database.New()
+	defer db.Close()
 
-        server := server.NewServer()
+	server := server.NewServer()
 
-        c := cron.New()
-        _, err := c.AddFunc("*/10 * * * *", func() {
-                err := db.UpdateAllFeeds(context.Background()) // Use background context for cron
-                if err != nil {
-                        log.Printf("Error updating feeds: %v", err)
-                }
-        })
+	c := cron.New()
+	_, err := c.AddFunc("*/10 * * * *", func() { // Run every 10 minutes
+			err := db.UpdateAllFeeds(context.Background())
+			if err != nil {
+					log.Printf("Error updating feeds: %v", err) 
+			}
+	})
 
-        if err != nil {
-                log.Fatalf("Error scheduling cron job: %v", err)
-        }
+	if err != nil {
+			log.Printf("Error scheduling cron job: %v", err) 
+			//  logging/monitoring here
+	} else {
+			c.Start()
+			defer c.Stop()
+			log.Println("Feed updater started. Running every 10 minutes.")
+	} 
 
-        c.Start()
-        defer c.Stop()
+	done := make(chan bool, 1)
+	
+	go gracefulShutdown(server, db, c, done)
 
-        log.Println("Feed updater started. Running every 10 minutes.")
+	err = server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+			panic(fmt.Sprintf("http server error: %s", err))
+	}
 
-        done := make(chan bool, 1)
-        go gracefulShutdown(server, db, c, done) 
-
-        err = server.ListenAndServe()
-        if err != nil && err != http.ErrServerClosed {
-                panic(fmt.Sprintf("http server error: %s", err))
-        }
-
-        <-done
-        log.Println("Graceful shutdown complete.")
+	<-done
+	log.Println("Graceful shutdown complete.")
 }
