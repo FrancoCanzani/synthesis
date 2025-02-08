@@ -34,7 +34,7 @@ export default function ReadArticlePage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 md:py-12">
-      <article className="prose prose-lg dark:prose-invert prose-headings:scroll-mt-20">
+      <article className="prose dark:prose-invert prose-headings:scroll-mt-20">
         {isPending ? (
           <ArticleSkeleton />
         ) : error ? (
@@ -57,7 +57,7 @@ export default function ReadArticlePage() {
                     href={article.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm underline"
+                    className="text-sm"
                   >
                     Read original
                   </a>

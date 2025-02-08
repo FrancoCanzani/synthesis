@@ -65,21 +65,21 @@ export default function ArticleRow({ article }: { article: Article }) {
         <h3 className="truncate font-medium leading-tight">{article.title}</h3>
         <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center justify-start space-x-1">
+            {article.label && <span className="">{article.label}</span>}
+            {article.label && <span className="">‧</span>}
             {article.siteName && (
               <>
                 <span className="max-w-[200px] truncate">
                   {article.siteName}
                 </span>
-                <span className="flex-shrink-0">‧</span>
               </>
             )}
-            <time className="flex-shrink-0">
-              {formatDistanceToNowStrict(new Date(article.publishedTime), {
-                addSuffix: true,
-              })}
-            </time>
           </div>
-          {article.label && <span className="underline">{article.label}</span>}
+          <time className="flex-shrink-0">
+            {formatDistanceToNowStrict(new Date(article.publishedTime), {
+              addSuffix: true,
+            })}
+          </time>
         </div>
       </div>
 
@@ -89,7 +89,7 @@ export default function ArticleRow({ article }: { article: Article }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 opacity-100 transition-opacity hover:bg-white group-hover:opacity-100 dark:hover:bg-background sm:opacity-0"
+              className="h-8 w-8 opacity-100 transition-opacity hover:bg-white group-hover:opacity-100 dark:hover:bg-background md:opacity-0"
             >
               <Ellipsis className="h-4 w-4" />
               <span className="sr-only">Open options</span>

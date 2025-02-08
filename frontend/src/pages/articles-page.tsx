@@ -18,6 +18,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function ArticlesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") || "row";
+  const query = searchParams.get("q") || "";
 
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ["articlesData"],
@@ -29,8 +30,6 @@ export default function ArticlesPage() {
       return response.json();
     },
   });
-
-  const query = searchParams.get("q")?.toLowerCase() || "";
 
   const filteredArticles = data?.filter((article: Article) => {
     if (!query) return true;
@@ -52,6 +51,17 @@ export default function ArticlesPage() {
     });
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchParams((prev) => {
+      if (event.target.value) {
+        prev.set("q", event.target.value);
+      } else {
+        prev.delete("q");
+      }
+      return prev;
+    });
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch p-3 md:p-4 lg:p-5">
       <header className="mb-8 flex w-full flex-wrap items-center justify-between gap-4">
@@ -65,7 +75,7 @@ export default function ArticlesPage() {
           <Input
             placeholder="Search articles..."
             value={query}
-            onChange={(e) => setSearchParams({ q: e.target.value })}
+            onChange={handleSearchChange}
             className="hidden h-8 w-64 sm:block"
           />
           <div

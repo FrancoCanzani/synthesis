@@ -84,7 +84,7 @@ export default function ArticleCard({ article }: { article: Article }) {
               addSuffix: true,
             })}
           </time>
-          {article.label && <span className="underline">{article.label}</span>}
+          {article.label && <span>{article.label}</span>}
         </div>
       </div>
       <div className="absolute right-2 top-2">
