@@ -33,8 +33,8 @@ export default function ReadArticlePage() {
   });
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-stretch overflow-y-auto p-3 md:p-4">
-      <article className="mx-auto p-2 sm:max-w-[80ch]">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 md:py-12">
+      <article className="prose prose-lg dark:prose-invert prose-headings:scroll-mt-20">
         {isPending ? (
           <ArticleSkeleton />
         ) : error ? (
@@ -47,60 +47,64 @@ export default function ReadArticlePage() {
           />
         ) : article ? (
           <>
-            <div className="mb-6">
-              <h2 className="prose prose-xl mb-4 text-xl font-medium text-black dark:prose-invert dark:text-white sm:text-2xl md:text-3xl">
+            <header className="mb-4 space-y-4">
+              <div className="flex w-full items-center justify-between">
+                {article.label && (
+                  <span className="text-sm underline">{article.label}</span>
+                )}
+                {article.url && (
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm underline"
+                  >
+                    Read original
+                  </a>
+                )}
+              </div>
+
+              <h1 className="text-3xl font-bold leading-tight tracking-tight lg:text-4xl">
                 {article.title}
-              </h2>
-              <div className="flex flex-col items-start gap-x-1.5 space-y-2 text-xs text-muted-foreground md:flex-row md:items-center md:space-y-0">
-                <div className="flex items-center md:space-x-1.5">
+              </h1>
+
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-2">
                   {article.favicon && (
                     <img
                       src={article.favicon}
-                      alt={article.title}
-                      className="hidden h-4 w-4 rounded-sm md:block"
+                      alt={article.siteName}
+                      className="h-5 w-5 rounded-sm"
                     />
                   )}
-                  <span>{article.siteName}</span>
+                  <span className="font-medium">{article.siteName}</span>
                 </div>
-                <span className="hidden md:block">‧</span>
-                <span>By {article.author || "Unknown Author"}</span>
-                <span className="hidden md:block">‧</span>
-                <span>Published: {formatDate(article.publishedTime)}</span>
-                <span className="hidden md:block">‧</span>
-                {article.modifiedTime && (
-                  <span className="hidden md:block">
-                    Last modified: {formatDate(article.modifiedTime)}
-                  </span>
-                )}
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-2 hover:underline"
-                >
-                  View original
-                </a>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                  {article.author && <span>By {article.author}</span>}
+                  <time dateTime={article.publishedTime}>
+                    {formatDate(article.publishedTime)}
+                  </time>
+                </div>
               </div>
-            </div>
+            </header>
 
             {article.image && (
-              <img
-                src={article.image}
-                alt={article.title}
-                className="mb-4 w-full rounded-sm object-cover"
-              />
+              <figure className="my-4">
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  className="aspect-video w-full rounded-sm object-cover"
+                />
+              </figure>
             )}
 
             {article.excerpt && (
-              <div className="mb-4 rounded-sm bg-muted p-4 italic">
+              <div className="my-8 rounded-sm bg-accent p-4 font-medium leading-relaxed">
                 {article.excerpt}
               </div>
             )}
 
-            <div
-              className="prose prose-sm text-black dark:prose-invert sm:prose-base focus:outline-none dark:text-white sm:max-w-[80ch]"
-              dangerouslySetInnerHTML={{ __html: article.content }}
-            />
+            <div dangerouslySetInnerHTML={{ __html: article.content }} />
           </>
         ) : null}
       </article>
@@ -110,25 +114,28 @@ export default function ReadArticlePage() {
 
 function ArticleSkeleton() {
   return (
-    <div className="space-y-2">
-      <Skeleton className="h-10 w-3/4" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-64 w-full" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-4 w-2/3" />
-      <Skeleton className="h-4 w-2/3" />
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-24" />
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-12 w-full" />
+      <div className="flex gap-4 py-4">
+        <Skeleton className="h-5 w-5" />
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-5 w-48" />
+      </div>
+      <Skeleton className="aspect-video w-full rounded-lg" />
+      <div className="space-y-4 py-4">
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-6 w-2/3" />
+      </div>
     </div>
   );
 }
 
 function ErrorAlert({ message }: { message: string }) {
   return (
-    <Alert variant="default" className="rounded-sm">
+    <Alert variant="destructive" className="rounded-lg">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
