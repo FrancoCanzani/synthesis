@@ -24,20 +24,24 @@ type Service interface {
 	GetNotes(ctx context.Context, userId string) ([]*models.Note, error)
 	UpdateNote(ctx context.Context, note *models.Note, userId string) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string, userId string) error
+
 	GetArticle(ctx context.Context, userId string, articleId string) (*models.Article, error)
 	GetArticles(ctx context.Context, user_id string) ([]*models.Article, error)
 	CreateArticle(ctx context.Context, article *models.Article) (*models.Article, error)
 	DeleteArticle(ctx context.Context, id string, user_id string) error
+
 	CreateFeed(ctx context.Context, source *models.FeedSource, feed *models.Feed, items []*models.FeedItem) error
 	FeedExists(ctx context.Context, link string, userId string) (bool, error)
 	GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error)
 	DeleteFeed(ctx context.Context, link string, userId string) error
 	UpdateFeedItem(ctx context.Context, id int64, userId string, attribute string, value any) error
 	MarkAllFeedItemsAsRead(ctx context.Context, userId string) error
-	SaveEmail(ctx context.Context, receivedEmail models.ReceivedEmail) (models.ReceivedEmail, error) 
+	UpdateAllFeeds(ctx context.Context) error 
+
+	SaveEmail(ctx context.Context, receivedEmail models.ReceivedEmail) (models.ReceivedEmail, error)
 	GetEmails(ctx context.Context, recipientAlias string) ([]*models.Email, error)
 	UpdateEmailItem(ctx context.Context, id int64, recipientAlias string, attribute string, value any) error
-	
+
 	Close() error
 }
 
@@ -237,7 +241,7 @@ func (s *service) initTables() error {
         feed_type TEXT,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (feed_link) REFERENCES feeds_sources(feed_link) ON DELETE CASCADE
+        FOREIGN KEY (feed_link) REFERENCES feeds_sources(feed_link) 
     )`
 
 	_, err = s.db.Exec(queryFeeds)
@@ -266,7 +270,7 @@ func (s *service) initTables() error {
         starred BOOLEAN DEFAULT FALSE,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        FOREIGN KEY (feed_link) REFERENCES feeds(feed_link) ON DELETE CASCADE
+        FOREIGN KEY (feed_link) REFERENCES feeds(feed_link) 
     )`
 
 	_, err = s.db.Exec(queryFeedsItems)

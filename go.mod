@@ -11,6 +11,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/openai/openai-go v0.1.0-alpha.39
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.33.0
 	golang.org/x/time v0.9.0
 )

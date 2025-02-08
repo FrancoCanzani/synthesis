@@ -33,7 +33,7 @@ export default function ReadArticlePage() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8 md:py-12">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8">
       <article className="prose dark:prose-invert prose-headings:scroll-mt-20">
         {isPending ? (
           <ArticleSkeleton />

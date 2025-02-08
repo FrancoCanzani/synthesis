@@ -1,16 +1,18 @@
 import AddFeedDialog from "@/components/feeds/add-feed-dialog";
 import ActionButton from "@/components/ui/action-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getToken } from "@/lib/helpers";
 import { FeedItem } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarArrowDown,
   CalendarArrowUp,
   CheckCheck,
-  Grid3X3,
-  Rows4,
+  LayoutGrid,
+  LayoutList,
 } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
@@ -33,6 +35,8 @@ export default function FeedsPageHeader({
     order: "desc",
     view: "row",
   });
+
+  const view = searchParams.get("view") || "row";
 
   const mutation = useMutation({
     mutationFn: markAllAsRead,
@@ -57,13 +61,10 @@ export default function FeedsPageHeader({
     queryClient.invalidateQueries({ queryKey: ["feedItems", order] });
   };
 
-  const handleViewChange = () => {
-    const view = searchParams.get("view");
-    const newView = view === "row" ? "grid" : "row";
-
-    setSearchParams((params) => {
-      params.set("view", newView);
-      return params;
+  const setView = (newView: string) => {
+    setSearchParams((prev) => {
+      prev.set("view", newView);
+      return prev;
     });
   };
 
@@ -92,22 +93,28 @@ export default function FeedsPageHeader({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <ActionButton
-          onClick={handleViewChange}
-          disabled={isPending || isFetchingNextPage}
-          tooltipContent={
-            searchParams.get("view") === "row" ? "Grid view" : "Row view"
-          }
-        >
-          {searchParams.get("view") === "grid" ? (
-            <Rows4 className="h-4 w-4" />
-          ) : (
-            <Grid3X3 className="h-4 w-4" />
+        <div
+          className={cn(
+            "flex items-center gap-2 border-r pr-2 sm:border-x sm:px-2",
           )}
-          <span className="sr-only">
-            {searchParams.get("view") === "row" ? "Grid view" : "Row view"}
-          </span>
-        </ActionButton>
+        >
+          <Button
+            variant={view === "row" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setView("row")}
+          >
+            <LayoutList className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={view === "grid" ? "secondary" : "ghost"}
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setView("grid")}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+        </div>
         <ActionButton
           onClick={handleOrderChange}
           disabled={isPending || isFetchingNextPage}

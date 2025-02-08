@@ -34,7 +34,7 @@ export default function ArticleCard({ article }: { article: Article }) {
   return (
     <Link
       to={`/articles/${article.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-sm border bg-card transition-colors hover:bg-accent"
+      className="group relative flex flex-col overflow-hidden rounded-sm border transition-colors hover:bg-accent"
     >
       {article.image && (
         <div className="aspect-video w-full overflow-hidden">

@@ -98,7 +98,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 			Updated:         &item.Updated,
 			UpdatedParsed:   item.UpdatedParsed,
 			GUID:            &item.GUID,
-			Read:            false,
+			Read:            true,
 			Starred:         false,
 			CreatedAt:       time.Now(),
 			UpdatedAt:       time.Now(),

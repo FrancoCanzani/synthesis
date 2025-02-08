@@ -27,7 +27,7 @@ func (h *EmailHandler) ReceivedEmailHandler(c *gin.Context) {
 	}
 
 	email, err := h.db.SaveEmail(c, parsedEmail)
- 
+
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to save email: " + err.Error()})
 		return
@@ -36,7 +36,7 @@ func (h *EmailHandler) ReceivedEmailHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, email)
 }
 
-func (h *EmailHandler) GetEmailsHandler(c *gin.Context){
+func (h *EmailHandler) GetEmailsHandler(c *gin.Context) {
 	alias := c.Query("alias")
 
 	fmt.Println(alias)
@@ -46,16 +46,15 @@ func (h *EmailHandler) GetEmailsHandler(c *gin.Context){
 		return
 	}
 
-
 	var parsedEmail models.ReceivedEmail
-	
+
 	if err := c.ShouldBind(&parsedEmail); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Failed to parse form data: " + err.Error()})
-		return 
+		return
 	}
 
 	emails, err := h.db.GetEmails(c, alias)
- 
+
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to save email: " + err.Error()})
 		return
@@ -66,10 +65,10 @@ func (h *EmailHandler) GetEmailsHandler(c *gin.Context){
 
 func (h *EmailHandler) UpdateEmailItemHandler(c *gin.Context) {
 	type UpdateRequest struct {
-		Id        int64  `json:"id" binding:"required"`
+		Id             int64  `json:"id" binding:"required"`
 		RecipientAlias string `json:"recipient_alias" binding:"required"`
-		Attribute string `json:"attribute" binding:"required"`
-		Value     any    `json:"value" binding:"required"`
+		Attribute      string `json:"attribute" binding:"required"`
+		Value          any    `json:"value" binding:"required"`
 	}
 
 	var req UpdateRequest

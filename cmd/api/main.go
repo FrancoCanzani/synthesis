@@ -9,48 +9,69 @@ import (
 	"syscall"
 	"time"
 
+	"synthesis/internal/database"
 	"synthesis/internal/server"
+
+	"github.com/robfig/cron/v3"
 )
 
-func gracefulShutdown(apiServer *http.Server, done chan bool) {
-	// Create context that listens for the interrupt signal from the OS.
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+func gracefulShutdown(apiServer *http.Server, db database.Service, c *cron.Cron, done chan bool) {
+        ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+        defer stop()
 
-	// Listen for the interrupt signal.
-	<-ctx.Done()
+        <-ctx.Done()
 
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
+        log.Println("Shutting down gracefully, press Ctrl+C again to force")
 
-	// The context is used to inform the server it has 5 seconds to finish
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := apiServer.Shutdown(ctx); err != nil {
-		log.Printf("Server forced to shutdown with error: %v", err)
-	}
+        ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
 
-	log.Println("Server exiting")
+        if err := apiServer.Shutdown(ctx); err != nil {
+                log.Printf("Server forced to shutdown with error: %v", err)
+        }
 
-	// Notify the main goroutine that the shutdown is complete
-	done <- true
+        log.Println("Server exiting")
+
+        if err := db.Close(); err != nil { // Close DB connection
+                log.Printf("Error closing database: %v", err)
+        }
+
+        c.Stop() // Stop the cron job scheduler
+
+        done <- true
 }
 
 func main() {
+        db := database.New()
+        defer db.Close() // Close the database connection when the application exits
 
-	server := server.NewServer()
+        server := server.NewServer()
 
-	// Create a done channel to signal when the shutdown is complete
-	done := make(chan bool, 1)
+        c := cron.New()
+        _, err := c.AddFunc("*/10 * * * *", func() {
+                err := db.UpdateAllFeeds(context.Background()) // Use background context for cron
+                if err != nil {
+                        log.Printf("Error updating feeds: %v", err)
+                }
+        })
 
-	// Run graceful shutdown in a separate goroutine
-	go gracefulShutdown(server, done)
+        if err != nil {
+                log.Fatalf("Error scheduling cron job: %v", err)
+        }
 
-	err := server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
-		panic(fmt.Sprintf("http server error: %s", err))
-	}
+        c.Start()
+        defer c.Stop()
 
-	// Wait for the graceful shutdown to complete
-	<-done
-	log.Println("Graceful shutdown complete.")
+        log.Println("Feed updater started. Running every 10 minutes.")
+
+        done := make(chan bool, 1)
+        go gracefulShutdown(server, db, c, done) 
+
+        err = server.ListenAndServe()
+        if err != nil && err != http.ErrServerClosed {
+                panic(fmt.Sprintf("http server error: %s", err))
+        }
+
+        <-done
+        log.Println("Graceful shutdown complete.")
 }
