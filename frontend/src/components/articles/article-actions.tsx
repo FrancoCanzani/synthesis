@@ -1,6 +1,3 @@
-import { Ellipsis } from "lucide-react";
-import { Link } from "react-router";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +7,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { copyToClipboard } from "@/lib/helpers";
 import { Article } from "@/lib/types";
+import { Ellipsis } from "lucide-react";
+import { Link } from "react-router";
+import { toast } from "sonner";
 
 export default function ArticleActions({
   article,
@@ -43,6 +43,7 @@ export default function ArticleActions({
           onClick={async (e) => {
             e.stopPropagation();
             await copyToClipboard(article.url);
+            toast.success("URL copied to clipboard");
           }}
         >
           Copy url

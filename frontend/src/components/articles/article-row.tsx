@@ -1,18 +1,11 @@
+import { getToken } from "@/lib/helpers";
+import { Article } from "@/lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Ellipsis, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { copyToClipboard, getToken } from "@/lib/helpers";
-import { Article } from "@/lib/types";
+import ArticleActions from "./article-actions";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -83,47 +76,10 @@ export default function ArticleRow({ article }: { article: Article }) {
         </div>
       </div>
 
-      <div className="flex-shrink-0">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-100 transition-opacity hover:bg-white group-hover:opacity-100 dark:hover:bg-background md:opacity-0"
-            >
-              <Ellipsis className="h-4 w-4" />
-              <span className="sr-only">Open options</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem asChild>
-              <Link to={`/articles/${article.id}`}>Read article</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <a href={article.url} target="_blank" rel="noopener noreferrer">
-                Visit original
-              </a>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={async (e) => {
-                e.stopPropagation();
-                await copyToClipboard(article.url);
-              }}
-            >
-              Copy url
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={async (e) => {
-                e.stopPropagation();
-                deleteArticleMutation.mutate(article.id);
-              }}
-              className="text-destructive focus:text-destructive"
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <ArticleActions
+        article={article}
+        onDelete={() => deleteArticleMutation.mutate(article.id)}
+      />
     </Link>
   );
 }

@@ -14,7 +14,7 @@ func (s *service) GetArticles(ctx context.Context, userId string) ([]*models.Art
 	query := `
         SELECT *
         FROM articles
-        WHERE user_id = ?
+        WHERE user_id = ? ORDER BY scraped_at DESC
     `
 
 	rows, err := s.db.QueryContext(ctx, query, userId)
@@ -60,7 +60,7 @@ func (s *service) GetArticle(ctx context.Context, userId string, articleId strin
 	query := `
         SELECT *
         FROM articles
-        WHERE user_id = ? AND id = ? ORDER BY ScrapedAt DESC
+        WHERE user_id = ? AND id = ?
     `
 
 	article := &models.Article{}
