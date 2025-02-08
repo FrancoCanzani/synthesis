@@ -47,9 +47,9 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 
 	feedQuery := `
         INSERT INTO feeds (
-            feed_link, link, user_id, title, description, image_url, image_title, updated, 
+            feed_link, link, user_id, title, description, label, image_url, image_title, updated, 
             updated_parsed, feed_type, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = tx.ExecContext(ctx, feedQuery,
 		feed.FeedLink,
@@ -57,6 +57,7 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 		feed.UserId,
 		feed.Title,
 		feed.Description,
+		feed.Label,
 		feed.ImageUrl,
 		feed.ImageTitle,
 		feed.Updated,
@@ -105,43 +106,43 @@ func (s *service) CreateFeed(ctx context.Context, source *models.FeedSource, fee
 }
 
 func (s *service) GetFeedItems(ctx context.Context, userId string, order string, limit int, offset int) ([]*models.FeedItemWithFeed, error) {
-	query := fmt.Sprintf(`
+    query := fmt.Sprintf(`
         SELECT 
             fi.id, fi.user_id, fi.title, fi.description, fi.content, fi.feed_link, fi.link, 
             fi.image_url, fi.image_title, fi.published, fi.published_parsed, 
             fi.updated, fi.updated_parsed, fi.guid, fi.read, fi.starred, 
             fi.created_at, fi.updated_at,
             f.title as feed_title, f.description as feed_description, 
-            f.image_url as feed_image_url, f.feed_type
+            f.label as feed_label, f.image_url as feed_image_url, f.feed_type  -- Added f.label
         FROM feeds_items fi
         JOIN feeds f ON fi.feed_link = f.feed_link AND fi.user_id = f.user_id
         WHERE fi.user_id = ?
         ORDER BY fi.published_parsed %s
         LIMIT ? OFFSET ?`, order)
 
-	rows, err := s.db.QueryContext(ctx, query, userId, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+    rows, err := s.db.QueryContext(ctx, query, userId, limit, offset)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-	var items []*models.FeedItemWithFeed
-	for rows.Next() {
-		item := &models.FeedItemWithFeed{}
-		err := rows.Scan(
-			&item.Id, &item.UserId, &item.Title, &item.Description, &item.Content, &item.FeedLink, &item.Link,
-			&item.ImageUrl, &item.ImageTitle, &item.Published, &item.PublishedParsed,
-			&item.Updated, &item.UpdatedParsed, &item.GUID, &item.Read, &item.Starred,
-			&item.CreatedAt, &item.UpdatedAt,
-			&item.Feed.Title, &item.Feed.Description, &item.Feed.ImageUrl, &item.Feed.FeedType,
-		)
-		if err != nil {
-			return nil, err
-		}
-		items = append(items, item)
-	}
+    var items []*models.FeedItemWithFeed
+    for rows.Next() {
+        item := &models.FeedItemWithFeed{}
+        err := rows.Scan(
+            &item.Id, &item.UserId, &item.Title, &item.Description, &item.Content, &item.FeedLink, &item.Link,
+            &item.ImageUrl, &item.ImageTitle, &item.Published, &item.PublishedParsed,
+            &item.Updated, &item.UpdatedParsed, &item.GUID, &item.Read, &item.Starred,
+            &item.CreatedAt, &item.UpdatedAt,
+            &item.Feed.Title, &item.Feed.Description, &item.Feed.Label, &item.Feed.ImageUrl, &item.Feed.FeedType, // Added &item.Feed.Label
+        )
+        if err != nil {
+            return nil, err
+        }
+        items = append(items, item)
+    }
 
-	return items, rows.Err()
+    return items, rows.Err()
 }
 
 func (s *service) DeleteFeed(ctx context.Context, feedLink string, userId string) error {
@@ -267,99 +268,108 @@ func (s *service) getAllActiveFeedSources(ctx context.Context) ([]*models.FeedSo
 }
 
 func (s *service) updateFeed(ctx context.Context, source *models.FeedSource) error {
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURLWithContext(source.FeedLink, ctx)
-	if err != nil {
-		_, errUpdate := s.db.ExecContext(ctx, "UPDATE feeds_sources SET failure_count = failure_count + 1, updated_at = ? WHERE feed_link = ?", time.Now(), source.FeedLink)
-		if errUpdate != nil {
-			return fmt.Errorf("parsing feed %w, updating failure count %w", err, errUpdate)
-		}
-		return fmt.Errorf("parsing feed: %w", err)
-	}
+    fp := gofeed.NewParser()
+    feed, err := fp.ParseURLWithContext(source.FeedLink, ctx)
+    if err != nil {
+        _, errUpdate := s.db.ExecContext(ctx, "UPDATE feeds_sources SET failure_count = failure_count + 1, updated_at = ? WHERE feed_link = ?", time.Now(), source.FeedLink)
+        if errUpdate != nil {
+            return fmt.Errorf("parsing feed %w, updating failure count %w", err, errUpdate)
+        }
+        return fmt.Errorf("parsing feed: %w", err)
+    }
 
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("starting transaction: %w", err)
-	}
-	defer tx.Rollback()
+    tx, err := s.db.BeginTx(ctx, nil)
+    if err != nil {
+        return fmt.Errorf("starting transaction: %w", err)
+    }
+    defer tx.Rollback()
 
-	_, err = tx.ExecContext(ctx, "UPDATE feeds_sources SET last_fetch = ?, updated_at = ?, failure_count = 0 WHERE feed_link = ?", time.Now(), time.Now(), source.FeedLink)
-	if err != nil {
-		return fmt.Errorf("updating feed source: %w", err)
-	}
+    _, err = tx.ExecContext(ctx, "UPDATE feeds_sources SET last_fetch = ?, updated_at = ?, failure_count = 0 WHERE feed_link = ?", time.Now(), time.Now(), source.FeedLink)
+    if err != nil {
+        return fmt.Errorf("updating feed source: %w", err)
+    }
 
-	if feed != nil {
-		_, err = tx.ExecContext(ctx, "UPDATE feeds SET title = ?, description = ?, updated = ?, updated_parsed = ?, image_url = ?, image_title = ?, updated_at = ? WHERE feed_link = ?",
-			feed.Title, feed.Description, feed.Updated, feed.UpdatedParsed, feed.Image.URL, feed.Image.Title, time.Now(), source.FeedLink)
-		if err != nil {
-			return fmt.Errorf("updating feed: %w", err)
-		}
-	}
+    if feed != nil && feed.Image != nil && feed.Image.URL != "" {
+        _, err = tx.ExecContext(ctx, "UPDATE feeds SET title = ?, description = ?, updated = ?, updated_parsed = ?, image_url = ?, image_title = ?, updated_at = ? WHERE feed_link = ?",
+            feed.Title, feed.Description, feed.Updated, feed.UpdatedParsed, feed.Image.URL, feed.Image.Title, time.Now(), source.FeedLink)
+        if err != nil {
+            return fmt.Errorf("updating feed: %w", err)
+        }
+    } else if feed != nil {
+         _, err = tx.ExecContext(ctx, "UPDATE feeds SET title = ?, description = ?, updated = ?, updated_parsed = ?, updated_at = ? WHERE feed_link = ?",
+            feed.Title, feed.Description, feed.Updated, feed.UpdatedParsed, time.Now(), source.FeedLink)
+        if err != nil {
+            return fmt.Errorf("updating feed: %w", err)
+        }
+    }
 
-	for _, item := range feed.Items {
-		exists, err := s.feedItemExists(ctx, &item.GUID, source.FeedLink)
-		if err != nil {
-			return fmt.Errorf("checking if feed item exists: %w", err)
-		}
-		if !exists {
-			feedItem := &models.FeedItem{
-				UserId:          source.UserId,
-				Title:           &item.Title,
-				Description:     &item.Description,
-				Content:         &item.Content,
-				FeedLink:        source.FeedLink,
-				Link:            &item.Link,
-				Published:       &item.Published,
-				PublishedParsed: item.PublishedParsed,
-				Updated:         &item.Updated,
-				UpdatedParsed:   item.UpdatedParsed,
-				GUID:            &item.GUID,
-				Read:            false,
-				Starred:         false,
-				CreatedAt:       time.Now(),
-				UpdatedAt:       time.Now(),
-			}
 
-			if item.Image != nil && item.Image.URL != "" {
-				feedItem.ImageUrl = &item.Image.URL
-				if item.Image.Title != "" {
-					feedItem.ImageTitle = &item.Image.Title
-				}
-			}
+    if feed != nil {
+        for _, item := range feed.Items {
+            exists, err := s.feedItemExists(ctx, &item.GUID, source.FeedLink)
+            if err != nil {
+                return fmt.Errorf("checking if feed item exists: %w", err)
+            }
+            if !exists {
+                feedItem := &models.FeedItem{
+                    UserId:          source.UserId,
+                    Title:           &item.Title,
+                    Description:     &item.Description,
+                    Content:         &item.Content,
+                    FeedLink:        source.FeedLink,
+                    Link:            &item.Link,
+                    Published:       &item.Published,
+                    PublishedParsed: item.PublishedParsed,
+                    Updated:         &item.Updated,
+                    UpdatedParsed:   item.UpdatedParsed,
+                    GUID:            &item.GUID,
+                    Read:            false,
+                    Starred:         false,
+                    CreatedAt:       time.Now(),
+                    UpdatedAt:       time.Now(),
+                }
 
-			itemQuery := `
-							INSERT INTO feeds_items (
-									feed_link, user_id, title, description, content, link, image_url, image_title, published,
-									published_parsed, updated, updated_parsed, guid, read,
-									starred, created_at, updated_at
-							) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                if item.Image != nil && item.Image.URL != "" {
+                    feedItem.ImageUrl = &item.Image.URL
+                    if item.Image.Title != "" {
+                        feedItem.ImageTitle = &item.Image.Title
+                    }
+                }
 
-			_, err = tx.ExecContext(ctx, itemQuery,
-				feedItem.FeedLink,
-				feedItem.UserId,
-				feedItem.Title,
-				feedItem.Description,
-				feedItem.Content,
-				feedItem.Link,
-				feedItem.ImageUrl,
-				feedItem.ImageTitle,
-				feedItem.Published,
-				feedItem.PublishedParsed,
-				feedItem.Updated,
-				feedItem.UpdatedParsed,
-				feedItem.GUID,
-				feedItem.Read,
-				feedItem.Starred,
-				feedItem.CreatedAt,
-				feedItem.UpdatedAt,
-			)
-			if err != nil {
-				return fmt.Errorf("inserting feed item: %w", err)
-			}
-		}
-	}
+                itemQuery := `
+                    INSERT INTO feeds_items (
+                        feed_link, user_id, title, description, content, link, image_url, image_title, published,
+                        published_parsed, updated, updated_parsed, guid, read,
+                        starred, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	return tx.Commit()
+                _, err = tx.ExecContext(ctx, itemQuery,
+                    feedItem.FeedLink,
+                    feedItem.UserId,
+                    feedItem.Title,
+                    feedItem.Description,
+                    feedItem.Content,
+                    feedItem.Link,
+                    feedItem.ImageUrl,
+                    feedItem.ImageTitle,
+                    feedItem.Published,
+                    feedItem.PublishedParsed,
+                    feedItem.Updated,
+                    feedItem.UpdatedParsed,
+                    feedItem.GUID,
+                    feedItem.Read,
+                    feedItem.Starred,
+                    feedItem.CreatedAt,
+                    feedItem.UpdatedAt,
+                )
+                if err != nil {
+                    return fmt.Errorf("inserting feed item: %w", err)
+                }
+            }
+        }
+    }
+
+    return tx.Commit()
 }
 
 func (s *service) feedItemExists(ctx context.Context, guid *string, feedLink string) (bool, error) {

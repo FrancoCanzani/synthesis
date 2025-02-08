@@ -75,6 +75,7 @@ type Feed struct {
 	UserId        string     `json:"userId"`
 	Title         *string    `json:"title,omitempty"`
 	Description   *string    `json:"description,omitempty"`
+	Label		  *string    `json:"label,omitempty"`
 	ImageUrl      *string    `json:"imageUrl,omitempty"`
 	ImageTitle    *string    `json:"imageTitle,omitempty"`
 	Updated       *string    `json:"updated,omitempty"`
@@ -127,6 +128,7 @@ type FeedItemWithFeed struct {
 	Feed            struct {
 		Title       *string `json:"title,omitempty"`
 		Description *string `json:"description,omitempty"`
+		Label		*string    `json:"label,omitempty"`
 		ImageUrl    *string `json:"imageUrl,omitempty"`
 		FeedType    *string `json:"feedType,omitempty"`
 	} `json:"feed"`

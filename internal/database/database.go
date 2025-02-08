@@ -234,6 +234,7 @@ func (s *service) initTables() error {
 		user_id TEXT NOT NULL,
         title TEXT,
         description TEXT,
+		label TEXT,
 		image_url TEXT,
 		image_title TEXT,
         updated DATETIME,

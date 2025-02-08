@@ -30,6 +30,8 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		return
 	}
 
+	label := c.Query("label")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
@@ -46,7 +48,6 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(feedLink, ctx)
 
-	fmt.Println(feed)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "failed to parse feed"})
 		return
@@ -70,6 +71,7 @@ func (h *FeedsHandler) CreateFeedHandler(c *gin.Context) {
 		UserId:        userId,
 		Title:         &feed.Title,
 		Description:   &feed.Description,
+		Label: 	   	   &label,
 		Updated:       &feed.Updated,
 		UpdatedParsed: feed.UpdatedParsed,
 		FeedType:      &feed.FeedType,
