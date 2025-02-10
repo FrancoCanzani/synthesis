@@ -59,6 +59,7 @@ export interface FeedItem {
   feed: {
     title?: string;
     description?: string;
+    label?: string;
     imageUrl?: string;
     feedType?: string;
   };

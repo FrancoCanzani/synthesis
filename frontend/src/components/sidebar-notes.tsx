@@ -42,7 +42,7 @@ export default function SidebarNotes() {
       {notes?.map((note) => (
         <Tooltip key={note.id}>
           <TooltipTrigger asChild>
-            <div className="group/item flex items-center rounded-md px-2 py-1 hover:bg-accent">
+            <div className="group/item flex items-center rounded-sm px-2 py-1 hover:bg-accent">
               <button
                 className={cn(
                   "block flex-1 truncate pr-1 text-start text-sm",

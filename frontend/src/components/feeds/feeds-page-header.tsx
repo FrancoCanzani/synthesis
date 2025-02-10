@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
+import FeedsLeftSheet from "./feeds-left-sheet";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -24,10 +25,12 @@ export default function FeedsPageHeader({
   isPending,
   isFetchingNextPage,
   unreadItems,
+  feedItems,
 }: {
   isPending: boolean;
   isFetchingNextPage: boolean;
   unreadItems: FeedItem[];
+  feedItems: FeedItem[];
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
@@ -93,6 +96,8 @@ export default function FeedsPageHeader({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+
+        <FeedsLeftSheet feedItems={feedItems} />
         <div
           className={cn(
             "flex items-center gap-2 border-r pr-2 sm:border-x sm:px-2",
