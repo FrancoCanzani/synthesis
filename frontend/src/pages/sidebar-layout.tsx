@@ -20,7 +20,7 @@ export default function SidebarLayout() {
     <SidebarProvider defaultOpen={true}>
       <div className="flex w-full min-w-0 bg-background">
         <AppSidebar />
-        <main className="flex min-h-screen min-w-0 flex-1 flex-col justify-between pb-11 md:pb-0">
+        <main className="min-h-screen flex-1 flex-col justify-between">
           <Outlet />
           <MobileFooterMenu />
         </main>

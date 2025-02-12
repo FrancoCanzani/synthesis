@@ -1,5 +1,4 @@
 import { signOut } from "@/lib/helpers";
-import { useAuth } from "@/lib/hooks/use-auth";
 import { Home, Inbox, Settings } from "lucide-react";
 import { Suspense } from "react";
 import { Link } from "react-router";
@@ -44,24 +43,9 @@ const items = [
 export function AppSidebar() {
   const newNoteId = uuidv4();
 
-  const { user } = useAuth();
-
   return (
     <Sidebar>
-      <SidebarHeader>
-        {user ? (
-          <div className="flex w-full items-center justify-start space-x-4 pl-2 pt-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black p-3 text-center text-xl font-medium text-white">
-              {user.user_metadata.name.split(" ")[0][0]}
-            </div>
-            <p className="font-medium capitalize">
-              {user.user_metadata.name.split(" ")[0]}'s notes
-            </p>
-          </div>
-        ) : (
-          "Loading..."
-        )}
-      </SidebarHeader>
+      <SidebarHeader className="text-2xl font-medium">Shamva</SidebarHeader>
       <SidebarContent className="rounded-r-md">
         <SidebarGroup>
           <SidebarGroupContent>

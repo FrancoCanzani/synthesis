@@ -1,6 +1,6 @@
 import { copyToClipboard, getToken } from "@/lib/helpers";
 import { useIsMobile } from "@/lib/hooks/use-mobile";
-import { FeedItem } from "@/lib/types";
+import { type FeedItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -18,7 +18,13 @@ import UnsubscribeFeedDialog from "./unsubscribe-feed-dialog";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function FeedGridItem({ item }: { item: FeedItem }) {
+export default function FeedItemSheet({
+  item,
+  handleSelectedFeedItem,
+}: {
+  item: FeedItem;
+  handleSelectedFeedItem: (id: number) => void;
+}) {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
@@ -54,45 +60,13 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
       <SheetTrigger asChild>
         <div
           className={cn(
-            "group flex w-full cursor-pointer flex-col justify-between overflow-hidden rounded-sm border bg-accent/20 p-2 transition-all hover:bg-accent",
+            "group flex w-full cursor-pointer flex-col items-start justify-between space-y-2 overflow-hidden rounded-sm bg-accent/20 p-2 text-sm transition-all hover:bg-accent",
             item.read && "opacity-60",
           )}
+          onClick={() => handleSelectedFeedItem(item.id)}
         >
-          <div className="mb-4 flex flex-col items-center justify-between space-y-4">
-            <div className="flex w-full items-center justify-between">
-              <a
-                href={item.feedLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs hover:underline"
-              >
-                {item.feed.title}
-              </a>
-              <span className="text-xs">{format(date, "PP")}</span>
-            </div>
-            <div className="flex w-full flex-col items-start">
-              <h3 className="mb-2 line-clamp-2 text-sm font-medium">
-                {item.title}
-              </h3>
-              {item.description && (
-                // some feeds provide the description in html
-                <p
-                  className="mb-2 line-clamp-3 text-xs text-muted-foreground"
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                />
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs hover:underline"
-            >
-              Read
-            </a>
+          <div className="flex w-full min-w-0 items-center justify-between space-x-3">
+            <h4 className="truncate font-medium">{item?.title}</h4>
             {item.starred && (
               <Star
                 className="h-3 w-3"
@@ -100,6 +74,10 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
                 stroke={item.starred ? "#fbbf24" : "currentColor"}
               />
             )}
+          </div>
+          <div className="flex w-full items-center justify-between text-muted-foreground">
+            <p className="mt-1 truncate text-xs">{item.feed.title}</p>
+            <span className="text-xs">{format(date, "PP")}</span>
           </div>
         </div>
       </SheetTrigger>
@@ -127,7 +105,7 @@ export default function FeedGridItem({ item }: { item: FeedItem }) {
               >
                 <Star
                   className="h-4 w-4"
-                  fill={item.starred ? "#fbbf24" : "none"}
+                  fill={item.starred ? "#fff400" : "white"}
                   stroke={item.starred ? "#fbbf24" : "currentColor"}
                 />
               </ActionButton>

@@ -1,47 +1,37 @@
-import { FeedItem } from "@/lib/types";
+import { type FeedItem as FeedItemType } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { useSearchParams } from "react-router";
 import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
-import FeedGridItem from "./feed-grid-item";
-import FeedRowItem from "./feed-row-item";
+import FeedItem from "./feed-item";
 
 export default function FeedItems({
   feedItems,
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
+  handleSelectedFeedItem,
 }: {
-  feedItems: FeedItem[];
+  feedItems: FeedItemType[];
   fetchNextPage: () => void;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  handleSelectedFeedItem: (id: number) => void;
 }) {
-  const [searchParams] = useSearchParams();
-  const view = searchParams.get("view");
-
   return (
-    <div className="flex w-full flex-col space-y-2 md:h-[calc(100vh-theme(spacing.32))] md:w-2/3">
-      <ScrollArea className="flex-1">
-        <div className="h-full">
-          {view === "grid" ? (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {feedItems.map((item) => (
-                <FeedGridItem item={item} key={item.id} />
-              ))}
-            </div>
-          ) : (
-            <div className="divide-y">
-              {feedItems.map((item) => (
-                <FeedRowItem item={item} key={item.id} />
-              ))}
-            </div>
-          )}
+    <div className="flex h-full w-full flex-col">
+      <div className="h-[calc(100vh-3.5rem)] overflow-y-auto p-3">
+        <div className="divide-y">
+          {feedItems.map((item) => (
+            <FeedItem
+              item={item}
+              key={item.id}
+              handleSelectedFeedItem={handleSelectedFeedItem}
+            />
+          ))}
         </div>
-      </ScrollArea>
+      </div>
       <div
         className={cn(
-          "sticky bottom-0 flex items-center justify-center",
+          "sticky bottom-0 flex items-center justify-center bg-white/50 backdrop-blur-sm", // Add some styling for visibility
           !hasNextPage && "hidden",
         )}
       >

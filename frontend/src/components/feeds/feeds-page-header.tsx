@@ -1,19 +1,11 @@
 import AddFeedDialog from "@/components/feeds/add-feed-dialog";
 import ActionButton from "@/components/ui/action-button";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getToken } from "@/lib/helpers";
 import { FeedItem } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  CalendarArrowDown,
-  CalendarArrowUp,
-  CheckCheck,
-  LayoutGrid,
-  LayoutList,
-} from "lucide-react";
+import { CalendarArrowDown, CalendarArrowUp, CheckCheck } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -36,10 +28,7 @@ export default function FeedsPageHeader({
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams({
     order: "desc",
-    view: "row",
   });
-
-  const view = searchParams.get("view") || "row";
 
   const mutation = useMutation({
     mutationFn: markAllAsRead,
@@ -64,13 +53,6 @@ export default function FeedsPageHeader({
     queryClient.invalidateQueries({ queryKey: ["feedItems", order] });
   };
 
-  const setView = (newView: string) => {
-    setSearchParams((prev) => {
-      prev.set("view", newView);
-      return prev;
-    });
-  };
-
   async function markAllAsRead() {
     const token = await getToken();
     const response = await fetch(`${API_URL}/feeds/mark-all-read`, {
@@ -86,7 +68,7 @@ export default function FeedsPageHeader({
   }
 
   return (
-    <header className="mb-8 flex w-full items-center justify-between">
+    <header className="sticky z-10 flex h-14 w-full items-center justify-between p-3">
       <h2 className="text-xl font-medium sm:text-2xl md:text-3xl">Feeds</h2>
       <div className="flex items-center gap-2">
         <Label className="sr-only">Search feeds</Label>
@@ -98,28 +80,7 @@ export default function FeedsPageHeader({
         />
 
         <FeedsLeftSheet feedItems={feedItems} />
-        <div
-          className={cn(
-            "flex items-center gap-2 border-r pr-2 sm:border-x sm:px-2",
-          )}
-        >
-          <Button
-            variant={view === "row" ? "secondary" : "ghost"}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setView("row")}
-          >
-            <LayoutList className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={view === "grid" ? "secondary" : "ghost"}
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setView("grid")}
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-        </div>
+
         <ActionButton
           onClick={handleOrderChange}
           disabled={isPending || isFetchingNextPage}
